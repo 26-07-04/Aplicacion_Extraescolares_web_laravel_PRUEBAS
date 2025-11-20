@@ -18,9 +18,12 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        'nombre',
+        'contrasena',
+        'contrasena_texto',
+        'rol',
+        'unidad_academica',
+        'contacto',
     ];
 
     /**
@@ -29,7 +32,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $hidden = [
-        'password',
+        'contrasena',
         'remember_token',
     ];
 
@@ -42,7 +45,22 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Table and primary key customization to match the new `usuarios` table.
+     */
+    protected $table = 'usuarios';
+    protected $primaryKey = 'id_usuario';
+    public $incrementing = true;
+    protected $keyType = 'int';
+
+    /**
+     * Devuelve el campo que almacena la contraseña para el guard de autenticación.
+     */
+    public function getAuthPassword()
+    {
+        return $this->contrasena;
     }
 }

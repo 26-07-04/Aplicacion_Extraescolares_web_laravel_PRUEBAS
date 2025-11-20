@@ -337,10 +337,11 @@ body, .contenedor-principal, .lado-izquierdo, .lado-derecho, .formulario-login, 
         <h1 style="font-size:1.5rem; font-weight:bold; margin-bottom: 8px;">ACTIVIDADES EXTRAESCOLARES</h1>
         <p style="font-size:1.05rem; font-weight:500; margin-bottom: 0;">Sistema de gestión de actividades complementarias</p>
       </div>
-      <form class="formulario-login" style="margin-top: 30px;" onsubmit="event.preventDefault(); validarAcceso();">
+      <form class="formulario-login" style="margin-top: 30px;" method="POST" action="{{ url('/login') }}">
+        @csrf
         <div class="campo">
           <img src="Imagenes/user.png" alt="Usuario" style="width:35px; height:35px; margin-right:8px;">
-          <input type="text" id="usuario" name="usuario" class="input-login-pequeno" placeholder="Ingresa tu nombre de usuario" />
+          <input type="text" id="usuario" name="usuario" value="{{ old('usuario') }}" class="input-login-pequeno" placeholder="Ingresa tu nombre de usuario" />
         </div>
         <div class="campo">
           <img src="Imagenes/pass.png" alt="Contraseña" style="width:35px; height:35px; margin-right:8px;">
@@ -349,7 +350,15 @@ body, .contenedor-principal, .lado-izquierdo, .lado-derecho, .formulario-login, 
         <button type="submit" class="boton-inicio-sesion">
           <i class="fas fa-sign-in-alt"></i> Verificar y Acceder
         </button>
-        <!-- Eliminado el div de mensaje-error -->
+        @if ($errors->any())
+          <div class="mensaje-error" style="display:block; margin-top:12px;">
+            <ul style="margin:0; padding-left:18px; color:#c00; font-weight:600;">
+              @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+              @endforeach
+            </ul>
+          </div>
+        @endif
       </form>
     </div>
   </div>

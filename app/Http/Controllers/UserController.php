@@ -6,26 +6,23 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    //crear dos funciones separadas para admin y user
-    public function index(Request $request){
-       if  ($request->user()->usertype=='admin'){
+    public function home()
+    {
+        return view('dashboard');
+    }
+
+    public function index()
+    {
         return view('admin.dashboard');
-       }
-       else{
-        return redirect()->route('dashboard');
-       }
     }
 
+    public function about()
+    {
+        return view('about');
+    }
 
-    public function home(Request $request){
-        if  ($request->user()->usertype=='user'){
-            return view('dashboard');
-        }
-        else{
-            return redirect()->route('admin.dashboard');
-        }
+    public function contact()
+    {
+        return view('contact');
     }
-    public function post(){
-        
-    }
-    }
+}
