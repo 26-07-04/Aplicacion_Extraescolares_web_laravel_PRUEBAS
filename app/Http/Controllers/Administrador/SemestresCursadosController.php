@@ -48,6 +48,9 @@ class SemestresCursadosController extends Controller
                 'fecha_fin' => $data['fecha_fin'],
             ]);
 
+            // Asegurarnos de traer los valores por defecto que estableció la BD (ej. estatus)
+            $semestre->refresh();
+
             return response()->json(['success' => true, 'semestre' => $semestre], 201);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Error al guardar semestre'], 500);
@@ -113,6 +116,29 @@ class SemestresCursadosController extends Controller
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Error al eliminar semestre'], 500);
+        }
+    }
+
+    /**
+     * Activar un semestre (desactiva todos los demás).
+     */
+    public function activarSemestre($id)
+    {
+        $semestre = Semestre::find($id);
+        if (!$semestre) {
+            return back()->with('error', 'Semestre no encontrado');
+        }
+
+        try {
+            // Desactivar todos los semestres
+            Semestre::where('estatus', 1)->update(['estatus' => 0]);
+
+            // Activar el seleccionado
+            $semestre->update(['estatus' => 1]);
+
+            return back()->with('success', 'Semestre activado correctamente');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error al activar semestre');
         }
     }
 }
