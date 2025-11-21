@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Administrador\SemestresCursadosController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 /*
@@ -35,6 +36,23 @@ Route::get('admin/dashboard', function (\Illuminate\Http\Request $request) {
     }
     return view('admin.dashboard', ['user' => $user]);
 })->middleware('auth')->name('admin.dashboard');
+
+// Nueva ruta: Gestión de semestres para administradores
+Route::get('admin/semestres', [SemestresCursadosController::class, 'index'])
+    ->middleware('auth')
+    ->name('admin.semestres');
+
+Route::post('admin/semestres', [SemestresCursadosController::class, 'store'])
+    ->middleware('auth')
+    ->name('admin.semestres.store');
+
+Route::put('admin/semestres/{id}', [SemestresCursadosController::class, 'update'])
+    ->middleware('auth')
+    ->name('admin.semestres.update');
+
+Route::delete('admin/semestres/{id}', [SemestresCursadosController::class, 'destroy'])
+    ->middleware('auth')
+    ->name('admin.semestres.destroy');
 
 Route::get('admin/about', [UserController::class, 'about'])
     ->middleware(['auth', 'admin'])
