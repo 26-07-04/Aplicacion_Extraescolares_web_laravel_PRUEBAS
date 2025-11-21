@@ -54,6 +54,11 @@ Route::delete('admin/semestres/{id}', [SemestresCursadosController::class, 'dest
     ->middleware('auth')
     ->name('admin.semestres.destroy');
 
+// Ruta para activar un semestre (solo un semestre activo a la vez)
+Route::post('admin/semestres/{id}/activar', [SemestresCursadosController::class, 'activarSemestre'])
+    ->middleware('auth')
+    ->name('admin.semestres.activar');
+
 Route::get('admin/about', [UserController::class, 'about'])
     ->middleware(['auth', 'admin'])
     ->name('admin.about');

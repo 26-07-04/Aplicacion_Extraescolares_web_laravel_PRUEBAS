@@ -69,6 +69,16 @@
           <div class="semestre-card" data-id="{{ $semestre->id_semestre }}" style="cursor: pointer;">
             <div class="semestre-header">
               <span class="semestre-periodo">{{ $semestre->nombre }}</span>
+              <div class="semestre-header-actions">
+                @if(isset($semestre->estatus) && $semestre->estatus == 1)
+                  <span class="semestre-estado activo">Activo</span>
+                @else
+                  <form method="POST" action="{{ route('admin.semestres.activar', ['id' => $semestre->id_semestre]) }}" style="display:inline;">
+                    @csrf
+                    <button class="btn-activar" type="submit"><i class="fas fa-toggle-off"></i> Activar</button>
+                  </form>
+                @endif
+              </div>
             </div>
             <div class="semestre-body">
               <div class="semestre-info">
@@ -337,9 +347,24 @@
               const inicio = new Date(s.fecha_inicio);
               const fin = new Date(s.fecha_fin);
               const formato = d => ('0'+d.getDate()).slice(-2) + '/' + ('0'+(d.getMonth()+1)).slice(-2) + '/' + d.getFullYear();
+
+              // Construir la parte de acciones del header según estatus devuelto por la API
+              let headerActionsHtml = '';
+              if(s.estatus == 1 || s.estatus === true){
+                headerActionsHtml = `<span class="semestre-estado activo">Activo</span>`;
+              } else {
+                headerActionsHtml = `
+                  <form method="POST" action="/admin/semestres/${s.id_semestre}/activar" style="display:inline;">
+                    <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').getAttribute('content')}">
+                    <button class="btn-activar" type="submit"><i class="fas fa-toggle-off"></i> Activar</button>
+                  </form>
+                `;
+              }
+
               card.innerHTML = `
                 <div class="semestre-header">
                   <span class="semestre-periodo">${s.nombre}</span>
+                  <div class="semestre-header-actions">${headerActionsHtml}</div>
                 </div>
                 <div class="semestre-body">
                   <div class="semestre-info">

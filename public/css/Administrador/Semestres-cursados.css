@@ -318,6 +318,41 @@ body {
   border-top: 1px solid #eaeaea;
 }
 
+/* Acciones en el header (lado derecho) */
+.semestre-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-activar {
+  background-color: #ff7a00; /* naranja cuando está disponible para activar */
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 18px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.12s ease, background-color 0.12s ease;
+}
+
+.btn-activar i { font-size: 14px; }
+
+.btn-activar:hover { transform: translateY(-2px); background-color: #ff8f33; }
+
+/* Badge verde para activo (ya definido) */
+.semestre-estado.activo {
+  background-color: #28a745;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 18px;
+  font-size: 13px;
+}
+
 .btn-semestre {
   padding: 6px 12px;
   border: none;

@@ -14,5 +14,10 @@ class Semestre extends Model
         'nombre',
         'fecha_inicio',
         'fecha_fin',
+        'estatus',
+    ];
+    
+    protected $casts = [
+        'estatus' => 'boolean',
     ];
 }
