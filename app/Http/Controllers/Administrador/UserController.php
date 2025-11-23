@@ -20,7 +20,12 @@ class UserController extends Controller
             'contactoUsuario' => ['required','string','max:50'],
             'rolUsuario' => ['required','in:Administrador,Coordinador'],
         ], [
-            'passwordUsuario.min' => 'La contraseña debe tener al menos 6 caracteres.'
+            'nombreUsuario.required' => 'El campo nombre es obligatorio.',
+            'passwordUsuario.required' => 'El campo contraseña es obligatorio.',
+            'passwordUsuario.min' => 'La contraseña debe tener al menos 6 caracteres.',
+            'unidadUsuario.required' => 'El campo unidad académica es obligatorio.',
+            'contactoUsuario.required' => 'El campo contacto es obligatorio.',
+            'rolUsuario.required' => 'El campo rol es obligatorio.',
         ]);
 
         // Validación adicional: contacto puede ser email o teléfono (números, espacios, +, -, paréntesis)
@@ -60,7 +65,11 @@ class UserController extends Controller
             'contactoUsuario' => ['required','string','max:50'],
             'rolUsuario' => ['required','in:Administrador,Coordinador'],
         ], [
-            'passwordUsuario.min' => 'La contraseña debe tener al menos 6 caracteres.'
+            'nombreUsuario.required' => 'El campo nombre es obligatorio.',
+            'passwordUsuario.min' => 'La contraseña debe tener al menos 6 caracteres.',
+            'unidadUsuario.required' => 'El campo unidad académica es obligatorio.',
+            'contactoUsuario.required' => 'El campo contacto es obligatorio.',
+            'rolUsuario.required' => 'El campo rol es obligatorio.',
         ]);
 
         // Validación adicional: contacto puede ser email o teléfono
