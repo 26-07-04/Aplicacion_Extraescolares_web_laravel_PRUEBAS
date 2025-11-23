@@ -287,6 +287,15 @@
             }
           });
         }
+        // Si se hizo clic en la tarjeta (pero no en botones de acción), abrir el panel principal filtrado por este semestre
+        const cardClick = e.target.closest('.semestre-card');
+        if(!editarBtn && !eliminarBtn && cardClick){
+          const id = cardClick.getAttribute('data-id');
+          if(id){
+            window.location.href = `/admin/principal/${id}`;
+            return;
+          }
+        }
       });
 
       // Enviar formulario via fetch (create o update según hidden semestreId)
