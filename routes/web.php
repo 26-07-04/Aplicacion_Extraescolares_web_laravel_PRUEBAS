@@ -6,6 +6,10 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Administrador\SemestresCursadosController;
 use App\Http\Controllers\Administrador\PrincipalAdministradorController;
 use App\Http\Controllers\Administrador\UserController as AdminUserController;
+use App\Http\Controllers\Coordinador\SemestresCursadosValleController as CoordinadorSemestresValleController;
+use App\Http\Controllers\Coordinador\SemestresCursadosUnionController as CoordinadorSemestresUnionController;
+use App\Http\Controllers\Coordinador\SemestresCursadosTlahuitoltepecController as CoordinadorSemestresTlahController;
+use App\Http\Controllers\Coordinador\SemestresCursadosDemetrioController as CoordinadorSemestresDemetrioController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 /*
@@ -78,6 +82,23 @@ Route::delete('admin/semestres/{id}', [SemestresCursadosController::class, 'dest
 Route::post('admin/semestres/{id}/activar', [SemestresCursadosController::class, 'activarSemestre'])
     ->middleware('auth')
     ->name('admin.semestres.activar');
+
+// Versiones por Unidad Académica (solo lectura) para Coordinador
+Route::get('coordinador/semestres/valle-de-etla', [CoordinadorSemestresValleController::class, 'index'])
+    ->middleware('auth')
+    ->name('coordinador.semestres.valle');
+
+Route::get('coordinador/semestres/union-hidalgo', [CoordinadorSemestresUnionController::class, 'index'])
+    ->middleware('auth')
+    ->name('coordinador.semestres.union');
+
+Route::get('coordinador/semestres/tlahuitoltepec', [CoordinadorSemestresTlahController::class, 'index'])
+    ->middleware('auth')
+    ->name('coordinador.semestres.tlahuitoltepec');
+
+Route::get('coordinador/semestres/demetrio-vallejo', [CoordinadorSemestresDemetrioController::class, 'index'])
+    ->middleware('auth')
+    ->name('coordinador.semestres.demetrio');
 
 Route::get('admin/about', [UserController::class, 'about'])
     ->middleware(['auth', 'admin'])

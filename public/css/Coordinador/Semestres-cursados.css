@@ -1,0 +1,224 @@
+/* Esttilos para la gestion de sesmestres cursados por los estudiantes - Coordinador */
+
+/* Estilos generales */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 30px;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.header-logos {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+.header-logos img {
+  height: 50px;
+  object-fit: contain;
+}
+
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.header-user i {
+  font-size: 30px; /* icono un poco más grande para coordinador */
+  color: #1B396A;
+}
+
+.title-bar {
+  background-color: #1B396A;
+  color: white;
+  padding: 12px 30px;
+  text-align: center;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+}
+
+.title-bar h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.main-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px;
+  background-color: #fafafa;
+  min-height: calc(100vh - 180px);
+}
+
+.semestres-header {
+  margin-bottom: 35px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.semestres-header h2 {
+  color: #1B396A;
+  font-size: 22px;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.descripcion-seccion {
+  color: #555;
+  font-size: 15px;
+  line-height: 1.5;
+  max-width: 900px;
+  margin: 0;
+  text-align: left;
+}
+
+.semestres-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+  grid-auto-flow: row dense;
+  justify-items: stretch;
+  justify-content: start;
+}
+
+.semestres-empty-card {
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  border: 1px dashed rgba(27,57,106,0.12);
+  padding: 22px 18px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #475569;
+  box-shadow: 0 6px 18px rgba(11, 35, 77, 0.04);
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.semestres-empty-card i {
+  font-size: 34px;
+  color: #1B396A;
+  margin-bottom: 10px;
+}
+
+.semestres-empty-card h3 {
+  margin: 0 0 6px 0;
+  color: #1B396A;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.semestre-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid #eaeaea;
+  position: relative;
+  /* Aumentar la altura mínima para tarjetas más grandes */
+  min-height: 220px;
+}
+
+.semestre-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-color: #d5d5d5;
+}
+
+.semestre-card .semestre-header {
+  /* Encabezado en color institucional amarillo (gradiente ligero) */
+  background: linear-gradient(120deg, #f8c200, #e0a800);
+  color: white;
+  padding: 16px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.semestre-periodo {
+  font-weight: 600; /* semi-negrita: un poquito en negritas */
+  font-size: 16px;
+  color: #000; /* texto en negro para mayor contraste sobre el fondo amarillo */
+}
+
+.semestre-estado {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.semestre-estado.activo {
+  background-color: #28a745;
+  color: white;
+}
+
+.semestre-body {
+  padding: 20px 18px; /* más espacio interior para tarjetas más altas */
+}
+
+.semestre-info p {
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  color: #444;
+  font-size: 14px;
+}
+
+.semestre-info i {
+  color: #1B396A;
+  width: 18px;
+  margin-right: 10px;
+  font-size: 14px;
+}
+
+.footer {
+  background-color: #1B396A;
+  color: white;
+  padding: 16px 0;
+  text-align: center;
+  margin-top: 50px;
+  border-top: 4px solid rgba(255,255,255,0.1);
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.footer p {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.9;
+  letter-spacing: 0.3px;
+}
+
+@media (max-width: 768px) {
+  .header { flex-direction: column; gap: 15px; padding: 15px; }
+  .header-logos { justify-content: center; flex-wrap: wrap; }
+  .header-user { width: 100%; justify-content: space-between; }
+  .main-container { padding: 15px; }
+  .semestres-grid { grid-template-columns: 1fr; }
+}
