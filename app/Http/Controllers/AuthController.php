@@ -67,6 +67,27 @@ class AuthController extends Controller
             return redirect()->route('admin.semestres');
         }
 
+        if ($user->rol === 'Coordinador') {
+            $ua = $user->unidad_academica ?? '';
+            // Redirigir según unidad académica (comprobaciones flexibles)
+                // Comprobaciones más específicas primero para evitar coincidencias parciales
+                if (stripos($ua, 'Demetrio') !== false || stripos($ua, 'Vallejo') !== false) {
+                    return redirect()->route('coordinador.semestres.demetrio');
+                }
+                if (stripos($ua, 'Tlahuitoltepec') !== false) {
+                    return redirect()->route('coordinador.semestres.tlahuitoltepec');
+                }
+                if (stripos($ua, 'Unión') !== false || stripos($ua, 'Union') !== false || stripos($ua, 'Hidalgo') !== false) {
+                    return redirect()->route('coordinador.semestres.union');
+                }
+                if (stripos($ua, 'Valle') !== false || stripos($ua, 'Etla') !== false) {
+                    return redirect()->route('coordinador.semestres.valle');
+                }
+
+            // Fallback: si no conocemos la unidad, enviar al dashboard general del coordinador
+            return redirect()->route('coordinator.dashboard');
+        }
+
         return redirect()->route('coordinator.dashboard');
     }
 
