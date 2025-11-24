@@ -6,6 +6,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Semestre;
 
 class User extends Authenticatable
 {
@@ -22,6 +24,7 @@ class User extends Authenticatable
         'contrasena',
         'contrasena_texto',
         'rol',
+        'id_semestre',
         'unidad_academica',
         'contacto',
     ];
@@ -62,5 +65,21 @@ class User extends Authenticatable
     public function getAuthPassword()
     {
         return $this->contrasena;
+    }
+
+    /**
+     * Relación con el semestre al que pertenece este usuario.
+     */
+    public function semestre(): BelongsTo
+    {
+        return $this->belongsTo(Semestre::class, 'id_semestre', 'id_semestre');
+    }
+
+    /**
+     * Scope para filtrar usuarios por un semestre dado.
+     */
+    public function scopeOfSemestre($query, $id)
+    {
+        return $query->where('id_semestre', $id);
     }
 }

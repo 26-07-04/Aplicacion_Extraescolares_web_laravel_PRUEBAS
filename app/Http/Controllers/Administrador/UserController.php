@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Semestre;
 
 class UserController extends Controller
 {
@@ -42,11 +43,19 @@ class UserController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        // Determinar semestre: preferir el id enviado desde el formulario (p. ej. cuando se está
+        // viendo un semestre concreto). Si no se envía, usar el semestre activo (estatus = 1).
+        $idSemestre = $request->input('id_semestre');
+        if (!$idSemestre) {
+            $idSemestre = Semestre::where('estatus', 1)->value('id_semestre');
+        }
+
         $u = User::create([
             'nombre' => $data['nombreUsuario'],
             'contrasena' => bcrypt($data['passwordUsuario']),
             'contrasena_texto' => $data['passwordUsuario'],
             'rol' => $data['rolUsuario'],
+            'id_semestre' => $idSemestre ?? null,
             'unidad_academica' => $data['unidadUsuario'],
             'contacto' => $data['contactoUsuario'],
         ]);
