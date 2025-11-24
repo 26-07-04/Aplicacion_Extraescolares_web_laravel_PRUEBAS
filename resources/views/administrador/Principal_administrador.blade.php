@@ -113,10 +113,52 @@
       @include('administrador.partials.unidad', ['unidad' => $unidad, 'actividades' => $actividades, 'estudiantes' => $estudiantes])
     @elseif(!empty($semestre))
       <div style="padding:18px;">
-        <h2>Semestre: {{ $semestre->nombre ?? $semestre->id ?? 'N/D' }}</h2>
-        <p>Actividades encontradas: {{ $actividades->count() ?? 0 }}</p>
-        <p>Estudiantes registrados: {{ $estudiantes->count() ?? 0 }}</p>
-        <!-- Aquí puede detallarse la lista de actividades/estudiantes -->
+        <div class="semestre-card">
+          <div class="left">
+            <div class="icon"><i class="fas fa-calendar-alt"></i></div>
+            <div>
+              <h2 class="title">
+                {{ $semestre->nombre ?? $semestre->id ?? 'Semestre' }}
+                @if(!empty($semestre->estatus))
+                  <span class="semestre-badge">{{ $semestre->estatus }}</span>
+                @endif
+              </h2>
+              <div class="subtitle">Panel del semestre — gestiona actividades y participantes</div>
+              <p class="semestre-description {{ (isset($semestre->descripcion) && strlen($semestre->descripcion) > 160) ? 'truncated' : '' }}">
+                {{ $semestre->descripcion ?? 'Este semestre agrupa las actividades extraescolares programadas para la comunidad del tecnológico. Aquí verás un resumen de actividades y la participación estudiantil.' }}
+              </p>
+              @if(!empty($semestre->updated_at))
+                <div class="semestre-updated">Última actualización: {{ optional($semestre->updated_at)->format('d M Y H:i') }}</div>
+              @endif
+            </div>
+          </div>
+
+          <div class="right">
+            <div class="stat activities">
+              <div class="stat-head">
+                <span class="stat-icon"><i class="fas fa-calendar-check"></i></span>
+                <div class="label">Actividades</div>
+              </div>
+              <div class="value">{{ $actividades->count() ?? 0 }}</div>
+            </div>
+
+            <div class="stat students">
+              <div class="stat-head">
+                <span class="stat-icon"><i class="fas fa-user-graduate"></i></span>
+                <div class="label">Estudiantes</div>
+              </div>
+              <div class="value">{{ $estudiantes->count() ?? 0 }}</div>
+            </div>
+
+            <div class="stat status">
+              <div class="stat-head">
+                <span class="stat-icon"><i class="fas fa-info-circle"></i></span>
+                <div class="label">Estado</div>
+              </div>
+              <div class="value">{{ $semestre->estatus ?? 'Activo' }}</div>
+            </div>
+          </div>
+        </div>
       </div>
     @else
       <div class="bienvenida-panel">
