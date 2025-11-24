@@ -273,7 +273,14 @@
               .then(async res => {
                 const json = await res.json().catch(()=>({}));
                 if(res.ok && json.success){
-                  Swal.fire('Eliminado','Semestre eliminado correctamente','success');
+                  Swal.fire({
+                    title: 'Eliminado',
+                    text: 'Semestre eliminado correctamente',
+                    icon: 'success',
+                    showConfirmButton: false,
+                    timer: 2500,
+                    timerProgressBar: true
+                  });
                   card.remove();
                 } else {
                   const msg = json.message || 'Error al eliminar semestre';
@@ -331,7 +338,14 @@
           const json = await res.json().catch(()=>({}));
           if(res.ok && json.success){
             if(isEdit){
-              Swal.fire('Actualizado','Semestre actualizado correctamente','success');
+              Swal.fire({
+                title: 'Actualizado',
+                text: 'Semestre actualizado correctamente',
+                icon: 'success',
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true
+              });
               // actualizar tarjeta existente
               const s = json.semestre;
               const card = contenedor.querySelector(`.semestre-card[data-id="${s.id_semestre}"]`);
@@ -346,7 +360,14 @@
                 if(pElems[1]) pElems[1].innerHTML = `<i class="fas fa-calendar-check"></i> <strong>Fecha fin:</strong> ${formato(fin)}`;
               }
             } else {
-              Swal.fire('Guardado','Semestre creado correctamente','success');
+              Swal.fire({
+                title: 'Guardado',
+                text: 'Semestre creado correctamente',
+                icon: 'success',
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true
+              });
               // Añadir tarjeta al DOM
               const s = json.semestre;
               const card = document.createElement('div');

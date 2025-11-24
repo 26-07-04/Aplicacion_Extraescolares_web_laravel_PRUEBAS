@@ -6,6 +6,7 @@
     </div>
     <form id="formAgregarUsuario" action="{{ route('admin.usuarios.store') }}" method="POST">
       @csrf
+      <input type="hidden" name="id_semestre" value="{{ $semestre->id_semestre ?? old('id_semestre') }}" />
       <input type="hidden" name="_form" value="create" />
       <div style="margin-bottom:16px;"><label style="font-weight:700; display:block; margin-bottom:6px;">Nombre</label>
         <input type="text" id="add_nombre" name="nombreUsuario" class="form-control" style="width:100%;padding:10px;" value="{{ old('nombreUsuario') }}" />

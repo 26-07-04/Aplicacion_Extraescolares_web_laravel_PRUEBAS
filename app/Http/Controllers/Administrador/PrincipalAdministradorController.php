@@ -46,8 +46,26 @@ class PrincipalAdministradorController extends Controller
         // Si se solicitó la vista de usuarios, cargar los usuarios desde la BD
         $usuarios = collect();
         if (!empty($view) && $view === 'usuarios') {
-            // Cargar usuarios ordenados por nombre
-            $usuarios = User::orderBy('nombre')->get();
+            // Determinar el semestre a usar: primero el id en la ruta, si no existe usar el semestre activo
+            $semestreId = null;
+            if ($semestre) {
+                $semestreId = $semestre->id_semestre;
+            } else {
+                $semestreId = Semestre::where('estatus', 1)->value('id_semestre');
+            }
+
+            if ($semestreId) {
+                // Cargar solo usuarios pertenecientes a ese semestre
+                $usuarios = User::where('id_semestre', $semestreId)->orderBy('nombre')->get();
+                // Si no se tenía el modelo $semestre (porque venimos sin id en la ruta)
+                // cargamos el modelo para que la vista conozca el semestre actual
+                if (!$semestre) {
+                    $semestre = Semestre::find($semestreId);
+                }
+            } else {
+                // Si no hay semestre activo ni seleccionado, devolver colección vacía
+                $usuarios = collect();
+            }
         }
 
         // Pasamos el nombre de unidad, la vista solicitada y la colección de usuarios a la vista

@@ -95,8 +95,11 @@
     <div class="sidebar-section">
       <h3 style="font-family: 'Open Sans', sans-serif;">ADMINISTRACIÓN</h3>
       <ul style="font-family: 'Segoe UI', sans-serif; font-size: 16px; color: rgba(255, 255, 255, 0.7); background-color: #1B396A; border-radius: 6px; padding: 8px;">
+        @php
+          $usuariosUrl = isset($semestre) && $semestre ? route('admin.principal', ['id' => $semestre->id_semestre]) . '?view=usuarios' : route('admin.principal') . '?view=usuarios';
+        @endphp
         <li style="margin-bottom: 10px; transition: all 0.3s; text-decoration: none; cursor: pointer;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)'">
-          <a href="{{ route('admin.principal') }}?view=usuarios" style="color:inherit; text-decoration:none; display:block;"><i class="fas fa-users" style="margin-right: 8px;"></i>Gestión de Usuarios</a>
+          <a href="{{ $usuariosUrl }}" style="color:inherit; text-decoration:none; display:block;"><i class="fas fa-users" style="margin-right: 8px;"></i>Gestión de Usuarios</a>
         </li>
       </ul>
     </div>
