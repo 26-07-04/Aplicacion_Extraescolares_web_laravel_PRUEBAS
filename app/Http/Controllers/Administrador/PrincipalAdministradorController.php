@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Administrador;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use App\Models\Semestre;
 use App\Models\User;
 
@@ -70,5 +71,39 @@ class PrincipalAdministradorController extends Controller
 
         // Pasamos el nombre de unidad, la vista solicitada y la colección de usuarios a la vista
         return view('administrador.Principal_administrador', compact('user', 'semestre', 'actividades', 'estudiantes', 'unidad', 'view', 'usuarios'));
+    }
+
+    public function vistaPrevia(Request $request)
+    {
+        $unidad = (string) $request->query('unidad', '');
+        $u = Str::of($unidad)->ascii()->lower()->trim()->__toString();
+
+        // Unión Hidalgo
+        if (Str::of($u)->contains('union hidalgo')) {
+            return view('administrador.vista_previa_U.actividadesUH', compact('unidad'));
+        }
+
+        // Demetrio / Vallejo
+        if (Str::of($u)->contains('demetr') || Str::of($u)->contains('vallej') || Str::of($u)->contains('demetria')) {
+            return view('administrador.vista_previa_U.actividadesDV', compact('unidad'));
+        }
+
+        // Tlahuitoltepec
+        if (Str::of($u)->contains('tlahui') || Str::of($u)->contains('tlahuitol') || Str::of($u)->contains('tlahuitoltepec')) {
+            return view('administrador.vista_previa_U.actividadesSMT', compact('unidad'));
+        }
+
+        // Valle de Etla / Valle
+        if (Str::of($u)->contains('valle') || Str::of($u)->contains('valle de etla') || Str::of($u)->contains('valle de')) {
+            return view('administrador.vista_previa_U.actividadesVE', compact('unidad'));
+        }
+
+        // Vista genérica si existe
+        $general = 'administrador.vista_previa_U.actividades_general';
+        if (view()->exists($general)) {
+            return view($general, compact('unidad'));
+        }
+
+        return redirect()->route('home')->with('warning', "Vista previa no disponible para la unidad: {$unidad}");
     }
 }
