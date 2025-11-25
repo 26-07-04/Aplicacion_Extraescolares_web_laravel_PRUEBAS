@@ -117,6 +117,9 @@ Route::get('coordinator/dashboard', function (\Illuminate\Http\Request $request)
     return view('dashboard.coordinator', ['user' => $user]);
 })->middleware('auth')->name('coordinator.dashboard');
 
+Route::get('admin/vista-previa', [PrincipalAdministradorController::class, 'vistaPrevia'])
+    ->name('administrador.vista_previa');
+
 
 
 /*

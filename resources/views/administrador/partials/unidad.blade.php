@@ -90,7 +90,7 @@
     <div class="seccion-alumnos">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
         <h3 id="tituloActividad" style="margin:0; color:#1B396A;">Alumnos inscritos a {{ $firstActividad }}</h3>
-        <a href="#" class="btn-vista-previa"><i class="fas fa-eye"></i>Vista Previa</a>
+        <a href="{{ route('administrador.vista_previa', ['unidad' => $unidadNombre]) }}" class="btn-vista-previa"><i class="fas fa-eye"></i>Vista Previa</a>
       </div>
 
       <div class="contenedor-busqueda" style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; flex-wrap:wrap;">
@@ -139,7 +139,7 @@
       <i class="fas fa-exclamation-circle" style="font-size:40px; color:#ff7f00; margin-bottom:12px;"></i>
       <h3 style="color:#1B396A; margin-bottom:8px;">No hay actividades registradas</h3>
       <p style="color:#555; font-size:15px;">No se encontraron actividades extraescolares para esta unidad académica.</p>
-      <a href="#" class="btn-vista-previa" style="margin-top:16px; display:inline-flex; align-items:center;"><i class="fas fa-eye"></i>Ir a gestión de actividades</a>
+      <a href="{{ route('administrador.vista_previa', ['unidad' => $unidadNombre]) }}" class="btn-vista-previa" style="margin-top:16px; display:inline-flex; align-items:center;"><i class="fas fa-eye"></i>Ir a gestión de actividades</a>
     </div>
   @endif
 </div>
