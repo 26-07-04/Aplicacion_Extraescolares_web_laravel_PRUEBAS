@@ -5,6 +5,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UnidadController;
 /*
 Route::get('/', function () {
     return view('welcome');
@@ -54,6 +55,15 @@ Route::get('coordinator/dashboard', function (\Illuminate\Http\Request $request)
 })->middleware('auth')->name('coordinator.dashboard');
 
 
+// PANEL ADMIN - TODAS LAS UNIDADES
+Route::get('/admin/unidades', [UnidadController::class, 'index'])
+    ->middleware(['auth'])
+    ->name('admin.unidades');
+
+// PANEL COORDINADOR - SOLO SU UNIDAD
+Route::get('/coordinator/unidad', [UnidadController::class, 'miUnidad'])
+    ->middleware(['auth'])
+    ->name('coordinator.unidad');
 
 /*
 Route::get('/dashboard', function () {
