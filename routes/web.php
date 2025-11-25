@@ -12,6 +12,7 @@ use App\Http\Controllers\Coordinador\SemestresCursadosTlahuitoltepecController a
 use App\Http\Controllers\Coordinador\SemestresCursadosDemetrioController as CoordinadorSemestresDemetrioController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UnidadController;
 /*
 Route::get('/', function () {
     return view('welcome');
@@ -121,6 +122,15 @@ Route::get('admin/vista-previa', [PrincipalAdministradorController::class, 'vist
     ->name('administrador.vista_previa');
 
 
+// PANEL ADMIN - TODAS LAS UNIDADES
+Route::get('/admin/unidades', [UnidadController::class, 'index'])
+    ->middleware(['auth'])
+    ->name('admin.unidades');
+
+// PANEL COORDINADOR - SOLO SU UNIDAD
+Route::get('/coordinator/unidad', [UnidadController::class, 'miUnidad'])
+    ->middleware(['auth'])
+    ->name('coordinator.unidad');
 
 /*
 Route::get('/dashboard', function () {
