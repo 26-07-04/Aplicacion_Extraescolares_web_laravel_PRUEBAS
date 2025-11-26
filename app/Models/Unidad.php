@@ -11,6 +11,6 @@ class Unidad extends Model
 
     protected $fillable = [
         'nombre_unidad',
-        'id_unidad'
+        'id_semestre'
     ];
 }
