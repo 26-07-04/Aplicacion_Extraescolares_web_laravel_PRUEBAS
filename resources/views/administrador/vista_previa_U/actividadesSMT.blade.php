@@ -129,6 +129,15 @@
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+  <script>
+    window.gestorConfig = window.gestorConfig || {};
+    // URL que abre el detalle SMT
+    window.gestorConfig.detalleBaseSMT = "{{ route('administrador.vista_detalle_smt') }}";
+    // Opcional: hacer SMT la ruta por defecto para este listado
+    @if (Route::has('administrador.vista_detalle_smt'))
+      window.gestorConfig.detalleBase = "{{ route('administrador.vista_detalle_smt') }}";
+    @endif
+  </script>
   <script src="{{ asset('js/actividades.js') }}"></script>
 </body>
 </html>

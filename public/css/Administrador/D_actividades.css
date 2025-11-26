@@ -1,0 +1,356 @@
+/* Estilos para detalle de actividad (D_actividades) */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background-color: #f5f5f5;
+  padding-top: 100px; /* Aumentado para el logo */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1;
+}
+
+/* Estilo para el logo del gobierno */
+.logo-gobierno {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #d4d6db;
+  padding: 15px 0;
+  text-align: center;
+  z-index: 1000;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.logo-gobierno img {
+  height: 45px;
+}
+
+.contenido-detalle {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+}
+
+.info-actividad {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  padding: 30px;
+  margin-bottom: 30px;
+  max-width: 1000px;      /* Más angosto */
+  margin-left: auto;     /* Centrado horizontal */
+  margin-right: auto;    /* Centrado horizontal */
+  margin-top: 10px;
+}
+
+.info-actividad h2 {
+  color: #002147;
+  margin-bottom: 15px;
+  font-size: 28px;
+  border-bottom: 2px solid #ff7f00;
+  padding-bottom: 10px;
+}
+
+.info-actividad p {
+  color: #555;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.tabla-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  padding: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background-color: #002147;
+  color: white;
+}
+
+tr:hover {
+  background-color: #f5f5f5;
+}
+
+.btn-agregar {
+  background-color: #ff7f00;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 15px;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.btn-agregar:hover {
+  background-color: #e67300;
+}
+
+.btn-accion {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.btn-accion img {
+  width: 20px;
+  height: 20px;
+}
+
+.acciones-celda {
+  display: flex;
+  gap: 8px;
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1100;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(6,12,34,0.55);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-contenido {
+  width: 100%;
+  max-width: 560px;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 22px;
+  box-shadow: 0 10px 30px rgba(9,30,66,0.25);
+  border: 1px solid rgba(2,33,71,0.06);
+  font-size: 15px;
+  color: #223;
+  position: relative;
+}
+
+/* Cabecera del modal */
+.modal-header {
+  display:flex;
+  align-items:center;
+  justify-content:center; /* centrar título */
+  gap:12px;
+  margin-bottom:12px;
+  position: relative; /* para posicionar la X absoluta */
+}
+.modal-header h3 {
+  margin:0;
+  font-size:17px;
+  color:#002147;
+  font-weight:600;
+  text-align:center; /* asegurar centrado */
+  width:100%;
+  padding-right:40px; /* espacio para la X a la derecha */
+}
+
+/* Cerrar (posición absoluta a la derecha dentro de la cabecera) */
+.cerrar {
+  background: transparent;
+  border: none;
+  font-size:22px; /* un poco más grande */
+  color: #6b7a90;
+  cursor:pointer;
+  position: absolute;
+  right: 12px;
+  top: 8px;
+  line-height: 1;
+  padding: 6px;
+}
+
+/* Cuerpo: aumentar espaciado vertical entre campos */
+.modal-body { margin-top:6px; }
+.modal-body label { display:block; font-size:13px; color:#40566a; margin-bottom:8px; }
+.modal-body input[type="text"],
+.modal-body input[type="number"],
+.modal-body textarea {
+  width:100%;
+  padding:10px 12px;
+  border-radius:8px;
+  border:1px solid #e6eaf0;
+  background:#fbfcfe;
+  outline:none;
+  transition:box-shadow .15s, border-color .15s;
+  font-size:13px;
+  color:#14212b;
+  margin-bottom:16px; /* más separación vertical */
+}
+
+/* Footer del modal: botones a la derecha y separación vertical ligera */
+.modal-footer {
+  display:flex;
+  gap:10px;
+  margin-top:14px;
+  justify-content: flex-end; /* mover botones a la derecha */
+  align-items: center;
+}
+.btn-primario {
+  background:#002147;
+  color:#fff;
+  border:none;
+  padding:10px 14px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+}
+.btn-secundario {
+  background:#f3f6f9;
+  color:#233;
+  border:1px solid #e6eaf0;
+  padding:10px 14px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+/* SweetAlert2 custom classes (usadas por el JS) */
+.swal-custom-popup { border-radius:12px !important; font-family: Arial, sans-serif !important; }
+.swal-btn-confirm { background:#002147 !important; color:#fff !important; border-radius:8px !important; padding:8px 14px !important; box-shadow:none !important; }
+.swal-btn-cancel { background:#f3f6f9 !important; color:#233 !important; border-radius:8px !important; padding:8px 14px !important; margin-right:8px !important; box-shadow:none !important; }
+.swal-custom-title { color:#002147 !important; font-weight:700 !important; }
+.swal-custom-content { color:#33475b !important; }
+/* --- Estilos del footer restaurados --- */
+.site-footer {
+  background-color: #002147;
+  color: white;
+  padding: 40px 0 20px;
+  margin-top: 40px;
+}
+.footer-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  gap: 30px;
+}
+.footer-text {
+  flex: 1;
+  min-width: 300px;
+}
+.footer-text h3 {
+  color: #ff7f00;
+  margin-bottom: 15px;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+.footer-text p {
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+.footer-map {
+  flex: 1;
+  min-width: 300px;
+}
+.footer-map iframe {
+  width: 100%;
+  height: 280px;
+  border-radius: 8px;
+  border: none;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+.footer-copyright {
+  text-align: center;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  font-size: 0.9em;
+  color: rgba(255,255,255,0.7);
+}
+
+/* Botón regresar (flecha) - copia del estilo usado en actividadesUH */
+.btn-flecha-back {
+  position: fixed;
+  top: 24px;
+  right: 80px;
+  z-index: 9999;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #002147;
+  border: 2px solid #002147;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  padding: 0;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform .12s, box-shadow .12s;
+}
+.btn-flecha-back svg,
+.btn-flecha-back img {
+  width: 16px;
+  height: 16px;
+  display: block;
+  fill: #fff;
+  color: #fff;
+}
+.btn-flecha-back:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.14);
+}
+
+/* Asegurar tamaño y aspecto del WhatsApp en footer (igual que actividadesUH) */
+.whatsapp-link img {
+  width: 40px;
+  height: 40px;
+  transition: transform 0.3s;
+}
+.whatsapp-link img:hover {
+  transform: scale(1.1);
+}
+
+/* Tipografía/tamaños del footer */
+.footer-text h3 {
+  color: #ff7f00;
+  margin-bottom: 15px;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.footer-text p {
+  margin-bottom: 20px;
+  line-height: 1.6;
+  color: #e0e0e0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  body { padding-top: 80px; }
+  .contenido-detalle { padding: 15px; }
+  .info-actividad { padding: 20px; }
+  .footer-container { flex-direction: column; }
+  .footer-map { order: -1; }
+  th, td { padding: 8px 10px; font-size: 14px; }
+}

@@ -129,6 +129,14 @@
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+  <script>
+    // Configuración sólo para Unión Hidalgo
+    window.gestorConfig = window.gestorConfig || {};
+    window.gestorConfig.detalleBase = "{{ url('administrador/vista_previa_U/D_actividades_UH') }}";
+    @if (Route::has('administrador.vista_detalle'))
+      window.gestorConfig.detalleBase = "{{ route('administrador.vista_detalle') }}";
+    @endif
+  </script>
   <script src="{{ asset('js/actividades.js') }}"></script>
-</body>
-</html>
+ </body>
+ </html>

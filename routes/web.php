@@ -121,6 +121,21 @@ Route::get('coordinator/dashboard', function (\Illuminate\Http\Request $request)
 Route::get('admin/vista-previa', [PrincipalAdministradorController::class, 'vistaPrevia'])
     ->name('administrador.vista_previa');
 
+// Ruta para el detalle de actividad (Unión Hidalgo)
+Route::get('administrador/vista_previa_U/D_actividades_UH', [PrincipalAdministradorController::class, 'vistaDetalle'])
+    ->name('administrador.vista_detalle');
+
+// Nueva ruta para el detalle de actividad (Demetrio Vallejo)
+Route::get('administrador/vista_previa_U/D_actividades_DV', [PrincipalAdministradorController::class, 'vistaDetalleDV'])
+    ->name('administrador.vista_detalle_dv');
+
+// Ruta detalle para SMT (Tlahuiltoltepec)
+Route::get('administrador/vista_previa_U/D_actividades_SMT', [PrincipalAdministradorController::class, 'vistaDetalleSMT'])
+    ->name('administrador.vista_detalle_smt');
+
+Route::get('administrador/vista_previa_U/D_actividades_VE', [PrincipalAdministradorController::class, 'vistaDetalleVE'])
+    ->name('administrador.vista_detalle_ve');
+
 
 // PANEL ADMIN - TODAS LAS UNIDADES
 Route::get('/admin/unidades', [UnidadController::class, 'index'])
