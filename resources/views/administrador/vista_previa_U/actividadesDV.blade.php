@@ -129,6 +129,15 @@
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+  <script>
+    window.gestorConfig = window.gestorConfig || {};
+    window.gestorConfig.detalleBaseDV = "{{ route('administrador.vista_detalle_dv') }}";
+
+    // Opcional: hacer DV la ruta por defecto (igual que UH hace con detalleBase)
+    @if (Route::has('administrador.vista_detalle_dv'))
+      window.gestorConfig.detalleBase = "{{ route('administrador.vista_detalle_dv') }}";
+    @endif
+  </script>
   <script src="{{ asset('js/actividades.js') }}"></script>
 </body>
 </html>

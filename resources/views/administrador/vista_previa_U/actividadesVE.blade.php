@@ -127,6 +127,15 @@
   </div>
 
   <!-- Scripts -->
+  <script>
+    window.gestorConfig = window.gestorConfig || {};
+    // URL que abre el detalle Valle de Etla
+    window.gestorConfig.detalleBaseVE = "{{ route('administrador.vista_detalle_ve') }}";
+    @if (Route::has('administrador.vista_detalle_ve'))
+      // hacer VE la ruta por defecto para este listado
+      window.gestorConfig.detalleBase = "{{ route('administrador.vista_detalle_ve') }}";
+    @endif
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
   <script src="{{ asset('js/actividades.js') }}"></script>

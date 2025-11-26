@@ -192,10 +192,13 @@ class GestorActividades {
         // Si necesitas cargar desde servidor, implementa aquí fetch('/api/actividades') y usa crearModuloActividad para renderizar.
     }
 
-    crearModuloActividad(actividad) {
+    crearModuloActividad(actividad /* objeto con id, nombre, descripcion, etc */) {
         const modulo = document.createElement('div');
-        modulo.className = 'modulo';
-        modulo.dataset.id_actividad = actividad.id;
+        modulo.classList.add('modulo','actividad');
+        // Añadir dataset necesario para la redirección
+        modulo.dataset.idActividad = actividad.id;
+        modulo.dataset.nombre = actividad.nombre;
+        modulo.dataset.descripcion = actividad.descripcion;
 
         modulo.innerHTML = `
             <img src="${actividad.imagen}" alt="${actividad.nombre}" onerror="this.src='/Imagenes/placeholder-actividad.jpg'">
@@ -255,3 +258,59 @@ window.addEventListener('click', function(event) {
         if (window.gestorActividades) window.gestorActividades.cerrarModalActividad();
     }
 });
+
+// --- inicio: redirección a detalle de actividad (condicional) ---
+(function () {
+  function getDetalleBaseForModulo(modulo) {
+    // prioridad: data-unidad en el módulo -> window.gestorConfig.detalleBase{Unidad} -> window.gestorConfig.detalleBase
+    const unidad = (modulo && (modulo.dataset.unidad || modulo.getAttribute('data-unidad'))) || null;
+    if (unidad) {
+      const key = 'detalleBase' + unidad.toUpperCase(); // e.g. detalleBaseDV or detalleBaseUH
+      if (window.gestorConfig && window.gestorConfig[key]) return window.gestorConfig[key];
+    }
+    if (window.gestorConfig && window.gestorConfig.detalleBase) return window.gestorConfig.detalleBase;
+    return null;
+  }
+
+  document.addEventListener('click', function (e) {
+    // buscar módulo más cercano (ajusta selectores si tu HTML cambia)
+    const modulo = e.target.closest && e.target.closest('.modulo.actividad, .modulo.actividad-item, .modulo');
+    if (!modulo) return;
+
+    const base = getDetalleBaseForModulo(modulo);
+    if (!base) return;
+
+    const id = modulo.dataset.idActividad || modulo.dataset.id || modulo.getAttribute('data-id-actividad') || modulo.getAttribute('data-id');
+    if (!id) return;
+
+    const nombre = modulo.dataset.nombre || modulo.getAttribute('data-nombre') || '';
+    const descripcion = modulo.dataset.descripcion || modulo.getAttribute('data-descripcion') || '';
+    const sep = base.indexOf('?') === -1 ? '?' : '&';
+    let url = base + sep + 'id_actividad=' + encodeURIComponent(id);
+    if (nombre) url += '&nombre=' + encodeURIComponent(nombre);
+    if (descripcion) url += '&descripcion=' + encodeURIComponent(descripcion);
+    window.location.href = url;
+  }, false);
+
+  // helper público
+  window.gestorActividadesRedirect = {
+    detalleUrlForModulo(modulo) {
+      const base = getDetalleBaseForModulo(modulo);
+      if (!base) return null;
+      const id = modulo.dataset.idActividad || modulo.dataset.id || modulo.getAttribute('data-id-actividad') || modulo.getAttribute('data-id');
+      if (!id) return null;
+      const nombre = modulo.dataset.nombre || modulo.getAttribute('data-nombre') || '';
+      const descripcion = modulo.dataset.descripcion || modulo.getAttribute('data-descripcion') || '';
+      const sep = base.indexOf('?') === -1 ? '?' : '&';
+      let url = base + sep + 'id_actividad=' + encodeURIComponent(id);
+      if (nombre) url += '&nombre=' + encodeURIComponent(nombre);
+      if (descripcion) url += '&descripcion=' + encodeURIComponent(descripcion);
+      return url;
+    },
+    goToDetalleForModulo(modulo) {
+      const u = this.detalleUrlForModulo(modulo);
+      if (u) window.location.href = u;
+    }
+  };
+})();
+// --- fin: redirección ---

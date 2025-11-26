@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Administrador;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Models\Semestre;
 use App\Models\User;
@@ -105,5 +106,68 @@ class PrincipalAdministradorController extends Controller
         }
 
         return redirect()->route('home')->with('warning', "Vista previa no disponible para la unidad: {$unidad}");
+    }
+
+    // Mostrar la vista detalle de una actividad (Unión Hidalgo)
+    public function vistaDetalle(Request $request)
+    {
+        $id = $request->query('id_actividad');
+        $actividad = null;
+
+        if ($id) {
+            try {
+                $actividad = DB::table('actividades')->where('id', $id)->first();
+            } catch (\Throwable $e) {
+                // Si no existe tabla/columna, dejar null y evitar crash
+                $actividad = null;
+            }
+        }
+
+        return view('administrador.vista_previa_U.D_actividades_UH', ['actividad' => $actividad]);
+    }
+
+    // Nueva: Vista detalle para Demetrio Vallejo
+    public function vistaDetalleDV(Request $request)
+    {
+        $id = $request->query('id_actividad');
+        $actividad = null;
+        if ($id) {
+            try {
+                $actividad = DB::table('actividades')->where('id', $id)->first();
+            } catch (\Throwable $e) {
+                $actividad = null;
+            }
+        }
+        return view('administrador.vista_previa_U.D_actividades_DV', ['actividad' => $actividad]);
+    }
+
+    // Nueva: Vista detalle para Tlahuitoltepec
+    public function vistaDetalleSMT(Request $request)
+    {
+        $id = $request->query('id_actividad');
+        $actividad = null;
+        if ($id) {
+            try {
+                $actividad = DB::table('actividades')->where('id', $id)->first();
+            } catch (\Throwable $e) {
+                $actividad = null;
+            }
+        }
+        return view('administrador.vista_previa_U.D_actividades_SMT', ['actividad' => $actividad]);
+    }
+
+    // Nueva: Vista detalle para Valle de Etla
+    public function vistaDetalleVE(Request $request)
+    {
+        $id = $request->query('id_actividad');
+        $actividad = null;
+        if ($id) {
+            try {
+                $actividad = DB::table('actividades')->where('id', $id)->first();
+            } catch (\Throwable $e) {
+                $actividad = null;
+            }
+        }
+        return view('administrador.vista_previa_U.D_actividades_VE', ['actividad' => $actividad]);
     }
 }
