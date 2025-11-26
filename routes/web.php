@@ -8,6 +8,7 @@ use App\Http\Controllers\Administrador\PrincipalAdministradorController;
 use App\Http\Controllers\Administrador\UserController as AdminUserController;
 use App\Http\Controllers\Coordinador\SemestresCursadosValleController as CoordinadorSemestresValleController;
 use App\Http\Controllers\Coordinador\SemestresCursadosUnionController as CoordinadorSemestresUnionController;
+use App\Http\Controllers\Coordinador\PanelUnionHidalgoController;
 use App\Http\Controllers\Coordinador\SemestresCursadosTlahuitoltepecController as CoordinadorSemestresTlahController;
 use App\Http\Controllers\Coordinador\SemestresCursadosDemetrioController as CoordinadorSemestresDemetrioController;
 use App\Models\User;
@@ -92,6 +93,11 @@ Route::get('coordinador/semestres/valle-de-etla', [CoordinadorSemestresValleCont
 Route::get('coordinador/semestres/union-hidalgo', [CoordinadorSemestresUnionController::class, 'index'])
     ->middleware('auth')
     ->name('coordinador.semestres.union');
+
+// Panel principal del Coordinador para la Unidad Unión Hidalgo (vista por semestre)
+Route::get('coordinador/union-hidalgo/panel/{id}', [PanelUnionHidalgoController::class, 'show'])
+    ->middleware('auth')
+    ->name('coordinador.union.panel');
 
 Route::get('coordinador/semestres/tlahuitoltepec', [CoordinadorSemestresTlahController::class, 'index'])
     ->middleware('auth')
