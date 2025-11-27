@@ -11,9 +11,11 @@ use App\Http\Controllers\Coordinador\SemestresCursadosUnionController as Coordin
 use App\Http\Controllers\Coordinador\PanelUnionHidalgoController;
 use App\Http\Controllers\Coordinador\SemestresCursadosTlahuitoltepecController as CoordinadorSemestresTlahController;
 use App\Http\Controllers\Coordinador\SemestresCursadosDemetrioController as CoordinadorSemestresDemetrioController;
+use App\Http\Controllers\Coordinador\VerEstudiantesController as CoordinadorVerEstudiantesController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UnidadController;
+use Illuminate\Http\Request;
 /*
 Route::get('/', function () {
     return view('welcome');
@@ -107,6 +109,11 @@ Route::get('coordinador/semestres/demetrio-vallejo', [CoordinadorSemestresDemetr
     ->middleware('auth')
     ->name('coordinador.semestres.demetrio');
 
+// Ver estudiantes - mostrar lista filtrada por unidad
+Route::get('coordinador/ver-estudiantes', [CoordinadorVerEstudiantesController::class, 'index'])
+    ->middleware('auth')
+    ->name('coordinador.verestudiantes');
+
 Route::get('admin/about', [UserController::class, 'about'])
     ->middleware(['auth', 'admin'])
     ->name('admin.about');
@@ -152,6 +159,20 @@ Route::get('/admin/unidades', [UnidadController::class, 'index'])
 Route::get('/coordinator/unidad', [UnidadController::class, 'miUnidad'])
     ->middleware(['auth'])
     ->name('coordinator.unidad');
+
+// Panel principal de coordinador - muestra el panel correspondiente por unidad (si existe)
+Route::get('/coordinator/panel', function (Request $request) {
+    $user = $request->user();
+    if (! $user || $user->rol !== 'Coordinador') {
+        abort(403);
+    }
+    $ua = $user->unidad_academica ?? '';
+    if (stripos($ua, 'Unión') !== false || stripos($ua, 'Union') !== false || stripos($ua, 'Hidalgo') !== false) {
+        return view('coordinador.union_hidalgo.panel', ['user' => $user]);
+    }
+    // Fallback: redirigir a la lista de semestres o al dashboard
+    return redirect()->route('coordinator.unidad');
+})->middleware('auth')->name('coordinator.panel');
 
 /*
 Route::get('/dashboard', function () {

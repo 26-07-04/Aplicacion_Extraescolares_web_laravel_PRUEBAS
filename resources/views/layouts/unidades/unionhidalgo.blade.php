@@ -1,46 +1,30 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>@yield('title', 'Dashboard - Actividades Extraescolares Valle de Etla')</title>
-  
-  <!-- Bootstrap -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-  
-  <!-- SweetAlert2 -->
-  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-  
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  
-  <!-- Estilos personalizados -->
-  <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-</head>
-<body>
-  <!-- Sidebar -->
-  @include('layouts.sidebar')
+@extends('layouts.app')
 
-  <!-- Main Content -->
-  <div class="main-content">
-    <!-- Top Navbar -->
-    @include('partials.header')
+@section('title', 'Unidad CIDERS Unión Hidalgo')
 
-    <!-- Content -->
-    <div class="content-wrapper">
-      @yield('content')
-    </div>
+@section('content')
+<div class="container">
+    <h1>Unidad CIDERS Unión Hidalgo</h1>
+    <p>Bienvenido, este es el panel de la Unidad CIDERS Unión Hidalgo.</p>
+    
+    @isset($selectedSemestre)
+        <div class="selectedSemestreCard">
+            <h3>{{ $selectedSemestre->nombre }}</h3>
+            <p><strong>Inicio:</strong> {{ date('d/m/Y', strtotime($selectedSemestre->fecha_inicio)) }}</p>
+            <p><strong>Fin:</strong> {{ date('d/m/Y', strtotime($selectedSemestre->fecha_fin)) }}</p>
+            <a href="{{ route('coordinador.semestres.union') }}">Volver a Semestres - Unión Hidalgo</a>
+        </div>
+    @endisset
 
-    <!-- Footer -->
-    @include('partials.footer')
-  </div>
+    {{-- Aquí agregas actividades, reportes, etc. --}}
+</div>
+@endsection
 
-  <!-- Icono de perfil -->
-  <div id="iconoPerfilContainer">
-    <i class="fas fa-user-circle" id="iconoPerfil"></i>
-  </div>
-
-  <!-- Scripts -->
-  @include('partials.scripts')
-</body>
-</html>
+@auth
+    @push('scripts')
+    <!-- Formulario oculto para logout -->
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+        @csrf
+    </form>
+    @endpush
+@endauth

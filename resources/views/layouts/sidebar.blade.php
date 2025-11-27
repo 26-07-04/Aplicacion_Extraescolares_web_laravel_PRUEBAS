@@ -11,7 +11,7 @@
         </a>
       </li>
       <li>
-        <a href="{{ url('VerEstudiantes') }}?unidad=Unidad académica Valle de Etla">
+        <a href="{{ route('coordinador.verestudiantes', ['unidad' => auth()->user()->unidad_academica ?? '']) }}">
           <i class="fa fa-users"></i> Ver Estudiantes
         </a>
       </li>

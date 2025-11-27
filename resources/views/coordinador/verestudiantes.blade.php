@@ -17,12 +17,11 @@
     <div class="sidebar-menu">
       <ul>
         <li>
-          <a href="{{ route('coordinator.panel') }}" class="active">
+          <a href="{{ route('coordinator.panel') }}" >
             <i class="fas fa-home"></i> Inicio
           </a>
-        </li>
         <li>
-          <a href="{{ route('coordinador.verestudiantes', ['unidad' => $user->unidad_academica ?? 'CIDERS Union Hidalgo']) }}">
+          <a href="{{ route('coordinador.verestudiantes', ['unidad' => $user->unidad_academica ?? 'CIDERS Union Hidalgo']) }}" class="active">
             <i class="fas fa-users"></i> Ver Estudiantes
           </a>
         </li>
@@ -65,6 +64,8 @@
           </div>
         </div>
 
+        
+
         <form id="logoutForm" action="{{ route('logout') }}" method="POST" style="display:none;">
           @csrf
         </form>
@@ -92,50 +93,40 @@
       <div class="welcome-section">
         <h1>Bienvenido al Sistema de Actividades Extraescolares</h1>
         <div class="unidad-nombre">Unidad Académica Unión Hidalgo</div>
-        <p>Semestre: <strong>{{ $semestre->nombre ?? '—' }}</strong></p>
-        <p>Desde este panel podrás gestionar estudiantes, constancias, informes y visualizar resultados para el semestre seleccionado.</p>
       </div>
 
-      <!-- Stats Cards -->
-      <div class="stats-cards">
-        <div class="stat-card">
-          <div class="stat-card-header">
-            <span class="stat-card-title">Ver Estudiantes</span>
-            <div class="stat-card-icon blue"><i class="fas fa-users"></i></div>
-          </div>
-          <div class="stat-card-value">—</div>
-          <div class="stat-card-footer">Consultar y gestionar la información de los estudiantes registrados en este semestre.</div>
+    <!-- Contenedor de la tabla -->
+<div class="tabla-container">
+    <div class="tabla-header">
+        <h2>Usuarios Registrados</h2>
+        <div class="search-container">
+            <input type="text" id="buscador-nombre" placeholder="Buscar por nombre..." class="buscador">
+            <button id="btn-buscar-nombre" class="btn-buscar" title="Buscar">
+                <i class="fas fa-search"></i>
+            </button>
+            <button id="btn-recargar" class="btn-recargar" title="Recargar tabla">
+                <i class="fas fa-sync-alt"></i>
+            </button>
         </div>
-
-        <div class="stat-card">
-          <div class="stat-card-header">
-            <span class="stat-card-title">Constancias</span>
-            <div class="stat-card-icon orange"><i class="fas fa-file-signature"></i></div>
-          </div>
-          <div class="stat-card-value">—</div>
-          <div class="stat-card-footer">Generar y descargar constancias de cumplimiento para los estudiantes.</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-card-header">
-            <span class="stat-card-title">Informes</span>
-            <div class="stat-card-icon green"><i class="fas fa-file-pdf"></i></div>
-          </div>
-          <div class="stat-card-value">—</div>
-          <div class="stat-card-footer">Registrar y consultar reportes de actividades realizadas.</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-card-header">
-            <span class="stat-card-title">Resultados</span>
-            <div class="stat-card-icon purple"><i class="fas fa-chart-line"></i></div>
-          </div>
-          <div class="stat-card-value">—</div>
-          <div class="stat-card-footer">Visualizar indicadores y estadísticas del semestre.</div>
-        </div>
-      </div>
-
     </div>
+    
+    <table id="dataTable" class="display nowrap">
+        <thead>
+            <tr>
+                <th>No. Control</th>
+                <th>Nombre</th>
+                <th>Carrera</th>
+                <th>Extraescolar</th>
+                <th>Semestre</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Los datos se cargarán dinámicamente mediante AJAX -->
+        </tbody>
+    </table>
+</div>
+
 
     <!-- Footer -->
     <footer class="site-footer">
