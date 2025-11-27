@@ -50,7 +50,7 @@
 
       <div class="semestres-grid" id="contenedorSemestres">
         @forelse($semestres as $semestre)
-          <div class="semestre-card" data-id="{{ $semestre->id_semestre }}">
+          <a href="{{ route('coordinador.demetrio.panel', $semestre->id_semestre) }}" class="semestre-link semestre-card" data-id="{{ $semestre->id_semestre }}">
             <div class="semestre-header">
               <span class="semestre-periodo">{{ $semestre->nombre }}</span>
               <div class="semestre-header-actions">
@@ -65,7 +65,7 @@
                 <p><i class="fas fa-calendar-check"></i> <strong>Fecha fin:</strong> {{ date('d/m/Y', strtotime($semestre->fecha_fin)) }}</p>
               </div>
             </div>
-          </div>
+          </a>
         @empty
           <div class="semestres-empty-card">
             <i class="fas fa-info-circle" aria-hidden="true"></i>

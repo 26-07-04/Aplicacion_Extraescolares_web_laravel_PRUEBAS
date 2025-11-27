@@ -11,6 +11,7 @@ use App\Http\Controllers\Coordinador\SemestresCursadosUnionController as Coordin
 use App\Http\Controllers\Coordinador\PanelUnionHidalgoController;
 use App\Http\Controllers\Coordinador\SemestresCursadosTlahuitoltepecController as CoordinadorSemestresTlahController;
 use App\Http\Controllers\Coordinador\SemestresCursadosDemetrioController as CoordinadorSemestresDemetrioController;
+use App\Http\Controllers\Coordinador\PanelDemetrioVallejoController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UnidadController;
@@ -98,6 +99,11 @@ Route::get('coordinador/semestres/union-hidalgo', [CoordinadorSemestresUnionCont
 Route::get('coordinador/union-hidalgo/panel/{id}', [PanelUnionHidalgoController::class, 'show'])
     ->middleware('auth')
     ->name('coordinador.union.panel');
+
+// Panel principal del Coordinador para la Unidad Demetrio Vallejo (vista por semestre)
+Route::get('coordinador/demetrio-vallejo/panel/{id}', [PanelDemetrioVallejoController::class, 'show'])
+    ->middleware('auth')
+    ->name('coordinador.demetrio.panel');
 
 Route::get('coordinador/semestres/tlahuitoltepec', [CoordinadorSemestresTlahController::class, 'index'])
     ->middleware('auth')
