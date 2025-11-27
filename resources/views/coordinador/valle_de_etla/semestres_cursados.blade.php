@@ -51,22 +51,24 @@
 
       <div class="semestres-grid" id="contenedorSemestres">
         @forelse($semestres as $semestre)
-          <div class="semestre-card" data-id="{{ $semestre->id_semestre }}">
-            <div class="semestre-header">
-              <span class="semestre-periodo">{{ $semestre->nombre }}</span>
-              <div class="semestre-header-actions">
-                @if(isset($semestre->estatus) && $semestre->estatus == 1)
-                  <span class="semestre-estado activo">Activo</span>
-                @endif
+          <a href="{{ route('coordinador.valle.panel', ['id' => $semestre->id_semestre]) }}" class="semestre-link">
+            <div class="semestre-card" data-id="{{ $semestre->id_semestre }}">
+              <div class="semestre-header">
+                <span class="semestre-periodo">{{ $semestre->nombre }}</span>
+                <div class="semestre-header-actions">
+                  @if(isset($semestre->estatus) && $semestre->estatus == 1)
+                    <span class="semestre-estado activo">Activo</span>
+                  @endif
+                </div>
+              </div>
+              <div class="semestre-body">
+                <div class="semestre-info">
+                  <p><i class="fas fa-calendar-alt"></i> <strong>Fecha inicio:</strong> {{ date('d/m/Y', strtotime($semestre->fecha_inicio)) }}</p>
+                  <p><i class="fas fa-calendar-check"></i> <strong>Fecha fin:</strong> {{ date('d/m/Y', strtotime($semestre->fecha_fin)) }}</p>
+                </div>
               </div>
             </div>
-            <div class="semestre-body">
-              <div class="semestre-info">
-                <p><i class="fas fa-calendar-alt"></i> <strong>Fecha inicio:</strong> {{ date('d/m/Y', strtotime($semestre->fecha_inicio)) }}</p>
-                <p><i class="fas fa-calendar-check"></i> <strong>Fecha fin:</strong> {{ date('d/m/Y', strtotime($semestre->fecha_fin)) }}</p>
-              </div>
-            </div>
-          </div>
+          </a>
         @empty
           <div class="semestres-empty-card">
             <i class="fas fa-info-circle" aria-hidden="true"></i>
