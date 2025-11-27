@@ -138,12 +138,13 @@ body {
 }
 
 /* Quitar subrayado en los enlaces que envuelven las tarjetas */
-.semestre-link{display:block;text-decoration:none;color:inherit}
-.semestre-link:hover{text-decoration:none}
-.semestre-link .semestre-card{text-decoration:none}
+/* Soporta ambos nombres de clase por compatibilidad */
+.semestre-link, .semestre-card-link { display: block; text-decoration: none; color: inherit; }
+.semestre-link:hover, .semestre-card-link:hover { text-decoration: none; }
+.semestre-link .semestre-card, .semestre-card-link .semestre-card { text-decoration: none; }
 /* Asegurar color correcto: título en negro y texto del cuerpo en gris */
-.semestre-link .semestre-periodo{ text-decoration:none; color:#000 }
-.semestre-link .semestre-info p{ text-decoration:none; color:#444 }
+.semestre-link .semestre-periodo, .semestre-card-link .semestre-periodo { text-decoration: none; color: #000; }
+.semestre-link .semestre-info p, .semestre-card-link .semestre-info p { text-decoration: none; color: #444; }
 
 .semestre-card:hover {
   transform: translateY(-5px);

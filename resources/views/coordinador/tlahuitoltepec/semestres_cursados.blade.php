@@ -50,6 +50,7 @@
 
       <div class="semestres-grid" id="contenedorSemestres">
         @forelse($semestres as $semestre)
+          <a href="{{ route('coordinador.tlahuitoltepec.panel', $semestre->id_semestre) }}" class="semestre-card-link">
           <div class="semestre-card" data-id="{{ $semestre->id_semestre }}">
             <div class="semestre-header">
               <span class="semestre-periodo">{{ $semestre->nombre }}</span>
@@ -66,6 +67,7 @@
               </div>
             </div>
           </div>
+          </a>
         @empty
           <div class="semestres-empty-card">
             <i class="fas fa-info-circle" aria-hidden="true"></i>
