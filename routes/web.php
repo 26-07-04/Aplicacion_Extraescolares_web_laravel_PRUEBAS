@@ -16,6 +16,7 @@ use App\Http\Controllers\Coordinador\SemestresCursadosDemetrioController as Coor
 use App\Http\Controllers\Coordinador\PanelDemetrioVallejoController;
 use App\Http\Controllers\Coordinador\VerEstudiantesController as CoordinadorVerEstudiantesController;
 use App\Http\Controllers\Coordinador\ConstanciaController as CoordinadorConstanciaController;
+use App\Http\Controllers\Coordinador\InformeController as CoordinadorInformeController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UnidadController;
@@ -138,6 +139,11 @@ Route::get('coordinador/ver-estudiantes', [CoordinadorVerEstudiantesController::
 Route::get('coordinador/constancia', [CoordinadorConstanciaController::class, 'index'])
     ->middleware('auth')
     ->name('coordinador.constancia');
+
+// Ver informes - mostrar por unidad
+Route::get('coordinador/informe', [CoordinadorInformeController::class, 'index'])
+    ->middleware('auth')
+    ->name('coordinador.informe');
 
 Route::get('admin/about', [UserController::class, 'about'])
     ->middleware(['auth', 'admin'])

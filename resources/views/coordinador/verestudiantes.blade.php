@@ -26,12 +26,12 @@
           </a>
         </li>
         <li>
-          <a href="#">
+          <a href="{{ route('coordinador.constancia', ['unidad' => $unidad ?? $user->unidad_academica ?? 'CIDERS Union Hidalgo']) }}">
             <i class="fas fa-file-signature"></i> Constancia de Cumplimiento
           </a>
         </li>
         <li>
-          <a href="#">
+          <a href="{{ route('coordinador.informe', ['unidad' => $unidad ?? $user->unidad_academica ?? 'CIDERS Union Hidalgo']) }}">
             <i class="fas fa-file-pdf"></i> Informe de Actividad
           </a>
         </li>

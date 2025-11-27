@@ -33,7 +33,7 @@
           </a>
         </li>
         <li>
-          <a href="#">
+          <a href="{{ route('coordinador.informe', ['unidad' => $unidad ?? auth()->user()->unidad_academica ?? '']) }}">
             <i class="fas fa-file-pdf"></i> Informe de Actividad
           </a>
         </li>
