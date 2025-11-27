@@ -7,9 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Semestre;
 
-class SemestresCursadosUnionController extends Controller
+class PanelUnionHidalgoController extends Controller
 {
-    public function index()
+    public function show($id)
     {
         $user = Auth::user();
         if (!$user || ($user->rol ?? '') !== 'Coordinador') {
@@ -21,7 +21,11 @@ class SemestresCursadosUnionController extends Controller
             abort(403);
         }
 
-        $semestres = Semestre::orderBy('fecha_inicio', 'desc')->get();
-        return view('coordinador.union_hidalgo.semestres_cursados', ['user' => $user, 'semestres' => $semestres, 'unidad' => 'Unidad Académica Unión Hidalgo']);
+        $semestre = Semestre::find($id);
+        if (!$semestre) {
+            abort(404);
+        }
+
+        return view('coordinador.union_hidalgo.panel', ['user' => $user, 'semestre' => $semestre, 'unidad' => 'Unidad Académica Unión Hidalgo']);
     }
 }

@@ -22,6 +22,6 @@ class SemestresCursadosTlahuitoltepecController extends Controller
         }
 
         $semestres = Semestre::orderBy('fecha_inicio', 'desc')->get();
-        return view('coordinador.tlahuitoltepec.semestres_cursados', ['user' => $user, 'semestres' => $semestres]);
+        return view('coordinador.tlahuitoltepec.semestres_cursados', ['user' => $user, 'semestres' => $semestres, 'unidad' => 'Unidad Académica Santa María Tlahuitoltepec']);
     }
 }

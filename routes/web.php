@@ -8,8 +8,15 @@ use App\Http\Controllers\Administrador\PrincipalAdministradorController;
 use App\Http\Controllers\Administrador\UserController as AdminUserController;
 use App\Http\Controllers\Coordinador\SemestresCursadosValleController as CoordinadorSemestresValleController;
 use App\Http\Controllers\Coordinador\SemestresCursadosUnionController as CoordinadorSemestresUnionController;
+use App\Http\Controllers\Coordinador\PanelUnionHidalgoController;
+use App\Http\Controllers\Coordinador\PanelValleEtlaController;
+use App\Http\Controllers\Coordinador\PanelTlahuitoltepecController;
 use App\Http\Controllers\Coordinador\SemestresCursadosTlahuitoltepecController as CoordinadorSemestresTlahController;
 use App\Http\Controllers\Coordinador\SemestresCursadosDemetrioController as CoordinadorSemestresDemetrioController;
+use App\Http\Controllers\Coordinador\PanelDemetrioVallejoController;
+use App\Http\Controllers\Coordinador\VerEstudiantesController as CoordinadorVerEstudiantesController;
+use App\Http\Controllers\Coordinador\ConstanciaController as CoordinadorConstanciaController;
+use App\Http\Controllers\Coordinador\InformeController as CoordinadorInformeController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UnidadController;
@@ -95,6 +102,27 @@ Route::get('coordinador/semestres/union-hidalgo', [CoordinadorSemestresUnionCont
     ->middleware('auth')
     ->name('coordinador.semestres.union');
 
+// Panel principal del Coordinador para la Unidad Unión Hidalgo (vista por semestre)
+Route::get('coordinador/union-hidalgo/panel/{id}', [PanelUnionHidalgoController::class, 'show'])
+    ->middleware('auth')
+    ->name('coordinador.union.panel');
+
+// Panel principal del Coordinador para la Unidad Valle de Etla (vista por semestre)
+Route::get('coordinador/valle-de-etla/panel/{id}', [PanelValleEtlaController::class, 'show'])
+    ->middleware('auth')
+    ->name('coordinador.valle.panel');
+
+
+// Panel principal del Coordinador para la Unidad Tlahuitoltepec (vista por semestre)
+Route::get('coordinador/tlahuitoltepec/panel/{id}', [PanelTlahuitoltepecController::class, 'show'])
+    ->middleware('auth')
+    ->name('coordinador.tlahuitoltepec.panel');
+
+// Panel principal del Coordinador para la Unidad Demetrio Vallejo (vista por semestre)
+Route::get('coordinador/demetrio-vallejo/panel/{id}', [PanelDemetrioVallejoController::class, 'show'])
+    ->middleware('auth')
+    ->name('coordinador.demetrio.panel');
+
 Route::get('coordinador/semestres/tlahuitoltepec', [CoordinadorSemestresTlahController::class, 'index'])
     ->middleware('auth')
     ->name('coordinador.semestres.tlahuitoltepec');
@@ -103,13 +131,28 @@ Route::get('coordinador/semestres/demetrio-vallejo', [CoordinadorSemestresDemetr
     ->middleware('auth')
     ->name('coordinador.semestres.demetrio');
 
+// Ver estudiantes - mostrar lista filtrada por unidad
+Route::get('coordinador/ver-estudiantes', [CoordinadorVerEstudiantesController::class, 'index'])
+    ->middleware('auth')
+    ->name('coordinador.verestudiantes');
+
+// Ver constancias - mostrar por unidad
+Route::get('coordinador/constancia', [CoordinadorConstanciaController::class, 'index'])
+    ->middleware('auth')
+    ->name('coordinador.constancia');
+
+// Ver informes - mostrar por unidad
+Route::get('coordinador/informe', [CoordinadorInformeController::class, 'index'])
+    ->middleware('auth')
+    ->name('coordinador.informe');
+
 Route::get('admin/about', [UserController::class, 'about'])
     ->middleware(['auth', 'admin'])
     ->name('admin.about');
 
 Route::get('admin/contact', [UserController::class, 'contact'])
     ->middleware(['auth', 'admin'])
-    ->name('admin.about');
+    ->name('admin.contact');
 
 // Coordinator dashboard
 Route::get('coordinator/dashboard', function (\Illuminate\Http\Request $request) {
@@ -148,6 +191,29 @@ Route::get('/admin/unidades', [UnidadController::class, 'index'])
 Route::get('/coordinator/unidad', [UnidadController::class, 'miUnidad'])
     ->middleware(['auth'])
     ->name('coordinator.unidad');
+
+// Panel principal de coordinador - muestra el panel correspondiente por unidad (si existe)
+Route::get('/coordinator/panel', function (Request $request) {
+    $user = $request->user();
+    if (! $user || $user->rol !== 'Coordinador') {
+        abort(403);
+    }
+    $ua = $user->unidad_academica ?? '';
+    if (stripos($ua, 'Unión') !== false || stripos($ua, 'Union') !== false || stripos($ua, 'Hidalgo') !== false) {
+        return view('coordinador.union_hidalgo.panel', ['user' => $user, 'unidad' => 'Unidad Académica Unión Hidalgo']);
+    }
+    if (stripos($ua, 'Valle') !== false || stripos($ua, 'Etla') !== false) {
+        return view('coordinador.valle_de_etla.panel', ['user' => $user, 'unidad' => 'Unidad Académica Valle de Etla']);
+    }
+    if (stripos($ua, 'Demetrio') !== false || stripos($ua, 'Vallejo') !== false) {
+        return view('coordinador.demetrio_vallejo.panel', ['user' => $user, 'unidad' => 'Unidad Académica Demetrio Vallejo']);
+    }
+    if (stripos($ua, 'Tlahui') !== false || stripos($ua, 'Tlahuitoltepec') !== false) {
+        return view('coordinador.tlahuitoltepec.panel', ['user' => $user, 'unidad' => 'Unidad Académica Santa María Tlahuitoltepec']);
+    }
+    // Fallback: redirigir a la lista de semestres o al dashboard
+    return redirect()->route('coordinator.unidad');
+})->middleware('auth')->name('coordinator.panel');
 
 /*
 Route::get('/dashboard', function () {
