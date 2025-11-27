@@ -27,7 +27,7 @@
           </a>
         </li>
         <li>
-          <a href="#">
+          <a href="{{ route('coordinador.constancia', ['unidad' => $unidad ?? auth()->user()->unidad_academica ?? '']) }}">
             <i class="fas fa-file-signature"></i> Constancia de Cumplimiento
           </a>
         </li>
@@ -98,6 +98,7 @@
 
       <!-- Stats Cards -->
       <div class="stats-cards">
+        <a href="{{ route('coordinador.constancia', ['unidad' => $unidad ?? auth()->user()->unidad_academica ?? '']) }}" style="text-decoration:none;color:inherit;">
         <div class="stat-card">
           <div class="stat-card-header">
             <span class="stat-card-title">Ver Estudiantes</span>
@@ -106,6 +107,7 @@
           <div class="stat-card-value">—</div>
           <div class="stat-card-footer">Consultar y gestionar la información de los estudiantes registrados en este semestre.</div>
         </div>
+        </a>
 
         <div class="stat-card">
           <div class="stat-card-header">

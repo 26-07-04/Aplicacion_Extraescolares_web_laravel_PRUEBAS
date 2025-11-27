@@ -15,6 +15,7 @@ use App\Http\Controllers\Coordinador\SemestresCursadosTlahuitoltepecController a
 use App\Http\Controllers\Coordinador\SemestresCursadosDemetrioController as CoordinadorSemestresDemetrioController;
 use App\Http\Controllers\Coordinador\PanelDemetrioVallejoController;
 use App\Http\Controllers\Coordinador\VerEstudiantesController as CoordinadorVerEstudiantesController;
+use App\Http\Controllers\Coordinador\ConstanciaController as CoordinadorConstanciaController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UnidadController;
@@ -132,6 +133,11 @@ Route::get('coordinador/semestres/demetrio-vallejo', [CoordinadorSemestresDemetr
 Route::get('coordinador/ver-estudiantes', [CoordinadorVerEstudiantesController::class, 'index'])
     ->middleware('auth')
     ->name('coordinador.verestudiantes');
+
+// Ver constancias - mostrar por unidad
+Route::get('coordinador/constancia', [CoordinadorConstanciaController::class, 'index'])
+    ->middleware('auth')
+    ->name('coordinador.constancia');
 
 Route::get('admin/about', [UserController::class, 'about'])
     ->middleware(['auth', 'admin'])

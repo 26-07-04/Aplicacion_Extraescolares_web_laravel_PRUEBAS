@@ -18,8 +18,9 @@
       @endif
       @auth
         @if(in_array(auth()->user()->rol ?? '', ['Coordinador', 'Administrador']))
-            {{-- Pass the current unidad if the page provides one, otherwise fallback to the authenticated user's unidad --}}
-            <a href="{{ route('coordinador.verestudiantes', ['unidad' => $unidad ?? auth()->user()->unidad_academica ?? '']) }}">Ver Estudiantes</a>
+          {{-- Pass the current unidad if the page provides one, otherwise fallback to the authenticated user's unidad --}}
+          <a href="{{ route('coordinador.verestudiantes', ['unidad' => $unidad ?? auth()->user()->unidad_academica ?? '']) }}">Ver Estudiantes</a>
+          <a href="{{ route('coordinador.constancia', ['unidad' => $unidad ?? auth()->user()->unidad_academica ?? '']) }}">Constancias</a>
         @endif
       @endauth
     </nav>
