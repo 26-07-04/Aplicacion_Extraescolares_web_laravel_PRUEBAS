@@ -16,7 +16,7 @@
         </a>
       </li>
       <li>
-        <a href="{{ url('contancia') }}">
+        <a href="{{ route('coordinador.constancia', ['unidad' => $unidad ?? auth()->user()->unidad_academica ?? '']) }}">
           <i class="fa fa-file-text"></i> Constancia de Cumplimiento 
         </a>
       </li>
