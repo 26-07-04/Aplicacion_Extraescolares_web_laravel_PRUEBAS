@@ -30,7 +30,7 @@
     <main>
       <div class="contenido-detalle">
         <div class="info-actividad">
-          <h2 id="nombre-actividad">{{ $actividad->nombre ?? 'Nombre de la Actividad' }}</h2>
+          <h2 id="nombre-actividad">{{ $actividad->nombre ?? $actividad->nombre_actividad ?? 'Nombre de la Actividad' }}</h2>
           <p id="descripcion-actividad">{{ $actividad->descripcion ?? 'Descripción de la actividad...' }}</p>
         </div>
 
@@ -46,7 +46,7 @@
               </tr>
             </thead>
             <tbody id="tabla-estudiantes">
-              <!-- Datos estáticos de ejemplo (Valle de Etla) -->
+              <!-- Ejemplo estático; la lógica de alumnos puede permanecer -->
               <tr>
                 <td>Luisa Torres</td>
                 <td>2042003</td>
@@ -57,34 +57,6 @@
                     <i class="bi bi-pen-fill" style="color:#002147; font-size:1.2em;"></i>
                   </button>
                   <button class="btn-accion btn-eliminar" title="Eliminar" data-id="301">
-                    <i class="bi bi-trash-fill" style="color:#002147; font-size:1.2em;"></i>
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td>Óscar Velasco</td>
-                <td>2042010</td>
-                <td>Ingeniería en Energías</td>
-                <td>6</td>
-                <td class="acciones-celda">
-                  <button class="btn-accion btn-editar" title="Editar" data-id="302" data-nombre="Óscar Velasco" data-numero_control="2042010" data-carrera="Ingeniería en Energías" data-semestre="6">
-                    <i class="bi bi-pen-fill" style="color:#002147; font-size:1.2em;"></i>
-                  </button>
-                  <button class="btn-accion btn-eliminar" title="Eliminar" data-id="302">
-                    <i class="bi bi-trash-fill" style="color:#002147; font-size:1.2em;"></i>
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td>Fernanda Ruiz</td>
-                <td>2042031</td>
-                <td>Diseño Industrial</td>
-                <td>3</td>
-                <td class="acciones-celda">
-                  <button class="btn-accion btn-editar" title="Editar" data-id="303" data-nombre="Fernanda Ruiz" data-numero_control="2042031" data-carrera="Diseño Industrial" data-semestre="3">
-                    <i class="bi bi-pen-fill" style="color:#002147; font-size:1.2em;"></i>
-                  </button>
-                  <button class="btn-accion btn-eliminar" title="Eliminar" data-id="303">
                     <i class="bi bi-trash-fill" style="color:#002147; font-size:1.2em;"></i>
                   </button>
                 </td>
@@ -157,12 +129,12 @@
     </footer>
   </div>
 
-  <!-- Configuración de endpoints para el JS (VE) -->
+  <!-- Configuración de endpoints para el JS (VE) usando API REST de Laravel -->
   <script>
     window.DActividadesVE = {
-      id_actividad: "{{ request()->query('id_actividad') ?? ($actividad->id ?? '') }}",
+      id_actividad: "{{ request()->query('id_actividad') ?? ($actividad->id ?? $actividad->id_actividad ?? '') }}",
       endpoints: {
-        obtenerActividad: "{{ url('php/obtener_actividad_ve.php') }}",
+        obtenerActividad: "{{ url('administrador/actividades') }}", // se usará obtenerActividad + '/' + id
         obtenerAlumnos: "{{ url('php/obtener_alumnos_inscritos_ve.php') }}",
         eliminarAlumno: "{{ url('php/eliminar_alumno_ve.php') }}",
         guardarAlumno: "{{ url('php/guardar_alumno_ve.php') }}",
@@ -172,7 +144,7 @@
   </script>
 
   <script>
-    // Poblado inteligente del título/descripcion:
+    // Poblado inteligente del título/descripcion: misma lógica que D_actividades_DV
     (function(){
       const elNombre = document.getElementById('nombre-actividad');
       const elDesc = document.getElementById('descripcion-actividad');
@@ -185,6 +157,7 @@
 
       // 2) parámetros URL (si el servidor no envió datos)
       const params = new URLSearchParams(window.location.search);
+      const idFromQuery = params.get('id_actividad') || (window.DActividadesVE && window.DActividadesVE.id_actividad) || '';
       if (!nombreServer) {
         const n = params.get('nombre');
         if (n) elNombre.textContent = n;
@@ -194,18 +167,29 @@
         if (d) elDesc.textContent = d;
       }
 
-      // 3) intentar fetch si aún no hay datos y hay endpoint + id
-      const id = window.DActividadesVE && window.DActividadesVE.id_actividad;
-      const ep = window.DActividadesVE && window.DActividadesVE.endpoints && window.DActividadesVE.endpoints.obtenerActividad;
-      if ((!nombreServer || !descServer) && id && ep) {
-        fetch(ep + '?id_actividad=' + encodeURIComponent(id))
-          .then(r => r.ok ? r.json() : Promise.reject())
-          .then(act => {
-            if (!act) return;
-            if (!nombreServer && (act.nombre_actividad || act.nombre)) elNombre.textContent = act.nombre_actividad || act.nombre;
-            if (!descServer && act.descripcion) elDesc.textContent = act.descripcion;
+      // 3) si aún no hay datos, pedir al endpoint REST /administrador/actividades/{id}
+      const id = idFromQuery;
+      const epBase = window.DActividadesVE && window.DActividadesVE.endpoints && window.DActividadesVE.endpoints.obtenerActividad;
+      if ((!nombreServer || !descServer) && id && epBase) {
+        const url = epBase.replace(/\/+$/,'') + '/' + encodeURIComponent(id);
+        fetch(url, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+          .then(r => {
+            if (!r.ok) return Promise.reject(r);
+            return r.json();
           })
-          .catch(()=>{/* silencioso */});
+          .then(act => {
+            const actividad = act.data ?? act; // adaptarse a formato
+            if (!actividad) return;
+            if (!nombreServer && (actividad.nombre_actividad || actividad.nombre)) {
+              elNombre.textContent = actividad.nombre_actividad || actividad.nombre;
+            }
+            if (!descServer && actividad.descripcion) {
+              elDesc.textContent = actividad.descripcion;
+            }
+          })
+          .catch((err) => {
+            console.debug('No se pudo obtener actividad por API (VE):', err);
+          });
       }
     })();
   </script>
