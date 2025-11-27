@@ -12,6 +12,13 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    /* Alineación y espaciado sólo para la sección ADMINISTRACIÓN (no afectar UNIDADES) */
+    .sidebar-section.admin-section ul { display: flex; flex-direction: column; gap: 8px; padding-left: 12px; }
+    .sidebar-section.admin-section ul li a { display: flex; align-items: center; gap: 8px; color: inherit; text-decoration: none; }
+    .sidebar-section.admin-section ul li.admin-documentos { margin-bottom: 10px; }
+    .sidebar-section.admin-section ul li.admin-usuarios { margin-top: 6px; }
+  </style>
 </head>
 <body>
 
@@ -92,14 +99,21 @@
         </li>
       </ul>
     </div>
-    <div class="sidebar-section">
+    <div class="sidebar-section admin-section">
       <h3 style="font-family: 'Open Sans', sans-serif;">ADMINISTRACIÓN</h3>
       <ul style="font-family: 'Segoe UI', sans-serif; font-size: 16px; color: rgba(255, 255, 255, 0.7); background-color: #1B396A; border-radius: 6px; padding: 8px;">
         @php
-          $usuariosUrl = isset($semestre) && $semestre ? route('admin.principal', ['id' => $semestre->id_semestre]) . '?view=usuarios' : route('admin.principal') . '?view=usuarios';
+          $baseUrl = isset($semestre) && $semestre ? route('admin.principal', ['id' => $semestre->id_semestre]) : route('admin.principal');
+          $documentosUrl = $baseUrl . '?view=documentos';
+          $usuariosUrl = $baseUrl . '?view=usuarios';
         @endphp
-        <li style="margin-bottom: 10px; transition: all 0.3s; text-decoration: none; cursor: pointer;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)'">
-          <a href="{{ $usuariosUrl }}" style="color:inherit; text-decoration:none; display:block;"><i class="fas fa-users" style="margin-right: 8px;"></i>Gestión de Usuarios</a>
+
+        <li class="admin-documentos" style="transition: all 0.3s; cursor: pointer;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)';">
+          <a href="{{ $documentosUrl }}"><i class="fas fa-file-alt" style="margin-right: 8px;"></i>Documentos</a>
+        </li>
+
+        <li class="admin-usuarios" style="transition: all 0.3s; cursor: pointer;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)';">
+          <a href="{{ $usuariosUrl }}"><i class="fas fa-users" style="margin-right: 8px;"></i>Gestión de Usuarios</a>
         </li>
       </ul>
     </div>
@@ -109,6 +123,8 @@
   <div class="main-content">
     @if(!empty($view) && $view === 'usuarios')
       @include('administrador.partials.gestion_usuarios')
+    @elseif(!empty($view) && $view === 'documentos')
+      @include('administrador.partials.documentos')
     @elseif(!empty($unidad))
       @include('administrador.partials.unidad', ['unidad' => $unidad, 'actividades' => $actividades, 'estudiantes' => $estudiantes])
     @elseif(!empty($semestre))

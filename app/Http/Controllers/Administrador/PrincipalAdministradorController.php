@@ -70,6 +70,21 @@ class PrincipalAdministradorController extends Controller
             }
         }
 
+        // Si se solicitó la vista de documentos, asegurarnos de que la variable $semestre
+        // esté definida usando el id en la ruta o el semestre activo (misma lógica que usuarios)
+        if (!empty($view) && $view === 'documentos') {
+            $semestreId = null;
+            if ($semestre) {
+                $semestreId = $semestre->id_semestre;
+            } else {
+                $semestreId = Semestre::where('estatus', 1)->value('id_semestre');
+            }
+
+            if ($semestreId && ! $semestre) {
+                $semestre = Semestre::find($semestreId);
+            }
+        }
+
         // Pasamos el nombre de unidad, la vista solicitada y la colección de usuarios a la vista
         return view('administrador.Principal_administrador', compact('user', 'semestre', 'actividades', 'estudiantes', 'unidad', 'view', 'usuarios'));
     }

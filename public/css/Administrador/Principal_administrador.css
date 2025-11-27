@@ -227,19 +227,46 @@ body {
 }
 
 /* Contenido del modal - CORRECCIÓN */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 99999; /* Asegura que el modal esté al frente de todo */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6); /* Fondo oscuro para el modal */
+  align-items: center; /* centrar verticalmente cuando se muestre como flex */
+  justify-content: center; /* centrar horizontalmente */
+}
+
 .modal-contenido {
   background-color: #ffffff;
-  padding: 20px;
-  width: 90%;
-  max-width: 500px;
+  padding: 10px 12px 8px; /* reducir padding inferior */
+  width: auto;
+  max-width: 480px; /* más ancho */
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 999999; /* Asegura que el contenido del modal esté al frente */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+  position: relative;
+  z-index: 999999;
+  animation: fadeIn 160ms ease-out;
+  max-height: 55vh; /* limitar altura del modal (reducido) */
+  overflow-y: auto; /* permitir scroll interno si el contenido es largo */
 }
+
+/* Ajustes para modal interno: quitar márgenes que puedan generar espacio extra */
+.modal-contenido .upload-form { margin: 0; }
+.modal-contenido .form-group { margin-bottom: 8px; }
+.modal-contenido .form-group:last-child { margin-bottom: 0; }
+.modal-contenido .documento-actions { margin-top: 8px; margin-bottom: 0; }
+
+/* Forzar layout columnar para evitar espacio en blanco bajo botones */
+.modal-contenido { box-sizing: border-box; display: flex; flex-direction: column; }
+.modal-contenido .upload-form { display: flex; flex-direction: column; padding: 0; }
+/* Asegurar que el contenedor de botones quede pegado al final sin generar espacios extra */
+.modal-contenido .upload-form > div:last-child { margin-top: 12px; margin-bottom: 0; align-self: flex-end; }
+.modal-contenido h2 { margin-bottom: 10px; padding-bottom: 6px; }
+.modal-contenido { padding-bottom: 6px; }
 
 /* Animación de entrada */
 @keyframes fadeIn {
@@ -249,14 +276,13 @@ body {
 
 /* Encabezado del modal */
 .modal-contenido h2 {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 600;
-  margin-bottom: 25px;
+  margin-bottom: 14px;
   color: #040404;
   border-bottom: 2px solid #1B396A;
   padding-bottom: 8px;
-  display: inline-block; /* Hace que el título y la línea se ajusten a su tamaño */
-  
+  display: inline-block;
 }
 
 /* Botón de cerrar */
@@ -788,6 +814,39 @@ body {
   text-decoration: underline;
 }
 
+/* Excepción: en la sección de ADMINISTRACIÓN no mostrar subrayado al hacer hover
+   y alinear los enlaces a la izquierda para mejor presentación */
+.sidebar-section.admin-section ul li:hover {
+  text-decoration: none;
+}
+
+/* Reglas específicas para el modal de Documentos (mayor especificidad) */
+#modalSubirDocumento .modal-contenido {
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 10px 12px 6px !important; /* padding reducido y forzado */
+  max-width: 480px !important;
+  width: 100% !important;
+  max-height: 65vh !important; /* ajustado: un poco más alto */
+  overflow-y: auto !important;
+}
+#modalSubirDocumento .modal-contenido .upload-form {
+  display: flex !important;
+  flex-direction: column !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+#modalSubirDocumento .modal-contenido .upload-form > div:last-child {
+  margin-top: 12px !important;
+  margin-bottom: 0 !important;
+  align-self: flex-end !important;
+}
+#modalSubirDocumento .modal-contenido h2 { margin-bottom: 10px !important; padding-bottom: 6px !important; }
+
+/* Si existe algún estilo inline o regla genérica que introduce espacio, lo anulamos */
+#modalSubirDocumento, #modalSubirDocumento .modal-contenido { vertical-align: top; }
+
 /* Estilo para el elemento activo en el dashboard */
 .sidebar-section ul li.activo {
   font-weight: bold; /* Negritas para el elemento activo */
@@ -796,12 +855,37 @@ body {
   border-radius: 5px; /* Bordes redondeados */
   padding: 5px; /* Espaciado interno */
 }
+.sidebar-section.admin-section ul li a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 6px 10px;
+  margin-left: -8px; /* mover ligeramente a la izquierda dentro del contenedor */
+  text-decoration: none;
+}
+.sidebar-section.admin-section ul li a i {
+  width: 20px; /* ancho fijo para que texto quede alineado */
+  display: inline-block;
+  text-align: center;
+}
+.sidebar-section.admin-section ul li a:hover {
+  text-decoration: none;
+  color: #ffffff;
+}
+.sidebar-section.admin-section ul li.admin-documentos,
+.sidebar-section.admin-section ul li.admin-usuarios {
+  margin: 0px 0;
+}
+
 
 .main-content {
   margin-left: 250px; /* Ampliar el margen izquierdo para evitar que se pase del dashboard */
   margin-right: 30px; /* Margen derecho más amplio */
   margin-top: 25px; /* Margen superior equilibrado */
   background-color: white;
+  min-height: 100vh; /* Asegura que el contenido principal ocupe al menos la altura de la ventana para permitir scroll correcto */
   border-radius: 12px; /* Bordes más redondeados */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Sombra más suave */
   padding: 25px; /* Espaciado interno más amplio */
@@ -1044,4 +1128,34 @@ body {
 @media (max-width: 420px) {
   .bienvenida-panel h1 { font-size: 22px; }
   .btn-coordinador { padding: 10px 18px; font-size: 14px; }
+}
+
+/* ==========================
+   Estilos para Documentos
+   Scoped bajo .documentos-page
+   ========================== */
+.documentos-page { padding: 20px; }
+.documentos-page .upload-section { background:#fff; border-radius:8px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,0.05); margin-bottom:22px; }
+.documentos-page .upload-title { color:#002147; font-size:20px; margin-bottom:10px; display:flex; align-items:center; gap:10px; }
+.documentos-page .upload-form { display:flex; flex-direction:column; gap:12px; }
+.documentos-page .form-group label { font-weight:600; margin-bottom:6px; color:#333; }
+.documentos-page .form-control { padding:8px 10px; border-radius:6px; border:1px solid #ddd; }
+.documentos-page .file-input-wrapper { position:relative; display:inline-block; }
+.documentos-page .file-input-button { padding:8px 12px; background:#3498db; color:#fff; border-radius:6px; cursor:pointer; border:none; }
+.documentos-page .btn-submit { background:#2ecc71; color:#fff; border:none; padding:10px 14px; border-radius:6px; cursor:pointer; }
+.documentos-page h2.section-title { color:#002147; margin-bottom:12px; }
+.documentos-page .documentos-container { display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:16px; }
+.documentos-page .documento-card { background:#fff; border-radius:8px; padding:14px; box-shadow:0 2px 8px rgba(0,0,0,0.06); display:flex; flex-direction:column; gap:8px; }
+.documentos-page .documento-icon { font-size:34px; color:#e74c3c; text-align:center; }
+.documentos-page .documento-title { font-weight:700; color:#002147; }
+.documentos-page .documento-desc { color:#666; font-size:14px; }
+.documentos-page .documento-actions { display:flex; gap:8px; justify-content:space-between; margin-top:8px; }
+.documentos-page .btn-documento { padding:8px 10px; border-radius:6px; border:none; cursor:pointer; }
+.documentos-page .btn-ver { background:#3498db; color:#fff; }
+.documentos-page .btn-descargar { background:#2ecc71; color:#fff; }
+.documentos-page .btn-eliminar { background:#e74c3c; color:#fff; }
+.documentos-page .empty-state { text-align:center; padding:30px 12px; color:#666; }
+
+@media (max-width: 768px) {
+  .documentos-page .documentos-container { grid-template-columns: 1fr; }
 }
