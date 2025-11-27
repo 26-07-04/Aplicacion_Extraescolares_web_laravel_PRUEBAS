@@ -10,6 +10,7 @@ use App\Http\Controllers\Coordinador\SemestresCursadosValleController as Coordin
 use App\Http\Controllers\Coordinador\SemestresCursadosUnionController as CoordinadorSemestresUnionController;
 use App\Http\Controllers\Coordinador\PanelUnionHidalgoController;
 use App\Http\Controllers\Coordinador\PanelValleEtlaController;
+use App\Http\Controllers\Administrador\DocumentoController;
 use App\Http\Controllers\Coordinador\PanelTlahuitoltepecController;
 use App\Http\Controllers\Coordinador\SemestresCursadosTlahuitoltepecController as CoordinadorSemestresTlahController;
 use App\Http\Controllers\Coordinador\SemestresCursadosDemetrioController as CoordinadorSemestresDemetrioController;
@@ -85,6 +86,19 @@ Route::put('admin/semestres/{id}', [SemestresCursadosController::class, 'update'
 Route::delete('admin/semestres/{id}', [SemestresCursadosController::class, 'destroy'])
     ->middleware('auth')
     ->name('admin.semestres.destroy');
+
+// Rutas para documentos (subir y descargar)
+Route::post('admin/documentos', [DocumentoController::class, 'store'])
+    ->middleware('auth')
+    ->name('admin.documentos.store');
+
+Route::get('admin/documentos/{id}/download', [DocumentoController::class, 'download'])
+    ->middleware('auth')
+    ->name('admin.documentos.download');
+
+Route::delete('admin/documentos/{id}', [DocumentoController::class, 'destroy'])
+    ->middleware('auth')
+    ->name('admin.documentos.destroy');
 
 // Ruta para activar un semestre (solo un semestre activo a la vez)
 Route::post('admin/semestres/{id}/activar', [SemestresCursadosController::class, 'activarSemestre'])
