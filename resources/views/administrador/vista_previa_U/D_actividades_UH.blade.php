@@ -165,12 +165,14 @@
       </footer>
     </div>
 
-    <!-- Configuración de endpoints para el JS (ajusta rutas si usas controladores Laravel) -->
+    <!-- Configuración de endpoints para el JS (ajustada a rutas Laravel) -->
     <script>
       window.DActividadesUH = {
+        // id pasado por query o desde servidor
         id_actividad: "{{ request()->query('id_actividad') ?? ($actividad->id ?? '') }}",
         endpoints: {
-          obtenerActividad: "{{ url('php/obtener_actividad_demetrio.php') }}",
+          // usar endpoint REST de Laravel (show) para obtener actividad en JSON
+          obtenerActividad: "{{ url('administrador/actividades') }}", // se usará obtenerActividad + '/' + id
           obtenerAlumnos: "{{ url('php/obtener_alumnos_inscritos_union.php') }}",
           eliminarAlumno: "{{ url('php/eliminar_alumno_union.php') }}",
           guardarAlumno: "{{ url('php/guardar_alumno_union.php') }}",
@@ -193,6 +195,7 @@
 
         // 2) parámetros URL (si el servidor no envió datos)
         const params = new URLSearchParams(window.location.search);
+        const idFromQuery = params.get('id_actividad') || (window.DActividadesUH && window.DActividadesUH.id_actividad) || '';
         if (!nombreServer) {
           const n = params.get('nombre');
           if (n) elNombre.textContent = n;
@@ -202,18 +205,31 @@
           if (d) elDesc.textContent = d;
         }
 
-        // 3) intentar fetch si aún no hay datos y hay endpoint + id
-        const id = window.DActividadesUH && window.DActividadesUH.id_actividad;
-        const ep = window.DActividadesUH && window.DActividadesUH.endpoints && window.DActividadesUH.endpoints.obtenerActividad;
-        if ((!nombreServer || !descServer) && id && ep) {
-          fetch(ep + '?id_actividad=' + encodeURIComponent(id))
-            .then(r => r.ok ? r.json() : Promise.reject())
+        // 3) si aún no hay datos, pedir al endpoint REST /administrador/actividades/{id}
+        const id = idFromQuery;
+        const epBase = window.DActividadesUH && window.DActividadesUH.endpoints && window.DActividadesUH.endpoints.obtenerActividad;
+        if ((!nombreServer || !descServer) && id && epBase) {
+          const url = epBase.replace(/\/+$/,'') + '/' + encodeURIComponent(id);
+          fetch(url, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+            .then(r => {
+              if (!r.ok) return Promise.reject(r);
+              return r.json();
+            })
             .then(act => {
               if (!act) return;
-              if (!nombreServer && (act.nombre_actividad || act.nombre)) elNombre.textContent = act.nombre_actividad || act.nombre;
-              if (!descServer && act.descripcion) elDesc.textContent = act.descripcion;
+              // el controller puede devolver la actividad dentro de 'data' o directamente
+              const actividad = act.data ?? act;
+              if (!nombreServer && (actividad.nombre_actividad || actividad.nombre)) {
+                elNombre.textContent = actividad.nombre_actividad || actividad.nombre;
+              }
+              if (!descServer && actividad.descripcion) {
+                elDesc.textContent = actividad.descripcion;
+              }
             })
-            .catch(()=>{/* silencioso */});
+            .catch((err) => {
+              // suave fallback: no mostrar error al usuario aquí
+              console.debug('No se pudo obtener actividad por API:', err);
+            });
         }
       })();
     </script>

@@ -13,6 +13,8 @@ use App\Http\Controllers\Coordinador\SemestresCursadosDemetrioController as Coor
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UnidadController;
+use App\Http\Controllers\Administrador\ActividadController;
+use Illuminate\Http\Request;
 /*
 Route::get('/', function () {
     return view('welcome');
@@ -160,6 +162,51 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// CRUD y detalle para Actividades (usadas por public/js/actividades.js)
+Route::prefix('administrador')->group(function () {
+    Route::get('actividades', [ActividadController::class, 'index'])->name('administrador.actividades.index');
+    Route::post('actividades', [ActividadController::class, 'store'])->name('administrador.actividades.store');
+    Route::get('actividades/{id}', [ActividadController::class, 'show'])->name('administrador.actividades.show');
+    Route::put('actividades/{id}', [ActividadController::class, 'update'])->name('administrador.actividades.update');
+    Route::delete('actividades/{id}', [ActividadController::class, 'destroy'])->name('administrador.actividades.destroy');
+
+    // Ruta de detalle que carga la vista D_actividades_UH con query params
+    Route::get('D_actividades_UH', function (Request $request) {
+        return view('administrador.vista_previa_U.D_actividades_UH', [
+            'id_actividad' => $request->query('id_actividad'),
+            'id_unidad'    => $request->query('id_unidad'),
+            'id_semestre'  => $request->query('id_semestre'),
+        ]);
+    })->name('administrador.actividades.detalle');
+
+    // Ruta de detalle que carga la vista D_actividades_DV con query params
+    Route::get('D_actividades_DV', function (Request $request) {
+        return view('administrador.vista_previa_U.D_actividades_DV', [
+            'id_actividad' => $request->query('id_actividad'),
+            'id_unidad'    => $request->query('id_unidad'),
+            'id_semestre'  => $request->query('id_semestre'),
+        ]);
+    })->name('administrador.actividades.detalle');
+
+    // Ruta de detalle que carga la vista D_actividades_SMT con query params
+    Route::get('D_actividades_SMT', function (Request $request) {
+        return view('administrador.vista_previa_U.D_actividades_SMT', [
+            'id_actividad' => $request->query('id_actividad'),
+            'id_unidad'    => $request->query('id_unidad'),
+            'id_semestre'  => $request->query('id_semestre'),
+        ]);
+    })->name('administrador.actividades.detalle');
+
+    // Ruta de detalle que carga la vista D_actividades_VE con query params
+    Route::get('D_actividades_VE', function (Request $request) {
+        return view('administrador.vista_previa_U.D_actividades_VE', [
+            'id_actividad' => $request->query('id_actividad'),
+            'id_unidad'    => $request->query('id_unidad'),
+            'id_semestre'  => $request->query('id_semestre'),
+        ]);
+    })->name('administrador.actividades.detalle');
 });
 
 require __DIR__.'/auth.php';

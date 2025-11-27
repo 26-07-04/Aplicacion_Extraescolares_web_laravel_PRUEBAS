@@ -128,7 +128,7 @@
         </div>
       </div>
 
-      <!-- Footer (igual que UH) -->
+      <!-- Footer -->
       <footer class="site-footer">
         <div class="footer-container">
           <div class="footer-text">
@@ -163,10 +163,11 @@
 
     <!-- Configuración de endpoints para el JS (Demetrio Vallejo) -->
     <script>
+      // Igual que en UH: usar endpoint REST de Laravel para obtener actividad en JSON
       window.DActividadesDV = {
-        id_actividad: "{{ request()->query('id_actividad') ?? '' }}",
+        id_actividad: "{{ request()->query('id_actividad') ?? ($actividad->id_actividad ?? $actividad->id ?? '') }}",
         endpoints: {
-          obtenerActividad: "{{ url('php/obtener_actividad_dv.php') }}",
+          obtenerActividad: "{{ url('administrador/actividades') }}", // se usará obtenerActividad + '/' + id
           obtenerAlumnos: "{{ url('php/obtener_alumnos_inscritos_dv.php') }}",
           eliminarAlumno: "{{ url('php/eliminar_alumno_dv.php') }}",
           guardarAlumno: "{{ url('php/guardar_alumno_dv.php') }}",
@@ -174,32 +175,54 @@
         }
       };
     </script>
-
+ 
     <script>
-      // Poblado inteligente del título/descripcion (DV):
+      // Poblado inteligente del título/descripcion (misma lógica que UH)
       (function(){
         const elNombre = document.getElementById('nombre-actividad');
         const elDesc = document.getElementById('descripcion-actividad');
 
-        // 1) valores URL si existen (por simplicidad servidor no pasa $actividad en esta vista)
-        const params = new URLSearchParams(window.location.search);
-        const n = params.get('nombre') || '';
-        const d = params.get('descripcion') || '';
-        if (n) elNombre.textContent = n;
-        if (d) elDesc.textContent = d;
+        // 1) valores server-side si llegaron
+        const nombreServer = {!! json_encode($actividad->nombre ?? $actividad->nombre_actividad ?? null) !!};
+        const descServer = {!! json_encode($actividad->descripcion ?? null) !!};
+        if (nombreServer) elNombre.textContent = nombreServer;
+        if (descServer) elDesc.textContent = descServer;
 
-        // 2) intentar fetch si hay endpoint + id
-        const id = window.DActividadesDV && window.DActividadesDV.id_actividad;
-        const ep = window.DActividadesDV && window.DActividadesDV.endpoints && window.DActividadesDV.endpoints.obtenerActividad;
-        if ((!n || !d) && id && ep) {
-          fetch(ep + '?id_actividad=' + encodeURIComponent(id))
-            .then(r => r.ok ? r.json() : Promise.reject())
+        // 2) parámetros URL (si el servidor no envió datos)
+        const params = new URLSearchParams(window.location.search);
+        const idFromQuery = params.get('id_actividad') || (window.DActividadesDV && window.DActividadesDV.id_actividad) || '';
+        if (!nombreServer) {
+          const n = params.get('nombre');
+          if (n) elNombre.textContent = n;
+        }
+        if (!descServer) {
+          const d = params.get('descripcion');
+          if (d) elDesc.textContent = d;
+        }
+
+        // 3) si aún no hay datos, pedir al endpoint REST /administrador/actividades/{id}
+        const id = idFromQuery;
+        const epBase = window.DActividadesDV && window.DActividadesDV.endpoints && window.DActividadesDV.endpoints.obtenerActividad;
+        if ((!nombreServer || !descServer) && id && epBase) {
+          const url = epBase.replace(/\/+$/,'') + '/' + encodeURIComponent(id);
+          fetch(url, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+            .then(r => {
+              if (!r.ok) return Promise.reject(r);
+              return r.json();
+            })
             .then(act => {
               if (!act) return;
-              if (act.nombre_actividad || act.nombre) elNombre.textContent = act.nombre_actividad || act.nombre;
-              if (act.descripcion) elDesc.textContent = act.descripcion;
+              const actividad = act.data ?? act;
+              if (!nombreServer && (actividad.nombre_actividad || actividad.nombre)) {
+                elNombre.textContent = actividad.nombre_actividad || actividad.nombre;
+              }
+              if (!descServer && actividad.descripcion) {
+                elDesc.textContent = actividad.descripcion;
+              }
             })
-            .catch(()=>{/* silencioso */});
+            .catch((err) => {
+              console.debug('No se pudo obtener actividad por API (DV):', err);
+            });
         }
       })();
     </script>

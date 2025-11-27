@@ -3,12 +3,54 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Actividades Extraescolares - Unión Hidalgo</title>
-  
-  <!-- CSS -->
+  <title>Actividades Extraescolares - Valle de Etla</title>
+
+  <!-- CSS (mantén sólo los que uses para evitar duplicados) -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
   <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
   <link rel="stylesheet" href="{{ asset('css/Administrador/actividades.css') }}">
+
+  <!-- CSRF token requerido por fetch -->
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+
+  <!-- Configuración usada por public/js/actividades.js (NO modifica estilos) -->
+  <script>
+    (function(){
+      // intenta obtener semestre/unidad desde variables server o query params
+      const unidadServer = @json(isset($unidad) ? $unidad : null);
+      const semestreServer = @json(isset($semestre) ? $semestre : null);
+
+      function resolveUnidadId(u){
+        if (!u) return null;
+        if (typeof u === 'object' && u !== null && ('id_unidad' in u)) return Number(u.id_unidad) || null;
+        if (!isNaN(Number(u))) return Number(u);
+        return null;
+      }
+      function resolveSemestreId(s){
+        if (!s) return null;
+        if (typeof s === 'object' && s !== null && ('id_semestre' in s)) return Number(s.id_semestre) || null;
+        if (!isNaN(Number(s))) return Number(s);
+        return null;
+      }
+
+      // fallback: leer query string si no hubo variable server
+      const params = new URLSearchParams(window.location.search);
+      const qUnidad = params.get('id_unidad') ?? params.get('unidad') ?? null;
+      const qSemestre = params.get('id_semestre') ?? params.get('semestre') ?? null;
+
+      window.ActUH = {
+        rutas: {
+          list: "{{ route('administrador.actividades.index') }}",
+          store: "{{ route('administrador.actividades.store') }}",
+          showBase: "{{ url('administrador/actividades') }}",
+          detail: "{{ url('administrador/vista_previa_U/D_actividades_VE') }}",
+        },
+        unidadId: resolveUnidadId(unidadServer ?? qUnidad) ?? 4,
+        semestreId: resolveSemestreId(semestreServer ?? qSemestre) ?? 1,
+        assetBase: "{{ asset('') }}"
+      };
+    })();
+  </script>
 </head>
 <body>
   <div class="wrapper">
@@ -127,17 +169,54 @@
   </div>
 
   <!-- Scripts -->
-  <script>
-    window.gestorConfig = window.gestorConfig || {};
-    // URL que abre el detalle Valle de Etla
-    window.gestorConfig.detalleBaseVE = "{{ route('administrador.vista_detalle_ve') }}";
-    @if (Route::has('administrador.vista_detalle_ve'))
-      // hacer VE la ruta por defecto para este listado
-      window.gestorConfig.detalleBase = "{{ route('administrador.vista_detalle_ve') }}";
-    @endif
-  </script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+
+  <!-- Configuración para actividadesVE.js (NO tocar diseño) -->
+  <script>
+    window.ActVE = {
+      rutas: {
+        list: "{{ route('administrador.actividades.index') }}",
+        store: "{{ route('administrador.actividades.store') }}",
+        showBase: "{{ url('administrador/actividades') }}",
+        // ruta de detalle (vista que muestra estudiantes de la actividad)
+        detail: "{{ url('administrador/D_actividades_VE') }}",
+      },
+      unidadId: 4,
+      // asigna aquí el semestre actual (ej. pasarlo desde el controlador como $semestre->id_semestre)
+      semestreId: {{ isset($semestre) ? (int)$semestre->id_semestre : 1 }},
+      assetBase: "{{ asset('') }}"
+    };
+  </script>
+
+  <script>
+    // No sobrescribir si ya existe una configuración más precisa
+    if (!window.ActVE) {
+      window.ActVE = {
+        rutas: {
+          list: "{{ route('administrador.actividades.index') }}",
+          store: "{{ route('administrador.actividades.store') }}",
+          showBase: "{{ url('administrador/actividades') }}",
+          detail: "{{ url('administrador/vista_previa_U/D_actividades_VE') }}",
+        },
+        // unidad/semestre: preferir variables servidorales, si no usar query string, si no fallback
+        unidadId: @json($unidad->id_unidad ?? request()->query('id_unidad') ?? 4),
+        semestreId: @json($semestre->id_semestre ?? request()->query('id_semestre') ?? null),
+        assetBase: "{{ asset('') }}"
+      };
+    } else {
+      // si existe, asegúrate que tenga assetBase y rutas mínimas
+      window.ActVE.rutas = window.ActVE.rutas || {
+        list: "{{ route('administrador.actividades.index') }}",
+        store: "{{ route('administrador.actividades.store') }}",
+        showBase: "{{ url('administrador/actividades') }}",
+        detail: "{{ url('administrador/vista_previa_U/D_actividades_VE') }}"
+      };
+      window.ActVE.assetBase = window.ActVE.assetBase || "{{ asset('') }}";
+      // preservar semestre y unidad ya calculados en head (no cambiarlos aquí)
+    }
+  </script>
+
   <script src="{{ asset('js/actividades.js') }}"></script>
 </body>
 </html>
