@@ -21,7 +21,7 @@
         </a>
       </li>
       <li>
-        <a href="{{ url('informe') }}">
+        <a href="{{ route('coordinador.informe', ['unidad' => $unidad ?? auth()->user()->unidad_academica ?? '']) }}">
           <i class="fa fa-file-pdf-o"></i> Informe de Actividad
         </a>
       </li>
