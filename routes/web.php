@@ -9,6 +9,7 @@ use App\Http\Controllers\Administrador\UserController as AdminUserController;
 use App\Http\Controllers\Coordinador\SemestresCursadosValleController as CoordinadorSemestresValleController;
 use App\Http\Controllers\Coordinador\SemestresCursadosUnionController as CoordinadorSemestresUnionController;
 use App\Http\Controllers\Coordinador\PanelUnionHidalgoController;
+use App\Http\Controllers\Coordinador\PanelTlahuitoltepecController;
 use App\Http\Controllers\Coordinador\SemestresCursadosTlahuitoltepecController as CoordinadorSemestresTlahController;
 use App\Http\Controllers\Coordinador\SemestresCursadosDemetrioController as CoordinadorSemestresDemetrioController;
 use App\Http\Controllers\Coordinador\PanelDemetrioVallejoController;
@@ -100,6 +101,11 @@ Route::get('coordinador/union-hidalgo/panel/{id}', [PanelUnionHidalgoController:
     ->middleware('auth')
     ->name('coordinador.union.panel');
 
+// Panel principal del Coordinador para la Unidad Tlahuitoltepec (vista por semestre)
+Route::get('coordinador/tlahuitoltepec/panel/{id}', [PanelTlahuitoltepecController::class, 'show'])
+    ->middleware('auth')
+    ->name('coordinador.tlahuitoltepec.panel');
+
 // Panel principal del Coordinador para la Unidad Demetrio Vallejo (vista por semestre)
 Route::get('coordinador/demetrio-vallejo/panel/{id}', [PanelDemetrioVallejoController::class, 'show'])
     ->middleware('auth')
@@ -119,7 +125,7 @@ Route::get('admin/about', [UserController::class, 'about'])
 
 Route::get('admin/contact', [UserController::class, 'contact'])
     ->middleware(['auth', 'admin'])
-    ->name('admin.about');
+    ->name('admin.contact');
 
 // Coordinator dashboard
 Route::get('coordinator/dashboard', function (\Illuminate\Http\Request $request) {
