@@ -26,6 +26,6 @@ class PanelUnionHidalgoController extends Controller
             abort(404);
         }
 
-        return view('coordinador.union_hidalgo.panel', ['user' => $user, 'semestre' => $semestre]);
+        return view('coordinador.union_hidalgo.panel', ['user' => $user, 'semestre' => $semestre, 'unidad' => 'Unidad Académica Unión Hidalgo']);
     }
 }

@@ -187,7 +187,16 @@ Route::get('/coordinator/panel', function (Request $request) {
     }
     $ua = $user->unidad_academica ?? '';
     if (stripos($ua, 'Unión') !== false || stripos($ua, 'Union') !== false || stripos($ua, 'Hidalgo') !== false) {
-        return view('coordinador.union_hidalgo.panel', ['user' => $user]);
+        return view('coordinador.union_hidalgo.panel', ['user' => $user, 'unidad' => 'Unidad Académica Unión Hidalgo']);
+    }
+    if (stripos($ua, 'Valle') !== false || stripos($ua, 'Etla') !== false) {
+        return view('coordinador.valle_de_etla.panel', ['user' => $user, 'unidad' => 'Unidad Académica Valle de Etla']);
+    }
+    if (stripos($ua, 'Demetrio') !== false || stripos($ua, 'Vallejo') !== false) {
+        return view('coordinador.demetrio_vallejo.panel', ['user' => $user, 'unidad' => 'Unidad Académica Demetrio Vallejo']);
+    }
+    if (stripos($ua, 'Tlahui') !== false || stripos($ua, 'Tlahuitoltepec') !== false) {
+        return view('coordinador.tlahuitoltepec.panel', ['user' => $user, 'unidad' => 'Unidad Académica Santa María Tlahuitoltepec']);
     }
     // Fallback: redirigir a la lista de semestres o al dashboard
     return redirect()->route('coordinator.unidad');

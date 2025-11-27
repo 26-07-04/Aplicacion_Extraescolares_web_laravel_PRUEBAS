@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel Coordinador - Unión Hidalgo - {{ $semestre->nombre ?? '' }}</title>
+  <title>Panel Coordinador - {{ $unidad ?? auth()->user()->unidad_academica ?? '' }}</title>
   <link rel="stylesheet" href="{{ asset('css/Coordinador/UnionHidalgo-panel.css') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -21,7 +21,7 @@
             <i class="fas fa-home"></i> Inicio
           </a>
         <li>
-          <a href="{{ route('coordinador.verestudiantes', ['unidad' => $user->unidad_academica ?? 'CIDERS Union Hidalgo']) }}" class="active">
+          <a href="{{ route('coordinador.verestudiantes', ['unidad' => $unidad ?? $user->unidad_academica ?? 'CIDERS Union Hidalgo']) }}" class="active">
             <i class="fas fa-users"></i> Ver Estudiantes
           </a>
         </li>
@@ -50,7 +50,7 @@
     <!-- Top Navbar -->
       <div class="top-navbar">
       <div class="user-menu" style="position:relative; display:flex; align-items:center; gap:24px; margin-left:auto;">
-        <a href="{{ route('coordinador.semestres.union') }}" class="btn-regresar-header" title="Regresar a Semestres cursados" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; background:#1B396A; color:#fff; padding:6px 10px; min-width:36px; border-radius:6px; text-decoration:none;">
+        <a href="{{ route('coordinator.panel') }}" class="btn-regresar-header" title="Regresar al panel" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; background:#1B396A; color:#fff; padding:6px 10px; min-width:36px; border-radius:6px; text-decoration:none;">
           <i class="fas fa-arrow-left" style="font-size:16px; color:#fff; line-height:1;"></i>
         </a>
         <i class="fas fa-user-circle" id="iconoPerfil" style="font-size:34px; color:#1B396A; cursor:pointer;"></i>
@@ -86,13 +86,14 @@
 
       <!-- Encabezado de unidad -->
       <div class="unidad-header">
-        Tecnológico Nacional de México - Unidad Académica Unión Hidalgo
+        Tecnológico Nacional de México - {{ $unidad ?? auth()->user()->unidad_academica ?? '' }}
       </div>
 
       <!-- Welcome Section -->
       <div class="welcome-section">
         <h1>Bienvenido al Sistema de Actividades Extraescolares</h1>
-        <div class="unidad-nombre">Unidad Académica Unión Hidalgo</div>
+        <div class="unidad-nombre">{{ $unidad ?? auth()->user()->unidad_academica ?? '' }}</div>
+        <p style="margin-top:6px; font-size:14px; color:#333;">Mostrando estudiantes para: <strong>{{ $unidad ?? auth()->user()->unidad_academica ?? '' }}</strong></p>
       </div>
 
     <!-- Contenedor de la tabla -->
