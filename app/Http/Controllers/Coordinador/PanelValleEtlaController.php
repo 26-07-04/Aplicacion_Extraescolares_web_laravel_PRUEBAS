@@ -26,6 +26,6 @@ class PanelValleEtlaController extends Controller
             abort(404);
         }
 
-        return view('coordinador.valle_de_etla.panel', ['user' => $user, 'semestre' => $semestre]);
+        return view('coordinador.valle_de_etla.panel', ['user' => $user, 'semestre' => $semestre, 'unidad' => 'Unidad Académica Valle de Etla']);
     }
 }

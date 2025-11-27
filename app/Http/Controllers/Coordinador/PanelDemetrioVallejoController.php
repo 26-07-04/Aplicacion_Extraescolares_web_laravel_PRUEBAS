@@ -26,6 +26,6 @@ class PanelDemetrioVallejoController extends Controller
             abort(404);
         }
 
-        return view('coordinador.demetrio_vallejo.panel', ['user' => $user, 'semestre' => $semestre]);
+        return view('coordinador.demetrio_vallejo.panel', ['user' => $user, 'semestre' => $semestre, 'unidad' => 'Unidad Académica Demetrio Vallejo Martínez - El Espinal']);
     }
 }

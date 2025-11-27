@@ -17,12 +17,12 @@
     <div class="sidebar-menu">
       <ul>
         <li>
-          <a href="javascript:void(0)" class="active">
+          <a href="{{ route('coordinator.panel') }}" class="active">
             <i class="fas fa-home"></i> Inicio
           </a>
         </li>
         <li>
-          <a href="#">
+          <a href="{{ route('coordinador.verestudiantes', ['unidad' => $unidad ?? auth()->user()->unidad_academica ?? '']) }}">
             <i class="fas fa-users"></i> Ver Estudiantes
           </a>
         </li>

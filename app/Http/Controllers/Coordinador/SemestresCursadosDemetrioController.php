@@ -22,6 +22,6 @@ class SemestresCursadosDemetrioController extends Controller
         }
 
         $semestres = Semestre::orderBy('fecha_inicio', 'desc')->get();
-        return view('coordinador.demetrio_vallejo.semestres_cursados', ['user' => $user, 'semestres' => $semestres]);
+        return view('coordinador.demetrio_vallejo.semestres_cursados', ['user' => $user, 'semestres' => $semestres, 'unidad' => 'Unidad Académica Demetrio Vallejo']);
     }
 }

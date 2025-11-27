@@ -22,6 +22,6 @@ class SemestresCursadosUnionController extends Controller
         }
 
         $semestres = Semestre::orderBy('fecha_inicio', 'desc')->get();
-        return view('coordinador.union_hidalgo.semestres_cursados', ['user' => $user, 'semestres' => $semestres]);
+        return view('coordinador.union_hidalgo.semestres_cursados', ['user' => $user, 'semestres' => $semestres, 'unidad' => 'Unidad Académica Unión Hidalgo']);
     }
 }
