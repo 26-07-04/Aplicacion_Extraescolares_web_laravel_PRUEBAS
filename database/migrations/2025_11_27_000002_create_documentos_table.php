@@ -17,9 +17,11 @@ return new class extends Migration
             $table->id();
             $table->string('nombre');
             $table->text('descripcion')->nullable();
-            $table->unsignedBigInteger('id_semestre');
-            $table->foreign('id_semestre')->references('id')->on('semestres')->onDelete('cascade');
+            // Coincidir con semestres ->increments('id_semestre') (unsigned INT)
+            $table->unsignedInteger('id_semestre');
+            $table->foreign('id_semestre')->references('id_semestre')->on('semestres')->onDelete('cascade');
             $table->timestamps();
+            $table->engine = 'InnoDB';
         });
     }
 
