@@ -1,5 +1,4 @@
-// Gestión de actividades 
-
+// Gestión de actividades - Versión Mejorada
 class GestorActividades {
     constructor() {
         this.actividadEditando = null;
@@ -34,7 +33,6 @@ class GestorActividades {
         this.configurarEventos();
         // cargar actividades desde servidor al iniciar
         this.cargarActividadesDesdeServidor();
-        // No cargar actividades estáticas aquí. Usar cargarDatosDesdeServidor() o insertar manualmente.
     }
 
     configurarEventos() {
@@ -159,147 +157,327 @@ class GestorActividades {
         if (modal) modal.style.display = 'none';
     }
 
-    async guardarActividad() {
-         const nombre = (document.getElementById('nombre-actividad') || {}).value;
-         const descripcion = (document.getElementById('descripcion-actividad') || {}).value;
+    // Funciones auxiliares para obtener configuración
+    obtenerUnidadId() {
+        // Múltiples formas de obtener el ID de unidad
+        if (window.ActUH && window.ActUH.unidadId) return window.ActUH.unidadId;
+        if (window.ActDV && window.ActDV.unidadId) return window.ActDV.unidadId;
+        
+        const unidadInput = document.getElementById('id_unidad');
+        if (unidadInput && unidadInput.value) return unidadInput.value;
+        
+        // Buscar en cualquier configuración global
+        for (const key in window) {
+            if (key.startsWith('Act') && window[key] && window[key].unidadId) {
+                return window[key].unidadId;
+            }
+        }
+        
+        return null;
+    }
 
-         if (!nombre || !descripcion) {
-             this.mostrarAlerta('Error', 'Por favor completa todos los campos obligatorios', 'error');
-             return;
-         }
+    obtenerSemestreId() {
+        // Múltiples formas de obtener el ID de semestre
+        if (window.ActUH && window.ActUH.semestreId) return window.ActUH.semestreId;
+        if (window.ActDV && window.ActDV.semestreId) return window.ActDV.semestreId;
+        
+        const semestreInput = document.getElementById('id_semestre');
+        if (semestreInput && semestreInput.value) return semestreInput.value;
+        
+        return null;
+    }
 
-         // preparar FormData para enviar al servidor (si existe endpoint)
-         const fd = new FormData();
-         fd.append('nombre_actividad', nombre);
-         fd.append('descripcion', descripcion);
+    obtenerUrlGuardado() {
+        // Buscar en todas las configuraciones posibles
+        const configs = [window.ActUH, window.ActDV, window.ActSMT, window.ActVE];
+        for (const config of configs) {
+            if (config && config.rutas && config.rutas.store) {
+                return config.rutas.store;
+            }
+        }
+        // Fallback por tipo de actividad
+        if (window.location.pathname.includes('unidad-horaria')) {
+            return '/administrador/actividades-uh';
+        } else if (window.location.pathname.includes('dia-viernes')) {
+            return '/administrador/actividades-dv';
+        }
+        return '/administrador/actividades';
+    }
 
-         // id_unidad: preferir variable global si existe, si no no lo añadimos (asegúrate que form/JS de la vista lo añade)
-         const unidadId = (window.ActUH && window.ActUH.unidadId) ? window.ActUH.unidadId : (document.getElementById('id_unidad')?.value || null);
-         if (unidadId) fd.append('id_unidad', unidadId);
+    obtenerUrlEdicion(id) {
+        const configs = [window.ActUH, window.ActDV, window.ActSMT, window.ActVE];
+        for (const config of configs) {
+            if (config && config.rutas && config.rutas.showBase) {
+                return `${config.rutas.showBase}/${id}`;
+            }
+        }
+        return `/administrador/actividades/${id}`;
+    }
 
-        // id_semestre: tomar de configuración global o de input hidden
-        const semestreId = (window.ActUH && window.ActUH.semestreId) ? window.ActUH.semestreId : (document.getElementById('id_semestre')?.value || null);
-        if (semestreId !== null && semestreId !== undefined && semestreId !== '') {
-            fd.append('id_semestre', semestreId);
+    obtenerCsrfToken() {
+        // Múltiples formas de obtener el token CSRF
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        if (meta) return meta.getAttribute('content');
+        
+        const tokenInput = document.querySelector('input[name="_token"]');
+        if (tokenInput) return tokenInput.value;
+        
+        console.warn('CSRF token no encontrado');
+        return '';
+    }
+
+    async procesarRespuestaExitosa(saved, nombre, descripcion, semestreId) {
+        const idGuardado = saved.id_actividad ?? saved.id ?? saved.idActividad;
+        const nombreGuardado = saved.nombre_actividad ?? saved.nombre ?? nombre;
+        const descripcionGuardada = saved.descripcion ?? saved.desc ?? descripcion;
+        const imagenGuardada = saved.imagen_url ?? saved.imagen ?? saved.imagenUrl ?? null;
+
+        if (!idGuardado) {
+            throw new Error('El servidor no devolvió un ID válido para la actividad');
         }
 
-         const inputFile = document.getElementById('imagen-actividad');
-         if (inputFile && inputFile.files && inputFile.files[0]) {
-             fd.append('imagen', inputFile.files[0]);
-         }
+        // Si es edición: actualizar DOM
+        if (this.actividadEditando) {
+            const mod = this.actividadEditando;
+            const h3 = mod.querySelector('h3');
+            const p = mod.querySelector('p');
+            if (h3) h3.textContent = nombreGuardado;
+            if (p) p.textContent = descripcionGuardada;
+            
+            // Actualizar imagen
+            const img = mod.querySelector('img');
+            if (img && imagenGuardada) {
+                img.src = this.resolveImageSrc(imagenGuardada);
+            }
+            
+            if (semestreId) mod.dataset.idSemestre = semestreId;
+            this.mostrarAlerta('Éxito', `Actividad "${nombreGuardado}" actualizada correctamente`, 'success');
+        } else {
+            // Crear nuevo módulo
+            const imagenPath = imagenGuardada ? 
+                this.resolveImageSrc(imagenGuardada) : 
+                (document.getElementById('vista-previa')?.src || '/Imagenes/placeholder-actividad.jpg');
+            
+            const nueva = this.crearModuloActividad({
+                id: idGuardado,
+                nombre: nombreGuardado,
+                descripcion: descripcionGuardada,
+                imagen: imagenPath,
+                id_semestre: semestreId
+            });
+            
+            const cont = document.getElementById('actividades-container');
+            const moduloAgregar = cont ? cont.querySelector('.modulo.agregar') : null;
+            
+            if (cont) {
+                if (moduloAgregar) cont.insertBefore(nueva, moduloAgregar);
+                else cont.appendChild(nueva);
+            }
+            this.mostrarAlerta('Éxito', `Actividad "${nombreGuardado}" creada correctamente`, 'success');
+        }
 
-         // determinar URL y método: crear o actualizar
-         let url = (window.ActUH && window.ActUH.rutas && window.ActUH.rutas.store) ? window.ActUH.rutas.store : '/administrador/actividades';
-         let method = 'POST';
-         const editarId = this.actividadEditando ? (this.actividadEditando.dataset.idActividad || this.actividadEditando.dataset.id) : null;
+        // Limpiar modal
+        this.cerrarModalActividad();
+    }
 
-         if (editarId) {
-             // emular PUT con _method
-             fd.append('_method', 'PUT');
-             url = ((window.ActUH && window.ActUH.rutas && window.ActUH.rutas.showBase) ? window.ActUH.rutas.showBase : '/administrador/actividades') + '/' + editarId;
-             method = 'POST';
-         }
+    async guardarActividad() {
+        const nombre = (document.getElementById('nombre-actividad') || {}).value;
+        const descripcion = (document.getElementById('descripcion-actividad') || {}).value;
 
-         // CSRF
-         const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        if (!nombre || !descripcion) {
+            this.mostrarAlerta('Error', 'Por favor completa todos los campos obligatorios', 'error');
+            return;
+        }
 
-         try {
-             const res = await fetch(url, {
-                 method: method,
-                 headers: csrf ? { 'X-CSRF-TOKEN': csrf } : {},
-                 body: fd,
-                 credentials: 'same-origin'
-             });
+        // Mostrar loading
+        const btnGuardar = document.getElementById('btn-guardar-actividad');
+        const originalText = btnGuardar.textContent;
+        btnGuardar.textContent = 'Guardando...';
+        btnGuardar.disabled = true;
 
-             if (res.status === 422) {
-                 const err = await res.json();
-                 const msgs = err.errors ? Object.values(err.errors).flat().join('\n') : JSON.stringify(err);
-                 this.mostrarAlerta('Validación', msgs, 'error');
-                 return;
-             }
+        try {
+            // preparar FormData para enviar al servidor
+            const fd = new FormData();
+            fd.append('nombre_actividad', nombre.trim());
+            fd.append('descripcion', descripcion.trim());
 
-             if (!res.ok) throw new Error('Error en servidor al guardar actividad');
+            // Obtener IDs de manera más robusta
+            const unidadId = this.obtenerUnidadId();
+            const semestreId = this.obtenerSemestreId();
 
-             const saved = await res.json(); // esperar respuesta con { id_actividad, imagen_url, nombre_actividad, descripcion, ... }
+            if (unidadId) fd.append('id_unidad', unidadId);
+            if (semestreId) fd.append('id_semestre', semestreId);
 
-            // asegurar que servidor devuelve id y imagen_url; normalizar campos
-            const idGuardado = saved.id_actividad ?? saved.id ?? saved.idActividad;
-            const nombreGuardado = saved.nombre_actividad ?? saved.nombre ?? nombre;
-            const descripcionGuardada = saved.descripcion ?? saved.desc ?? descripcion;
-            const imagenGuardada = saved.imagen_url ?? saved.imagen ?? saved.imagenUrl ?? null;
-            const semestreGuardado = saved.id_semestre ?? saved.idSemestre ?? semestreId ?? null;
+            // Manejar imagen
+            const inputFile = document.getElementById('imagen-actividad');
+            if (inputFile && inputFile.files && inputFile.files[0]) {
+                // Validar tamaño de imagen (max 5MB)
+                if (inputFile.files[0].size > 5 * 1024 * 1024) {
+                    throw new Error('La imagen no debe superar los 5MB');
+                }
+                fd.append('imagen', inputFile.files[0]);
+            }
 
-             // si edición: actualizar DOM del módulo editado
-             if (this.actividadEditando) {
-                 const mod = this.actividadEditando;
-                 const h3 = mod.querySelector('h3');
-                 const p = mod.querySelector('p');
-                 if (h3) h3.textContent = nombreGuardado;
-                 if (p) p.textContent = descripcionGuardada;
-                 // actualizar imagen a la ruta devuelta
-                 const img = mod.querySelector('img');
-                 if (img && imagenGuardada) img.src = (window.ActUH && window.ActUH.assetBase ? window.ActUH.assetBase + imagenGuardada : imagenGuardada);
-                 if (semestreGuardado) mod.dataset.idSemestre = semestreGuardado;
-                 this.mostrarAlerta('Éxito', `Actividad "${nombreGuardado}" actualizada correctamente`, 'success');
-             } else {
-                 // crear nuevo módulo y añadir al contenedor
-                 const imagenPath = imagenGuardada ? ((window.ActUH && window.ActUH.assetBase ? window.ActUH.assetBase + imagenGuardada : imagenGuardada)) : (document.getElementById('vista-previa')?.src || '/Imagenes/placeholder-actividad.jpg');
-                 const nueva = this.crearModuloActividad({
-                     id: idGuardado || Date.now(),
-                     nombre: nombreGuardado,
-                     descripcion: descripcionGuardada,
-                     imagen: imagenPath,
-                     id_semestre: semestreGuardado
-                 });
-                 const cont = document.getElementById('actividades-container');
-                 const moduloAgregar = cont ? cont.querySelector('.modulo.agregar') : null;
-                 if (cont) {
-                     if (moduloAgregar) cont.insertBefore(nueva, moduloAgregar);
-                     else cont.appendChild(nueva);
-                 }
-                 this.mostrarAlerta('Éxito', `Actividad "${nombreGuardado}" creada correctamente`, 'success');
-             }
+            // Determinar URL y método
+            let url = this.obtenerUrlGuardado();
+            let method = 'POST';
+            const editarId = this.actividadEditando ? 
+                (this.actividadEditando.dataset.idActividad || this.actividadEditando.dataset.id) : null;
 
-             // limpiar modal y estado
-             this.cerrarModalActividad();
+            if (editarId) {
+                // Para edición, usar PUT
+                fd.append('_method', 'PUT');
+                url = this.obtenerUrlEdicion(editarId);
+                method = 'POST';
+            }
 
-         } catch (err) {
-             console.error(err);
-             this.mostrarAlerta('Error', 'No se pudo guardar la actividad', 'error');
-         }
-     }
+            // Obtener CSRF token de manera más robusta
+            const csrf = this.obtenerCsrfToken();
+
+            console.log('Enviando datos a:', url, 'Método:', method); // Debug
+
+            const res = await fetch(url, {
+                method: method,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...(csrf ? { 'X-CSRF-TOKEN': csrf } : {})
+                },
+                body: fd,
+                credentials: 'same-origin'
+            });
+
+            // Manejar diferentes códigos de estado
+            if (res.status === 422) {
+                const err = await res.json();
+                const msgs = err.errors ? Object.values(err.errors).flat().join('\n') : 
+                             (err.message || JSON.stringify(err));
+                throw new Error(`Error de validación: ${msgs}`);
+            }
+
+            if (res.status === 413) {
+                throw new Error('La imagen es demasiado grande');
+            }
+
+            if (res.status === 500) {
+                throw new Error('Error interno del servidor');
+            }
+
+            if (!res.ok) {
+                throw new Error(`Error HTTP: ${res.status} ${res.statusText}`);
+            }
+
+            const responseText = await res.text();
+            let saved;
+            
+            try {
+                saved = JSON.parse(responseText);
+            } catch (e) {
+                console.error('Respuesta no es JSON:', responseText);
+                throw new Error('Respuesta inválida del servidor');
+            }
+
+            // Verificar que la respuesta tenga los datos esperados
+            if (!saved) {
+                throw new Error('Respuesta vacía del servidor');
+            }
+
+            // Procesar respuesta exitosa
+            await this.procesarRespuestaExitosa(saved, nombre, descripcion, semestreId);
+
+        } catch (err) {
+            console.error('Error completo:', err);
+            this.mostrarAlerta('Error', err.message || 'No se pudo guardar la actividad. Verifica la conexión.', 'error');
+        } finally {
+            // Restaurar botón
+            if (btnGuardar) {
+                btnGuardar.textContent = originalText;
+                btnGuardar.disabled = false;
+            }
+        }
+    }
+
+    obtenerUrlListado() {
+        const configs = [window.ActUH, window.ActDV, window.ActSMT, window.ActVE];
+        for (const config of configs) {
+            if (config && config.rutas && config.rutas.list) {
+                return config.rutas.list;
+            }
+        }
+        return '/administrador/actividades';
+    }
 
     // nueva función: carga actividades desde servidor para la unidad actual
     async cargarActividadesDesdeServidor() {
         const cont = document.getElementById('actividades-container') || document.querySelector('.actividades-container');
-        if (!cont) return;
-        cont.innerHTML = '<div style="color:#666">Cargando actividades...</div>';
-        const rutas = (window.ActUH && window.ActUH.rutas) ? window.ActUH.rutas : null;
-        const rutaList = rutas?.list ?? '/administrador/actividades';
-        const unidadId = (window.ActUH && window.ActUH.unidadId) ? window.ActUH.unidadId : (document.getElementById('id_unidad')?.value || null);
+        if (!cont) {
+            console.warn('Contenedor de actividades no encontrado');
+            return;
+        }
+        
+        const loadingHtml = '<div class="loading-actividades" style="color:#666; text-align:center; padding:2rem;">Cargando actividades...</div>';
+        cont.innerHTML = loadingHtml;
+        
         try {
-            const res = await fetch(rutaList + '?id_unidad=' + encodeURIComponent(unidadId), { credentials: 'same-origin' });
-            if (!res.ok) throw new Error('Error listando actividades');
+            const unidadId = this.obtenerUnidadId();
+            const semestreId = this.obtenerSemestreId();
+            
+            let url = this.obtenerUrlListado();
+            const params = new URLSearchParams();
+            
+            if (unidadId) params.append('id_unidad', unidadId);
+            if (semestreId) params.append('id_semestre', semestreId);
+            
+            if (params.toString()) {
+                url += (url.includes('?') ? '&' : '?') + params.toString();
+            }
+
+            console.log('Cargando actividades desde:', url); // Debug
+
+            const res = await fetch(url, { 
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!res.ok) {
+                throw new Error(`Error ${res.status} al cargar actividades`);
+            }
+
             const items = await res.json();
-            // limpiar e insertar en el contenedor respetando módulo "agregar" si existe
+            
+            if (!Array.isArray(items)) {
+                throw new Error('Formato de respuesta inválido');
+            }
+
+            // Limpiar y reconstruir contenedor
             const addModule = cont.querySelector('.modulo.agregar');
             cont.innerHTML = '';
-            items.forEach(item => {
-                const imagenUrl = item.imagen_url ?? item.imagen ?? item.imagenUrl ?? null;
-                const mdl = this.crearModuloActividad({
-                    id: item.id_actividad ?? item.id ?? item.idActividad,
-                    nombre: item.nombre_actividad ?? item.nombre,
-                    descripcion: item.descripcion ?? item.desc,
-                    imagen: imagenUrl ? ((window.ActUH && window.ActUH.assetBase ? window.ActUH.assetBase + imagenUrl : imagenUrl)) : '/Imagenes/placeholder-actividad.jpg',
-                    id_semestre: item.id_semestre ?? item.idSemestre ?? null
+            
+            if (items.length === 0) {
+                cont.innerHTML = '<div class="no-actividades" style="color:#999; text-align:center; padding:2rem; grid-column:1/-1;">No hay actividades registradas</div>';
+            } else {
+                items.forEach(item => {
+                    const imagenUrl = item.imagen_url ?? item.imagen ?? item.imagenUrl ?? null;
+                    const mdl = this.crearModuloActividad({
+                        id: item.id_actividad ?? item.id ?? item.idActividad,
+                        nombre: item.nombre_actividad ?? item.nombre,
+                        descripcion: item.descripcion ?? item.desc,
+                        imagen: this.resolveImageSrc(imagenUrl),
+                        id_semestre: item.id_semestre ?? item.idSemestre ?? null
+                    });
+                    cont.appendChild(mdl);
                 });
-                cont.appendChild(mdl);
-            });
-            // volver a insertar módulo agregar al final si existía
+            }
+            
+            // Volver a insertar módulo agregar si existía
             if (addModule) cont.appendChild(addModule);
+            
         } catch (e) {
-            console.error(e);
-            cont.innerHTML = '<div style="color:#c33">Error cargando actividades</div>';
+            console.error('Error cargando actividades:', e);
+            cont.innerHTML = `<div class="error-actividades" style="color:#c33; text-align:center; padding:2rem; grid-column:1/-1;">
+                Error cargando actividades: ${e.message}
+            </div>`;
         }
     }
 
@@ -330,7 +508,7 @@ class GestorActividades {
             return;
         }
 
-        const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        const csrf = this.obtenerCsrfToken();
         const baseShow = (window.ActUH && window.ActUH.rutas && window.ActUH.rutas.showBase) ? window.ActUH.rutas.showBase : '/administrador/actividades';
         const urlDel = baseShow.replace(/\/+$/,'') + '/' + encodeURIComponent(id);
 
@@ -338,7 +516,11 @@ class GestorActividades {
             // intentar DELETE directo
             let res = await fetch(urlDel, {
                 method: 'DELETE',
-                headers: { 'Accept': 'application/json', ...(csrf ? { 'X-CSRF-TOKEN': csrf } : {}) },
+                headers: { 
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...(csrf ? { 'X-CSRF-TOKEN': csrf } : {}) 
+                },
                 credentials: 'same-origin'
             });
 
@@ -348,7 +530,10 @@ class GestorActividades {
                 fd.append('_method', 'DELETE');
                 res = await fetch(urlDel, {
                     method: 'POST',
-                    headers: csrf ? { 'X-CSRF-TOKEN': csrf } : {},
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        ...(csrf ? { 'X-CSRF-TOKEN': csrf } : {})
+                    },
                     body: fd,
                     credentials: 'same-origin'
                 });
@@ -467,9 +652,14 @@ class GestorActividades {
     }
 }
 
-// Exportar instancia global mínima
+// Exportar instancia global mejorada
 document.addEventListener('DOMContentLoaded', function() {
-    window.gestorActividades = new GestorActividades();
+    try {
+        window.gestorActividades = new GestorActividades();
+        console.log('Gestor de actividades inicializado correctamente');
+    } catch (error) {
+        console.error('Error inicializando gestor de actividades:', error);
+    }
 });
 
 // Cerrar modal actividad al hacer clic fuera
