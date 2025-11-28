@@ -14,30 +14,31 @@
       <img src="{{ asset('Imagenes/ITVE.png') }}" alt="ITVE" class="sidebar-logo">
       <h3>Actividades Extraescolares</h3>
     </div>
+    @php $show = request()->get('show'); @endphp
     <div class="sidebar-menu">
       <ul>
         <li>
-          <a href="javascript:void(0)" class="active">
+          <a href="{{ url()->current() }}" class="{{ $show ? '' : 'active' }}">
             <i class="fas fa-home"></i> Inicio
           </a>
         </li>
         <li>
-          <a href="{{ route('coordinator.unidad') }}">
+          <a href="{{ url()->current() }}?show=estudiantes" class="{{ $show === 'estudiantes' ? 'active' : '' }}">
             <i class="fas fa-users"></i> Ver Estudiantes
           </a>
         </li>
         <li>
-          <a href="{{ route('coordinador.constancia', ['unidad' => $unidad ?? auth()->user()->unidad_academica ?? '']) }}">
+          <a href="{{ url()->current() }}?show=constancias" class="{{ $show === 'constancias' ? 'active' : '' }}">
             <i class="fas fa-file-signature"></i> Constancia de Cumplimiento
           </a>
         </li>
         <li>
-          <a href="#">
+          <a href="{{ url()->current() }}?show=informe" class="{{ $show === 'informe' ? 'active' : '' }}">
             <i class="fas fa-file-pdf"></i> Informe de Actividad
           </a>
         </li>
         <li>
-          <a href="#">
+          <a href="{{ url()->current() }}?show=resultados" class="{{ $show === 'resultados' ? 'active' : '' }}">
             <i class="fas fa-chart-line"></i> Resultados
           </a>
         </li>
@@ -87,7 +88,7 @@
       <div class="unidad-header">
         Tecnológico Nacional de México - Unidad Académica Santa María Tlahuitoltepec
       </div>
-
+      @if(empty($show))
       <!-- Welcome Section -->
       <div class="welcome-section">
         <h1>Bienvenido al Sistema de Actividades Extraescolares</h1>
@@ -98,7 +99,7 @@
 
       <!-- Stats Cards -->
       <div class="stats-cards">
-        <a href="{{ route('coordinador.constancia', ['unidad' => $unidad ?? auth()->user()->unidad_academica ?? '']) }}" style="text-decoration:none;color:inherit;">
+        <a href="{{ url()->current() }}?show=estudiantes" style="text-decoration:none;color:inherit;">
         <div class="stat-card">
           <div class="stat-card-header">
             <span class="stat-card-title">Ver Estudiantes</span>
@@ -136,6 +137,23 @@
           <div class="stat-card-footer">Visualizar indicadores y estadísticas del semestre.</div>
         </div>
       </div>
+      @endif
+
+      @if(request()->get('show') === 'estudiantes')
+        @include('coordinador.tlahuitoltepec.estudiantes_table')
+      @endif
+
+      @if(request()->get('show') === 'constancias')
+        @include('coordinador.tlahuitoltepec.constancias_table')
+      @endif
+
+      @if(request()->get('show') === 'informe')
+        @include('coordinador.tlahuitoltepec.informe_actividad')
+      @endif
+
+      @if(request()->get('show') === 'resultados')
+        @include('coordinador.tlahuitoltepec.resultados')
+      @endif
 
     </div>
 
