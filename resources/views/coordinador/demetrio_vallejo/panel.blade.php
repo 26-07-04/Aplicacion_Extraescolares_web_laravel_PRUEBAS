@@ -6,6 +6,38 @@
   <title>Panel Coordinador - Demetrio Vallejo Martínez - {{ $semestre->nombre ?? '' }}</title>
   <link rel="stylesheet" href="{{ asset('css/Coordinador/UnionHidalgo-panel.css') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* Overrides para compactar el footer y el mapa */
+    .site-footer {
+      padding: 12px 0 8px 0;
+    }
+    .footer-container {
+      padding: 8px 16px;
+      gap: 14px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .footer-text h3 {
+      margin-bottom: 8px;
+      font-size: 1.05em;
+    }
+    .footer-text p {
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+    .footer-map iframe {
+      width: 270px !important;
+      height: 160px !important;
+      max-width: 100%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+     
+    }
+    .footer-copyright {
+      margin-top: 12px;
+      padding-top: 10px;
+      font-size: 0.85em;
+    }
+  </style>
 </head>
 <body>
   <!-- Sidebar -->
@@ -14,30 +46,31 @@
       <img src="{{ asset('Imagenes/ITVE.png') }}" alt="ITVE" class="sidebar-logo">
       <h3>Actividades Extraescolares</h3>
     </div>
+    @php $show = request()->get('show'); @endphp
     <div class="sidebar-menu">
       <ul>
         <li>
-          <a href="javascript:void(0)" class="active">
+          <a href="{{ url()->current() }}" class="{{ $show ? '' : 'active' }}">
             <i class="fas fa-home"></i> Inicio
           </a>
         </li>
         <li>
-          <a href="{{ route('coordinator.unidad') }}">
+          <a href="{{ url()->current() }}?show=estudiantes" class="{{ $show === 'estudiantes' ? 'active' : '' }}">
             <i class="fas fa-users"></i> Ver Estudiantes
           </a>
         </li>
         <li>
-          <a href="{{ route('coordinador.constancia', ['unidad' => $unidad ?? auth()->user()->unidad_academica ?? '']) }}">
+          <a href="{{ url()->current() }}?show=constancias" class="{{ $show === 'constancias' ? 'active' : '' }}">
             <i class="fas fa-file-signature"></i> Constancia de Cumplimiento
           </a>
         </li>
         <li>
-          <a href="#">
+          <a href="{{ url()->current() }}?show=informe" class="{{ $show === 'informe' ? 'active' : '' }}">
             <i class="fas fa-file-pdf"></i> Informe de Actividad
           </a>
         </li>
         <li>
-          <a href="#">
+          <a href="{{ url()->current() }}?show=resultados" class="{{ $show === 'resultados' ? 'active' : '' }}">
             <i class="fas fa-chart-line"></i> Resultados
           </a>
         </li>
@@ -88,6 +121,7 @@
         Tecnológico Nacional de México - Unidad Académica Demetrio Vallejo Martínez - El Espinal
       </div>
 
+      @if(empty($show))
       <!-- Welcome Section -->
       <div class="welcome-section">
         <h1>Bienvenido al Sistema de Actividades Extraescolares</h1>
@@ -136,6 +170,23 @@
           <div class="stat-card-footer">Visualizar indicadores y estadísticas del semestre.</div>
         </div>
       </div>
+      @endif
+
+      @if(request()->get('show') === 'estudiantes')
+        @include('coordinador.demetrio_vallejo.estudiantes_table')
+      @endif
+
+      @if(request()->get('show') === 'constancias')
+        @include('coordinador.demetrio_vallejo.constancias_table')
+      @endif
+
+      @if(request()->get('show') === 'informe')
+        @include('coordinador.demetrio_vallejo.informe_actividad')
+      @endif
+
+      @if(request()->get('show') === 'resultados')
+        @include('coordinador.demetrio_vallejo.resultados')
+      @endif
 
     </div>
 
@@ -152,10 +203,7 @@
         <div class="footer-map">
           <iframe
             src="https://www.google.com/maps?q=TecNM+Campus+Valle+de+Etla+Unidad+Demetrio+Vallejo&output=embed"
-            width="100%" height="280" style="border:0;border-radius:8px;" allowfullscreen="" loading="lazy"></iframe>
-          <div style="margin-top:8px; text-align:right;">
-            <a href="https://www.google.com/maps/search/?api=1&query=TecNM+Campus+Valle+de+Etla+Unidad+Demetrio+Vallejo" target="_blank" rel="noopener" style="color:#fff; text-decoration:underline;">Abrir en Google Maps</a>
-          </div>
+            width="100%" height="140" style="border:0;border-radius:8px;" allowfullscreen="" loading="lazy"></iframe>
         </div>
       </div>
       <div class="footer-copyright">
