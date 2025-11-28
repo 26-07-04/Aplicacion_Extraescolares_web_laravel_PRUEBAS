@@ -88,7 +88,18 @@ class GestorActividades {
             if (archivo && archivo.type.startsWith('image/')) this.cargarImagen(archivo);
         });
 
-        dropArea.addEventListener('click', () => imagenInput.click());
+        // Evitar abrir el selector dos veces: no llamar a input.click() si el click vino desde un <label> (el label ya abre el selector)
+        let openingFileDialog = false;
+        dropArea.addEventListener('click', (e) => {
+            // si el click proviene de dentro de un label o del propio input, no disparamos el .click() manual
+            if (e.target.closest && (e.target.closest('label') || e.target.closest('input[type="file"]'))) {
+                return;
+            }
+            if (openingFileDialog) return;
+            openingFileDialog = true;
+            try { imagenInput.click(); }
+            finally { setTimeout(() => { openingFileDialog = false; }, 600); }
+        });
 
         imagenInput.addEventListener('change', (e) => {
             const archivo = e.target.files[0];

@@ -5,9 +5,10 @@ namespace App\Http\Controllers\Administrador;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Actividad;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 
 class ActividadController extends Controller
 {
@@ -62,7 +63,7 @@ class ActividadController extends Controller
         ]);
     }
 
-    // Crear actividad (guarda id_semestre e id_unidad)
+    // PATCH: store robusto para que no devuelva 500 silencioso
     public function store(Request $request)
     {
         $v = Validator::make($request->all(), [
@@ -73,31 +74,38 @@ class ActividadController extends Controller
             'imagen' => 'nullable|image|max:5120'
         ]);
 
-        if ($v->fails()) return response()->json(['errors' => $v->errors()], 422);
-
-        $data = [
-            'nombre_actividad' => $request->input('nombre_actividad'),
-            'descripcion' => $request->input('descripcion'),
-            'id_unidad' => $request->input('id_unidad'),
-            'id_semestre' => $request->input('id_semestre'),
-        ];
-
-        if ($request->hasFile('imagen')) {
-            $file = $request->file('imagen');
-            $nombre = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
-            $dir = public_path('Imagenes');
-            if (!File::exists($dir)) File::makeDirectory($dir, 0755, true);
-            $file->move($dir, $nombre);
-            $data['imagen_url'] = 'Imagenes/' . $nombre;
+        if ($v->fails()) {
+            return response()->json(['errors' => $v->errors()], 422);
         }
 
-        $actividad = Actividad::create($data);
+        try {
+            $data = $request->only(['nombre_actividad','descripcion','id_unidad','id_semestre']);
 
-        $resp = $actividad->toArray();
-        $resp['id_actividad'] = $actividad->getKey();
-        $resp['imagen_url'] = $actividad->imagen_url ?? ($actividad->imagen ?? null);
+            if ($request->hasFile('imagen')) {
+                $file = $request->file('imagen');
+                $safeName = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
+                $dir = public_path('Imagenes');
+                if (! File::exists($dir)) {
+                    File::makeDirectory($dir, 0755, true);
+                }
+                $file->move($dir, $safeName);
+                $data['imagen_url'] = 'Imagenes/' . $safeName;
+            }
 
-        return response()->json($resp, 201);
+            $actividad = Actividad::create($data);
+
+            return response()->json([
+                'id_actividad' => $actividad->getKey(),
+                'nombre_actividad' => $actividad->nombre_actividad,
+                'descripcion' => $actividad->descripcion,
+                'id_unidad' => $actividad->id_unidad,
+                'id_semestre' => $actividad->id_semestre,
+                'imagen_url' => $actividad->imagen_url ?? null
+            ], 201);
+        } catch (\Throwable $e) {
+            Log::error('Actividad store error: '.$e->getMessage(), ['trace' => $e->getTraceAsString(), 'input' => $request->all()]);
+            return response()->json(['message' => 'Error interno al crear actividad', 'error' => $e->getMessage()], 500);
+        }
     }
 
     // Actualizar

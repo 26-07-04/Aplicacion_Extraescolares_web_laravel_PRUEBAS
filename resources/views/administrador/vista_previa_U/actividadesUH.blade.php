@@ -118,7 +118,6 @@
       <!-- Modal para agregar/editar actividad -->
       <div id="modal-actividad" class="modal">
         <div class="modal-contenido">
-          <span class="cerrar" onclick="cerrarModalActividad()">&times;</span>
           <h3 id="modal-titulo">Agregar Actividad Extraescolar</h3>
           <form id="formulario-actividad">
             <input type="text" id="nombre-actividad" placeholder="Nombre de la actividad" required>
