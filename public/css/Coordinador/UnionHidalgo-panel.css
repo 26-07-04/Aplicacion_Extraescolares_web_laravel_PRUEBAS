@@ -1,6 +1,6 @@
 /* Estilos para el panel del Coordinador - Unidad Unión Hidalgo */
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Arial',sans-serif}
-body{background-color:#f5f5f5;display:flex;min-height:100vh}
+body{background-color:#f5f5f5;display:flex;min-height:100vh;overflow-x:hidden}
 .sidebar{width:250px;background-color:#002147;color:#fff;transition:all .3s;position:fixed;height:100vh;z-index:1000}
 .sidebar-header{padding:14px 16px;background-color:#001a36;text-align:left}
 .sidebar-header h3{color:#fff;font-size:1rem;margin:0;font-weight:500;letter-spacing:0.15px;margin-top:8px}
@@ -20,7 +20,7 @@ body{background-color:#f5f5f5;display:flex;min-height:100vh}
 .user-menu{display:flex;align-items:center}
 .user-menu img{width:40px;height:40px;border-radius:50%;margin-right:10px}
 .user-menu span{color:#002147;font-weight:bold}
-.content-wrapper{padding:20px}
+.content-wrapper{padding:20px;margin:0;padding-bottom:0}
 .welcome-section{background:#fff;border-radius:8px;padding:30px;margin-bottom:30px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
 .welcome-section h1{color:#002147;margin-bottom:10px;font-size:28px}
 .unidad-nombre{color:#ff7f00;font-size:24px;font-weight:bold;margin-bottom:15px}
@@ -39,7 +39,7 @@ body{background-color:#f5f5f5;display:flex;min-height:100vh}
 .header-main{background:#f5f5f5;padding:8px 10px 6px;display:flex;justify-content:center;flex-wrap:wrap;gap:18px}
 .logo-enlace img{height:48px;transition:transform .2s;margin:0 18px;vertical-align:middle}
 .logo-enlace img:hover{transform:scale(1.05)}
-.site-footer{background-color:#002147;color:#fff;padding:40px 0 20px;margin-top:40px}
+.site-footer{background-color:#002147;color:#fff;padding:40px 0 20px;margin:0}
 .footer-container{display:flex;flex-wrap:wrap;justify-content:space-between;max-width:1200px;margin:0 auto;padding:0 20px;gap:30px}
 .footer-text{flex:1;min-width:300px}
 .footer-text h3{color:#ff7f00;margin-bottom:15px;font-size:1.3em;font-weight:bold}
@@ -60,6 +60,7 @@ body{background-color:#f5f5f5;display:flex;min-height:100vh}
 /* Ensure the blue footer bar stretches the width of the main-content (panel) */
 .main-content > .site-footer{
     width: 100%;
+    margin: 0;
     margin-left: 0;
     box-sizing: border-box;
     padding-bottom: 0;

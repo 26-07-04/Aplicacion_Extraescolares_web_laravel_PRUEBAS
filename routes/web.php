@@ -150,6 +150,11 @@ Route::get('coordinador/ver-estudiantes', [CoordinadorVerEstudiantesController::
     ->middleware('auth')
     ->name('coordinador.verestudiantes');
 
+// Guardar nuevo estudiante
+Route::post('coordinador/estudiantes', [CoordinadorVerEstudiantesController::class, 'store'])
+    ->middleware('auth')
+    ->name('coordinador.estudiantes.store');
+
 // Ver constancias - mostrar por unidad
 Route::get('coordinador/constancia', [CoordinadorConstanciaController::class, 'index'])
     ->middleware('auth')

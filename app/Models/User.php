@@ -21,8 +21,14 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'nombre',
+        'numero_control',
+        'carrera',
+        'semestre',
+        'actividad_extraescolar',
         'contrasena',
         'contrasena_texto',
+        'email',
+        'password',
         'rol',
         'id_semestre',
         'unidad_academica',
