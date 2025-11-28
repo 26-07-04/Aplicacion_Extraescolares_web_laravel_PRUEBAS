@@ -15,9 +15,6 @@ use App\Http\Controllers\Coordinador\PanelTlahuitoltepecController;
 use App\Http\Controllers\Coordinador\SemestresCursadosTlahuitoltepecController as CoordinadorSemestresTlahController;
 use App\Http\Controllers\Coordinador\SemestresCursadosDemetrioController as CoordinadorSemestresDemetrioController;
 use App\Http\Controllers\Coordinador\PanelDemetrioVallejoController;
-use App\Http\Controllers\Coordinador\VerEstudiantesController as CoordinadorVerEstudiantesController;
-use App\Http\Controllers\Coordinador\ConstanciaController as CoordinadorConstanciaController;
-use App\Http\Controllers\Coordinador\InformeController as CoordinadorInformeController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UnidadController;
@@ -146,25 +143,19 @@ Route::get('coordinador/semestres/demetrio-vallejo', [CoordinadorSemestresDemetr
     ->middleware('auth')
     ->name('coordinador.semestres.demetrio');
 
-// Ver estudiantes - mostrar lista filtrada por unidad
-Route::get('coordinador/ver-estudiantes', [CoordinadorVerEstudiantesController::class, 'index'])
-    ->middleware('auth')
-    ->name('coordinador.verestudiantes');
+// Rutas placeholder para evitar errores cuando las vistas fueron eliminadas
+// Usar redirect()->back() para permanecer en la misma unidad en lugar
+// de volver al panel que depende de `auth()->user()->unidad_academica`.
+Route::get('coordinador/ver-estudiantes', function (Request $request) {
+    return redirect()->back();
+})->middleware('auth')->name('coordinador.verestudiantes');
 
-// Guardar nuevo estudiante
-Route::post('coordinador/estudiantes', [CoordinadorVerEstudiantesController::class, 'store'])
-    ->middleware('auth')
-    ->name('coordinador.estudiantes.store');
+Route::get('coordinador/constancia', function (Request $request) {
+    return redirect()->back();
+})->middleware('auth')->name('coordinador.constancia');
 
-// Ver constancias - mostrar por unidad
-Route::get('coordinador/constancia', [CoordinadorConstanciaController::class, 'index'])
-    ->middleware('auth')
-    ->name('coordinador.constancia');
 
-// Ver informes - mostrar por unidad
-Route::get('coordinador/informe', [CoordinadorInformeController::class, 'index'])
-    ->middleware('auth')
-    ->name('coordinador.informe');
+
 
 Route::get('admin/about', [UserController::class, 'about'])
     ->middleware(['auth', 'admin'])
