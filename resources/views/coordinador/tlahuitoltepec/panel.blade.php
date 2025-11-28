@@ -22,7 +22,7 @@
           </a>
         </li>
         <li>
-          <a href="{{ route('coordinador.verestudiantes', ['unidad' => $unidad ?? auth()->user()->unidad_academica ?? '']) }}">
+          <a href="{{ route('coordinator.unidad') }}">
             <i class="fas fa-users"></i> Ver Estudiantes
           </a>
         </li>
