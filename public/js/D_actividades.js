@@ -2,52 +2,78 @@
 (function () {
   if (!window.DActividadesUH) window.DActividadesUH = {};
   const cfg = window.DActividadesUH;
-  const idActividad = cfg.id_actividad || new URLSearchParams(window.location.search).get('id_actividad') || '';
+  const actividadId = String(cfg.id_actividad || new URLSearchParams(window.location.search).get('id_actividad') || '').trim();
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
-  // Mixin SweetAlert2 con clases personalizadas (coincide con CSS)
-  const SwalCustom = (typeof Swal !== 'undefined') ? Swal.mixin({
-    customClass: {
-      popup: 'swal-custom-popup',
-      title: 'swal-custom-title',
-      content: 'swal-custom-content',
-      confirmButton: 'swal-btn-confirm',
-      cancelButton: 'swal-btn-cancel'
-    },
-    buttonsStyling: false
-  }) : null;
+  // helpers para endpoints por defecto si no están en cfg.endpoints
+  function ep(name, id) {
+    const e = (cfg.endpoints && cfg.endpoints[name]) || '';
+    if (e) return e;
+    switch (name) {
+      case 'obtenerActividad': return `/administrador/actividades/${encodeURIComponent(actividadId)}`;
+      case 'obtenerAlumnos': return `/administrador/actividades/${encodeURIComponent(actividadId)}/estudiantes`;
+      case 'guardarAlumno': return `/administrador/actividades/${encodeURIComponent(actividadId)}/estudiantes`;
+      case 'editarAlumno': return id ? `/administrador/actividades/estudiantes/${encodeURIComponent(id)}` : `/administrador/actividades/estudiantes`;
+      case 'eliminarAlumno': return id ? `/administrador/actividades/estudiantes/${encodeURIComponent(id)}` : `/administrador/actividades/estudiantes`;
+      default: return '';
+    }
+  }
 
-  function obtenerJSON(url) { return fetch(url).then(r => r.json()); }
+  // utilitarios
+  function safeJsonResponse(res) {
+    const ct = res.headers.get('content-type') || '';
+    if (ct.includes('application/json')) return res.json().catch(()=>null);
+    return res.text().then(t => {
+      try { return t ? JSON.parse(t) : null; } catch { return { message: t }; }
+    }).catch(()=>null);
+  }
+  function escapeHtml(text) { if (text === null || text === undefined) return ''; return String(text).replace(/[&<>"'`=\/]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'}[s])); }
+  function htmlAttr(text){ return (text||'').replace(/"/g,'&quot;'); }
 
+  // carga actividad (nombre/desc)
   function cargarActividad() {
-    if (!cfg.endpoints || !cfg.endpoints.obtenerActividad) return;
-    obtenerJSON(cfg.endpoints.obtenerActividad + '?id_actividad=' + encodeURIComponent(idActividad))
+    const url = ep('obtenerActividad');
+    if (!url) return;
+    fetch(url, { credentials: 'same-origin', headers: { 'Accept':'application/json' } })
+      .then(r => safeJsonResponse(r))
       .then(act => {
         if (!act) return;
-        const nombre = act.nombre_actividad || act.nombre || '';
-        const desc = act.descripcion || act.descripcion_actividad || '';
-        document.getElementById('nombre-actividad').textContent = nombre || document.getElementById('nombre-actividad').textContent;
-        document.getElementById('descripcion-actividad').textContent = desc || document.getElementById('descripcion-actividad').textContent;
+        const actividad = act.data ?? act;
+        const nombre = actividad.nombre_actividad || actividad.nombre || '';
+        const desc = actividad.descripcion || actividad.descripcion_actividad || '';
+        const elN = document.getElementById('nombre-actividad');
+        const elD = document.getElementById('descripcion-actividad');
+        if (elN && nombre) elN.textContent = nombre;
+        if (elD && desc) elD.textContent = desc;
       }).catch(()=>{/* silent */});
   }
 
+  // cargar estudiantes desde la API Laravel
   function cargarEstudiantes() {
-    const endpoint = cfg.endpoints && cfg.endpoints.obtenerAlumnos;
-    if (!endpoint) return;
-    obtenerJSON(endpoint + '?id_actividad=' + encodeURIComponent(idActividad))
-      .then(alumnos => {
-        const tbody = document.getElementById('tabla-estudiantes');
-        tbody.innerHTML = '';
-        if (!alumnos || alumnos.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:#666">No hay estudiantes registrados en esta actividad</td></tr>`;
+    const url = ep('obtenerAlumnos');
+    const tbody = document.getElementById('tabla-estudiantes');
+    if (!url || !tbody) return;
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:18px;color:#666">Cargando...</td></tr>';
+    fetch(url, { credentials: 'same-origin', headers: { 'Accept':'application/json' } })
+      .then(r => safeJsonResponse(r).then(data => ({ ok: r.ok, status: r.status, data })))
+      .then(({ ok, data }) => {
+        if (!ok) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:18px;color:#c33">No se pudo cargar la lista</td></tr>';
           return;
         }
-        alumnos.forEach(al => {
+        const items = Array.isArray(data) ? data : (data?.data || data);
+        if (!items || items.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:#666">No hay estudiantes registrados en esta actividad</td></tr>';
+          return;
+        }
+        tbody.innerHTML = '';
+        items.forEach(al => {
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td>${escapeHtml(al.nombre)}</td>
-            <td>${escapeHtml(al.numero_control)}</td>
-            <td>${escapeHtml(al.carrera)}</td>
-            <td>${escapeHtml(al.semestre)}</td>
+            <td>${escapeHtml(al.nombre ?? '')}</td>
+            <td>${escapeHtml(al.numero_control ?? '')}</td>
+            <td>${escapeHtml(al.carrera ?? '')}</td>
+            <td>${escapeHtml(al.semestre ?? '')}</td>
             <td class="acciones-celda">
               <button class="btn-accion btn-editar" title="Editar" data-id="${al.id_alumno}" data-nombre="${htmlAttr(al.nombre)}" data-numero_control="${htmlAttr(al.numero_control)}" data-carrera="${htmlAttr(al.carrera)}" data-semestre="${htmlAttr(al.semestre)}">
                 <i class="bi bi-pen-fill" style="color:#002147; font-size:1.15em;"></i>
@@ -59,164 +85,97 @@
           `;
           tbody.appendChild(tr);
         });
-        attachRowEvents();
-      }).catch(()=>{/* silent */});
+      }).catch((err)=>{
+        console.error('Error cargarEstudiantes', err);
+        const tbody = document.getElementById('tabla-estudiantes');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:18px;color:#c33">Error cargando estudiantes</td></tr>';
+      });
   }
 
-  function attachRowEvents() {
-    document.querySelectorAll('.btn-editar').forEach(btn => {
-      btn.onclick = function () {
-        document.getElementById('editar-id').value = this.dataset.id || '';
-        document.getElementById('editar-nombre').value = this.dataset.nombre || '';
-        document.getElementById('editar-numero-control').value = this.dataset.numero_control || '';
-        document.getElementById('editar-carrera').value = this.dataset.carrera || '';
-        document.getElementById('editar-semestre').value = this.dataset.semestre || '';
-        document.getElementById('modal-editar').style.display = 'flex';
-      };
+  // eliminar alumno: llama DELETE a /administrador/actividades/estudiantes/{id}
+  async function eliminarAlumno(idAlumno) {
+    const url = ep('eliminarAlumno', idAlumno);
+    if (!url) throw new Error('Endpoint eliminar no configurado');
+    const urlWithQuery = `${url}?id_actividad=${encodeURIComponent(actividadId)}`;
+    const res = await fetch(urlWithQuery, {
+      method: 'DELETE',
+      credentials: 'same-origin',
+      headers: {
+        'X-CSRF-TOKEN': csrfToken,
+        'Accept': 'application/json'
+      }
     });
-
-    document.querySelectorAll('.btn-eliminar').forEach(btn => {
-      btn.onclick = function () {
-        const idAlumno = this.dataset.id;
-        (SwalCustom || Swal).fire({
-          title: '¿Estás seguro?',
-          text: "Se eliminará este estudiante",
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonText: 'Sí, eliminar',
-          cancelButtonText: 'Cancelar'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            const endpoint = (cfg.endpoints && cfg.endpoints.eliminarAlumno) || cfg.endpoints && cfg.endpoints.obtenerAlumnos;
-            fetch(endpoint, {
-              method: 'POST',
-              headers: {'Content-Type':'application/x-www-form-urlencoded'},
-              body: `id_alumno=${encodeURIComponent(idAlumno)}&id_actividad=${encodeURIComponent(idActividad)}`
-            }).then(r => r.json()).then(resp => {
-              if (resp && resp.success) {
-                (SwalCustom || Swal).fire('Eliminado','El estudiante ha sido eliminado.','success');
-                cargarEstudiantes();
-              } else {
-                (SwalCustom || Swal).fire('Error','No se pudo eliminar el estudiante.','error');
-              }
-            }).catch(()=>Swal.fire('Error','No se pudo conectar con el servidor.','error'));
-          }
-        });
-      };
-    });
-  }
-
-  // Formulario editar / crear
-  function initForm() {
-    const form = document.getElementById('form-editar-estudiante');
-    if (!form) return;
-    form.onsubmit = function (e) {
-      e.preventDefault();
-      const id = document.getElementById('editar-id').value;
-      const nombre = document.getElementById('editar-nombre').value;
-      const numero_control = document.getElementById('editar-numero-control').value;
-      const carrera = document.getElementById('editar-carrera').value;
-      const semestre = document.getElementById('editar-semestre').value;
-
-      const endpoint = id ? (cfg.endpoints && cfg.endpoints.editarAlumno) : (cfg.endpoints && cfg.endpoints.guardarAlumno);
-      if (!endpoint) return Swal.fire('Error','No hay endpoint configurado.','error');
-
-      const body = `id_alumno=${encodeURIComponent(id)}&nombre=${encodeURIComponent(nombre)}&numero_control=${encodeURIComponent(numero_control)}&carrera=${encodeURIComponent(carrera)}&semestre=${encodeURIComponent(semestre)}&id_actividad=${encodeURIComponent(idActividad)}`;
-
-      fetch(endpoint, {
-        method: 'POST',
-        headers: {'Content-Type':'application/x-www-form-urlencoded'},
-        body
-      }).then(r => r.json()).then(resp => {
-        if (resp && resp.success) {
-          Swal.fire('Listo','Datos guardados.','success');
-          document.getElementById('modal-editar').style.display = 'none';
-          cargarEstudiantes();
-        } else {
-          Swal.fire('Error','No se pudo guardar la información.','error');
-        }
-      }).catch(()=>Swal.fire('Error','No se pudo conectar con el servidor.','error'));
-    };
-
-    document.getElementById('cerrar-modal-editar').onclick = function () {
-      document.getElementById('modal-editar').style.display = 'none';
-    };
-    document.getElementById('btn-cancelar-edicion').onclick = function () {
-      document.getElementById('modal-editar').style.display = 'none';
-    };
-
-    // agregar estudiante (abre modal en modo crear)
-    const btnAgregar = document.getElementById('btn-agregar-estudiante');
-    if (btnAgregar) {
-      btnAgregar.onclick = function () {
-        document.getElementById('modal-titulo-editar').textContent = 'Agregar Estudiante';
-        document.getElementById('editar-id').value = '';
-        document.getElementById('editar-nombre').value = '';
-        document.getElementById('editar-numero-control').value = '';
-        document.getElementById('editar-carrera').value = '';
-        document.getElementById('editar-semestre').value = '';
-        document.getElementById('modal-editar').style.display = 'flex';
-      };
+    const data = await safeJsonResponse(res);
+    if (!res.ok) {
+      const msg = data?.message || `Status ${res.status}`;
+      throw new Error(msg);
     }
+    return data;
+  }
 
-    // cerrar modal si se clickea fuera
-    window.addEventListener('click', function (e) {
-      const modal = document.getElementById('modal-editar');
-      if (e.target === modal) modal.style.display = 'none';
+  // actualizar alumno: POST _method=PUT a /administrador/actividades/estudiantes/{id}
+  async function actualizarAlumno(idAlumno, payloadObj) {
+    const url = ep('editarAlumno', idAlumno);
+    if (!url) throw new Error('Endpoint editar no configurado');
+    const fd = new FormData();
+    Object.keys(payloadObj || {}).forEach(k => fd.append(k, payloadObj[k]));
+    fd.append('_method','PUT');
+    fd.append('id_actividad', actividadId); // para validación en servidor
+    const res = await fetch(url, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept':'application/json' },
+      body: fd
     });
+    const data = await safeJsonResponse(res);
+    if (!res.ok) {
+      const msg = data?.message || `Status ${res.status}`;
+      throw new Error(msg);
+    }
+    return data;
   }
 
-  // init
-  document.addEventListener('DOMContentLoaded', function () {
-    cargarActividad();
-    initForm && initForm();
-    cargarEstudiantes();
-  });
-
-  // utilitarios
-  function escapeHtml(text) { if (text === null || text === undefined) return ''; return String(text).replace(/[&<>"'`=\/]/g, function (s) { return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'})[s]; }); }
-  function htmlAttr(text){ return (text||'').replace(/"/g,'&quot;'); }
-})();
-// --- ADICIÓN: manejo delegado de editar/eliminar y formulario del modal ---
-(function () {
-  // Abrir modal y poblar campos desde botones con class="btn-editar"
-  function abrirModalConDatos(btn) {
-    const id = btn.dataset.id || '';
-    const nombre = btn.dataset.nombre || '';
-    const numero = btn.dataset.numero_control || btn.dataset.numero || '';
-    const carrera = btn.dataset.carrera || '';
-    const semestre = btn.dataset.semestre || '';
-
-    const modal = document.getElementById('modal-editar');
-    if (!modal) return;
-    document.getElementById('editar-id').value = id;
-    document.getElementById('editar-nombre').value = nombre;
-    document.getElementById('editar-numero-control').value = numero;
-    document.getElementById('editar-carrera').value = carrera;
-    document.getElementById('editar-semestre').value = semestre;
-    modal.style.display = 'flex';
+  // crear nuevo alumno: POST a /administrador/actividades/{actividad}/estudiantes
+  async function crearAlumno(payloadObj) {
+    const url = ep('guardarAlumno');
+    if (!url) throw new Error('Endpoint crear no configurado');
+    const fd = new FormData();
+    Object.keys(payloadObj || {}).forEach(k => fd.append(k, payloadObj[k]));
+    fd.append('id_actividad', actividadId);
+    const res = await fetch(url, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept':'application/json' },
+      body: fd
+    });
+    const data = await safeJsonResponse(res);
+    if (!res.ok) {
+      const msg = data?.message || `Status ${res.status}`;
+      throw new Error(msg);
+    }
+    return data;
   }
 
-  // Cerrar modal
-  function cerrarModal() {
-    const modal = document.getElementById('modal-editar');
-    if (modal) modal.style.display = 'none';
-  }
-
-  // Delegated click para botones editar / eliminar
+  // Delegated events: editar, eliminar
   document.addEventListener('click', function (e) {
-    const editar = e.target.closest && e.target.closest('.btn-editar');
-    if (editar) {
+    const btn = e.target.closest && e.target.closest('.btn-editar');
+    if (btn) {
       e.preventDefault();
-      abrirModalConDatos(editar);
+      const id = btn.dataset.id || '';
+      document.getElementById('editar-id').value = id;
+      document.getElementById('editar-nombre').value = btn.getAttribute('data-nombre') || '';
+      document.getElementById('editar-numero-control').value = btn.getAttribute('data-numero_control') || '';
+      document.getElementById('editar-carrera').value = btn.getAttribute('data-carrera') || '';
+      document.getElementById('editar-semestre').value = btn.getAttribute('data-semestre') || '';
+      const modal = document.getElementById('modal-editar');
+      if (modal) modal.style.display = 'flex';
       return;
     }
 
-    const eliminar = e.target.closest && e.target.closest('.btn-eliminar');
-    if (eliminar) {
+    const btnDel = e.target.closest && e.target.closest('.btn-eliminar');
+    if (btnDel) {
       e.preventDefault();
-      const idAlumno = eliminar.dataset.id;
-      const idActividad = (window.DActividadesUH && window.DActividadesUH.id_actividad) || new URLSearchParams(window.location.search).get('id_actividad') || '';
+      const idAlumno = btnDel.dataset.id;
       Swal.fire({
         title: '¿Estás seguro?',
         text: 'Se eliminará este estudiante',
@@ -224,101 +183,87 @@
         showCancelButton: true,
         confirmButtonText: 'Sí, eliminar',
         cancelButtonText: 'Cancelar'
-      }).then((res) => {
+      }).then(async (res) => {
         if (!res.isConfirmed) return;
-        // Llamada al endpoint de eliminación si existe
-        const ep = window.DActividadesUH && window.DActividadesUH.endpoints && window.DActividadesUH.endpoints.eliminarAlumno;
-        if (ep) {
-          fetch(ep, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: `id_alumno=${encodeURIComponent(idAlumno)}&id_actividad=${encodeURIComponent(idActividad)}`
-          })
-          .then(r => r.json())
-          .then(json => {
-            if (json && json.success) {
-              Swal.fire('Eliminado','El estudiante ha sido eliminado.','success');
-              // eliminar fila del DOM
-              const fila = eliminar.closest('tr');
-              if (fila) fila.remove();
-            } else {
-              Swal.fire('Error','No se pudo eliminar el estudiante.','error');
-            }
-          })
-          .catch(()=> Swal.fire('Error','No se pudo conectar al servidor.','error'));
-        } else {
-          // Si no hay endpoint, sólo eliminar fila (modo demo)
-          const fila = eliminar.closest('tr');
+        try {
+          await eliminarAlumno(idAlumno);
+          // eliminar fila en DOM y recargar la lista
+          const fila = btnDel.closest('tr');
           if (fila) fila.remove();
-          Swal.fire('Eliminado','Fila eliminada (demo).','success');
+          // recargar para mayor consistencia
+          cargarEstudiantes();
+          Swal.fire({ position: 'center', icon: 'success', title: 'Estudiante eliminado correctamente', showConfirmButton: false, timer: 1500 });
+        } catch (err) {
+          console.error('Error eliminarAlumno:', err);
+          Swal.fire({ position: 'center', icon: 'error', title: 'No se pudo eliminar', text: err.message || '' });
         }
       });
       return;
     }
 
-    // Cerrar modal con botones de cancelar o cerrar
+    // cerrar modal
     if (e.target.matches('#cerrar-modal-editar') || e.target.matches('#btn-cancelar-edicion')) {
       e.preventDefault();
-      cerrarModal();
+      const modal = document.getElementById('modal-editar');
+      if (modal) modal.style.display = 'none';
       return;
     }
   }, false);
 
-  // Manejo del formulario de edición (guardar)
+  // formulario: crear o editar
   const form = document.getElementById('form-editar-estudiante');
   if (form) {
-    form.addEventListener('submit', function (evt) {
+    form.addEventListener('submit', async function (evt) {
       evt.preventDefault();
-      const id = document.getElementById('editar-id').value;
-      const nombre = document.getElementById('editar-nombre').value;
-      const numero_control = document.getElementById('editar-numero-control').value;
-      const carrera = document.getElementById('editar-carrera').value;
-      const semestre = document.getElementById('editar-semestre').value;
-      const idActividad = (window.DActividadesUH && window.DActividadesUH.id_actividad) || new URLSearchParams(window.location.search).get('id_actividad') || '';
-
-      const ep = window.DActividadesUH && window.DActividadesUH.endpoints && window.DActividadesUH.endpoints.editarAlumno;
-      if (ep) {
-        fetch(ep, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-          body: `id_alumno=${encodeURIComponent(id)}&nombre=${encodeURIComponent(nombre)}&numero_control=${encodeURIComponent(numero_control)}&carrera=${encodeURIComponent(carrera)}&semestre=${encodeURIComponent(semestre)}&id_actividad=${encodeURIComponent(idActividad)}`
-        })
-        .then(r => r.json())
-        .then(json => {
-          if (json && json.success) {
-            Swal.fire('Actualizado','Los datos del estudiante han sido actualizados.','success');
-            cerrarModal();
-            // actualizar fila si existe en DOM (demo)
-            const fila = document.querySelector(`button.btn-editar[data-id="${id}"]`)?.closest('tr');
-            if (fila) {
-              fila.children[0].textContent = nombre;
-              fila.children[1].textContent = numero_control;
-              fila.children[2].textContent = carrera;
-              fila.children[3].textContent = semestre;
-            }
-          } else {
-            Swal.fire('Error','No se pudo actualizar el estudiante.','error');
-          }
-        })
-        .catch(()=> Swal.fire('Error','No se pudo conectar al servidor.','error'));
-      } else {
-        // Modo demo: actualizar fila y cerrar
-        const fila = document.querySelector(`button.btn-editar[data-id="${id}"]`)?.closest('tr');
-        if (fila) {
-          fila.children[0].textContent = nombre;
-          fila.children[1].textContent = numero_control;
-          fila.children[2].textContent = carrera;
-          fila.children[3].textContent = semestre;
+      const id = document.getElementById('editar-id').value || '';
+      const payload = {
+        nombre: document.getElementById('editar-nombre').value || '',
+        numero_control: document.getElementById('editar-numero-control').value || '',
+        carrera: document.getElementById('editar-carrera').value || '',
+        semestre: document.getElementById('editar-semestre').value || ''
+      };
+      try {
+        if (id) {
+          await actualizarAlumno(id, payload);
+          await cargarEstudiantes();
+          const modal = document.getElementById('modal-editar'); if (modal) modal.style.display = 'none';
+          Swal.fire({ position: 'center', icon: 'success', title: 'Datos actualizados', showConfirmButton: false, timer: 1500 });
+        } else {
+          await crearAlumno(payload);
+          await cargarEstudiantes();
+          const modal = document.getElementById('modal-editar'); if (modal) modal.style.display = 'none';
+          Swal.fire({ position: 'center', icon: 'success', title: 'Estudiante agregado', showConfirmButton: false, timer: 1500 });
         }
-        cerrarModal();
-        Swal.fire('Actualizado','Datos actualizados (demo).','success');
+      } catch (err) {
+        console.error('Error guardar:', err);
+        Swal.fire({ position: 'center', icon: 'error', title: 'No se pudo guardar', text: err.message || '' });
       }
-    });
+    }, false);
   }
 
-  // Cerrar modal al hacer clic fuera del contenido (ya existe en tu vista, pero aseguramos)
-  window.addEventListener('click', function(event) {
+  // abrir modal para crear (si existe botón)
+  const btnAgregar = document.getElementById('btn-agregar-estudiante');
+  if (btnAgregar) {
+    btnAgregar.addEventListener('click', function () {
+      document.getElementById('modal-titulo-editar').textContent = 'Agregar Estudiante';
+      document.getElementById('editar-id').value = '';
+      document.getElementById('editar-nombre').value = '';
+      document.getElementById('editar-numero-control').value = '';
+      document.getElementById('editar-carrera').value = '';
+      document.getElementById('editar-semestre').value = '';
+      const modal = document.getElementById('modal-editar'); if (modal) modal.style.display = 'flex';
+    }, false);
+  }
+
+  // cerrar modal si clic fuera
+  window.addEventListener('click', function (e) {
     const modal = document.getElementById('modal-editar');
-    if (modal && event.target === modal) modal.style.display = 'none';
+    if (modal && e.target === modal) modal.style.display = 'none';
+  });
+
+  // init
+  document.addEventListener('DOMContentLoaded', function () {
+    cargarActividad();
+    cargarEstudiantes();
   });
 })();

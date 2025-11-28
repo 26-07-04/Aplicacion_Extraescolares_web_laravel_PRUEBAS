@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Detalle de Actividad Extraescolar - Demetrio Vallejo</title>
 
+  <!-- CSRF token requerido por fetch -->
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
   <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -12,7 +15,7 @@
 </head>
 <body>
     <div class="wrapper">
-      <!-- Botón regresar (flecha) igual que en actividadesUH -->
+      <!-- Botón regresar (flecha) igual que en actividadesDV -->
       <a href="{{ url()->previous() }}"
          onclick="event.preventDefault(); if (history.length > 1) history.back(); else window.location.href='{{ route('admin.semestres') }}';"
          class="btn-flecha-back" title="Regresar" aria-label="Regresar">
@@ -47,48 +50,8 @@
                  </tr>
                </thead>
                <tbody id="tabla-estudiantes">
-                 <!-- Datos estáticos de ejemplo (Demetrio Vallejo) -->
                  <tr>
-                   <td>José Martínez</td>
-                   <td>2020008</td>
-                   <td>Ingeniería Electromecánica</td>
-                   <td>5</td>
-                   <td class="acciones-celda">
-                     <button class="btn-accion btn-editar" title="Editar" data-id="101" data-nombre="José Martínez" data-numero_control="2020008" data-carrera="Ingeniería Electromecánica" data-semestre="5">
-                       <i class="bi bi-pen-fill" style="color:#002147; font-size:1.2em;"></i>
-                     </button>
-                     <button class="btn-accion btn-eliminar" title="Eliminar" data-id="101">
-                       <i class="bi bi-trash-fill" style="color:#002147; font-size:1.2em;"></i>
-                     </button>
-                   </td>
-                 </tr>
-                 <tr>
-                   <td>Lucía Hernández</td>
-                   <td>2020021</td>
-                   <td>Arquitectura</td>
-                   <td>3</td>
-                   <td class="acciones-celda">
-                     <button class="btn-accion btn-editar" title="Editar" data-id="102" data-nombre="Lucía Hernández" data-numero_control="2020021" data-carrera="Arquitectura" data-semestre="3">
-                       <i class="bi bi-pen-fill" style="color:#002147; font-size:1.2em;"></i>
-                     </button>
-                     <button class="btn-accion btn-eliminar" title="Eliminar" data-id="102">
-                       <i class="bi bi-trash-fill" style="color:#002147; font-size:1.2em;"></i>
-                     </button>
-                   </td>
-                 </tr>
-                 <tr>
-                   <td>Diego Ramos</td>
-                   <td>2020034</td>
-                   <td>Tecnologías de la Información</td>
-                   <td>7</td>
-                   <td class="acciones-celda">
-                     <button class="btn-accion btn-editar" title="Editar" data-id="103" data-nombre="Diego Ramos" data-numero_control="2020034" data-carrera="Tecnologías de la Información" data-semestre="7">
-                       <i class="bi bi-pen-fill" style="color:#002147; font-size:1.2em;"></i>
-                     </button>
-                     <button class="btn-accion btn-eliminar" title="Eliminar" data-id="103">
-                       <i class="bi bi-trash-fill" style="color:#002147; font-size:1.2em;"></i>
-                     </button>
-                   </td>
+                   <td colspan="5" style="text-align:center;padding:20px;color:#666">Cargando...</td>
                  </tr>
                </tbody>
              </table>
@@ -96,7 +59,7 @@
         </div>
       </main>
 
-      <!-- Modal para editar/agregar estudiante (misma estructura que UH) -->
+      <!-- Modal para editar/agregar estudiante (misma estructura que DV) -->
       <div id="modal-editar" class="modal" aria-hidden="true">
         <div class="modal-contenido" role="dialog" aria-modal="true" aria-labelledby="modal-titulo-editar">
           <div class="modal-header">
@@ -161,23 +124,20 @@
       </footer>
     </div>
 
-    <!-- Configuración de endpoints para el JS (Demetrio Vallejo) -->
+    <!-- Configuración de endpoints para el JS (ajustada a rutas Laravel) -->
     <script>
-      // Igual que en UH: usar endpoint REST de Laravel para obtener actividad en JSON
+      // Igual que en DV: usar endpoint REST de Laravel para obtener actividad en JSON
       window.DActividadesDV = {
-        id_actividad: "{{ request()->query('id_actividad') ?? ($actividad->id_actividad ?? $actividad->id ?? '') }}",
+        // id pasado por query o desde servidor
+        id_actividad: "{{ request()->query('id_actividad') ?? ($actividad->id ?? '') }}",
         endpoints: {
-          obtenerActividad: "{{ url('administrador/actividades') }}", // se usará obtenerActividad + '/' + id
-          obtenerAlumnos: "{{ url('php/obtener_alumnos_inscritos_dv.php') }}",
-          eliminarAlumno: "{{ url('php/eliminar_alumno_dv.php') }}",
-          guardarAlumno: "{{ url('php/guardar_alumno_dv.php') }}",
-          editarAlumno: "{{ url('php/editar_alumno_dv.php') }}"
+          obtenerActividad: "{{ url('administrador/actividades') }}",
         }
       };
     </script>
- 
+
     <script>
-      // Poblado inteligente del título/descripcion (misma lógica que UH)
+      // Poblado inteligente del título/descripcion:
       (function(){
         const elNombre = document.getElementById('nombre-actividad');
         const elDesc = document.getElementById('descripcion-actividad');
@@ -206,12 +166,10 @@
         if ((!nombreServer || !descServer) && id && epBase) {
           const url = epBase.replace(/\/+$/,'') + '/' + encodeURIComponent(id);
           fetch(url, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
-            .then(r => {
-              if (!r.ok) return Promise.reject(r);
-              return r.json();
-            })
+            .then(r => { if (!r.ok) return Promise.reject(r); return r.json(); })
             .then(act => {
               if (!act) return;
+              // el controller puede devolver la actividad dentro de 'data' o directamente
               const actividad = act.data ?? act;
               if (!nombreServer && (actividad.nombre_actividad || actividad.nombre)) {
                 elNombre.textContent = actividad.nombre_actividad || actividad.nombre;
@@ -220,14 +178,172 @@
                 elDesc.textContent = actividad.descripcion;
               }
             })
-            .catch((err) => {
-              console.debug('No se pudo obtener actividad por API (DV):', err);
-            });
+            .catch(()=>{});
         }
       })();
     </script>
 
-     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-     <script src="{{ asset('js/D_actividades.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('js/D_actividades.js') }}"></script>
+
+    <script>
+(function(){
+  const actividadId = "{{ request()->query('id_actividad') ?? ($actividad->id ?? $actividad->id_actividad ?? '') }}";
+  if (!actividadId) return;
+  const tabla = document.getElementById('tabla-estudiantes');
+
+  async function cargarEstudiantes(){
+    tabla.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
+    try {
+      const res = await fetch(`/administrador/actividades/${encodeURIComponent(actividadId)}/estudiantes`, { credentials:'same-origin', headers:{'Accept':'application/json'}});
+      if (!res.ok) throw new Error('Error al obtener estudiantes');
+      const items = await res.json();
+      if (!items || items.length === 0) {
+        
+        return;
+      }
+      tabla.innerHTML = '';
+      items.forEach(e => {
+        const tr = document.createElement('tr');
+        tr.dataset.id = e.id_alumno;
+        tr.innerHTML = `
+          <td>${escapeHtml(e.nombre ?? '')}</td>
+          <td>${escapeHtml(e.numero_control ?? '')}</td>
+          <td>${escapeHtml(e.carrera ?? '')}</td>
+          <td>${escapeHtml(e.semestre ?? '')}</td>
+          <td class="acciones-celda">
+            <button class="btn-accion btn-editar" title="Editar" data-id="${e.id_alumno}" data-nombre="${escapeAttr(e.nombre)}" data-numero_control="${escapeAttr(e.numero_control)}" data-carrera="${escapeAttr(e.carrera)}" data-semestre="${escapeAttr(e.semestre)}">
+              <i class="bi bi-pen-fill" style="color:#002147; font-size:1.2em;"></i>
+            </button>
+            <button class="btn-accion btn-eliminar" title="Eliminar" data-id="${e.id_alumno}">
+              <i class="bi bi-trash-fill" style="color:#002147; font-size:1.2em;"></i>
+            </button>
+          </td>
+        `;
+        tabla.appendChild(tr);
+      });
+    } catch (err) {
+      console.error(err);
+      tabla.innerHTML = '<tr><td colspan="5">Error cargando estudiantes</td></tr>';
+    }
+  }
+
+  function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c])); }
+  function escapeAttr(s){ return String(s ?? '').replace(/"/g,'&quot;'); }
+
+  // eliminar por delegación (envía id_actividad como query para validación)
+  document.addEventListener('click', async (ev) => {
+    const btnEliminar = ev.target.closest && ev.target.closest('.btn-eliminar');
+    if (btnEliminar) {
+      const idEst = btnEliminar.getAttribute('data-id');
+      if (!idEst) return;
+      const confirmed = await Swal.fire({
+        title: 'Confirmar',
+        text: '¿Eliminar estudiante?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Eliminar',
+        cancelButtonText: 'Cancelar'
+      });
+      if (!confirmed.isConfirmed) return;
+      try {
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        const url = `/administrador/actividades/estudiantes/${encodeURIComponent(idEst)}?id_actividad=${encodeURIComponent(actividadId)}`;
+        const res = await fetch(url, {
+          method: 'DELETE',
+          headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+          credentials: 'same-origin'
+        });
+        const text = await res.text().catch(()=>null);
+        if (!res.ok) {
+          console.error('Delete response', res.status, text);
+          if (res.status === 403) return Swal.fire('Error','Operación no permitida','error');
+          if (res.status === 404) return Swal.fire('Error','Estudiante no encontrado','error');
+          return Swal.fire('Error','No se pudo eliminar','error');
+        }
+        await cargarEstudiantes();
+        // Toast de éxito (eliminación) - centrado
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: "Eliminado correctamente",
+          showConfirmButton: false,
+          timer: 1500
+        });
+      } catch (e) {
+        console.error(e);
+        Swal.fire('Error','No se pudo eliminar','error');
+      }
+    }
+  });
+
+  // abrir modal editar (delegación)
+  document.addEventListener('click', (ev) => {
+    const btnEditar = ev.target.closest && ev.target.closest('.btn-editar');
+    if (!btnEditar) return;
+    const idEst = btnEditar.getAttribute('data-id');
+    document.getElementById('editar-id').value = idEst || '';
+    document.getElementById('editar-nombre').value = btnEditar.getAttribute('data-nombre') || '';
+    document.getElementById('editar-numero-control').value = btnEditar.getAttribute('data-numero_control') || '';
+    document.getElementById('editar-carrera').value = btnEditar.getAttribute('data-carrera') || '';
+    document.getElementById('editar-semestre').value = btnEditar.getAttribute('data-semestre') || '';
+    document.getElementById('modal-editar').style.display = 'flex';
+  });
+
+  // submit editar -> actualiza en la base (envía id_actividad para validar)
+  document.getElementById('form-editar-estudiante').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const idEst = document.getElementById('editar-id').value;
+    if (!idEst) return Swal.fire({ position: 'center', icon: 'error', title: 'ID de estudiante no encontrado' });
+
+    const payload = new FormData();
+    payload.append('nombre', document.getElementById('editar-nombre').value.trim());
+    payload.append('numero_control', document.getElementById('editar-numero-control').value.trim());
+    payload.append('carrera', document.getElementById('editar-carrera').value.trim());
+    payload.append('semestre', document.getElementById('editar-semestre').value);
+    payload.append('_method','PUT');
+    payload.append('id_actividad', actividadId); // importante para validación en controlador
+
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+    try {
+      const res = await fetch(`/administrador/actividades/estudiantes/${encodeURIComponent(idEst)}`, {
+        method: 'POST',
+        headers: csrf ? { 'X-CSRF-TOKEN': csrf, 'Accept':'application/json' } : { 'Accept':'application/json' },
+        body: payload,
+        credentials: 'same-origin'
+      });
+
+      // parseo seguro del body (intentar json, si falla obtener texto)
+      let data = null;
+      const ct = res.headers.get('content-type') || '';
+      if (ct.includes('application/json')) {
+        data = await res.json().catch(()=>null);
+      } else {
+        const text = await res.text().catch(()=>null);
+        try { data = text ? JSON.parse(text) : null; } catch {_=>{ data = { message: text }; } }
+      }
+
+      if (res.ok) {
+        await cargarEstudiantes();
+        document.getElementById('modal-editar').style.display = 'none';
+      }
+
+      // manejo de errores según status
+      if (res.status === 422) {
+        const msgs = data?.errors ? Object.values(data.errors).flat().join('\n') : (data?.message || 'Error de validación');
+        return Swal.fire({ position: 'center', icon: 'error', title: 'Validación', text: msgs });
+      }
+      if (res.status === 403) return Swal.fire({ position: 'center', icon: 'error', title: 'Operación no permitida', text: data?.message || '' });
+      if (res.status === 404) return Swal.fire({ position: 'center', icon: 'error', title: 'Estudiante no encontrado' });
+    } catch (err) {
+      console.error('Fetch error update:', err);
+      return Swal.fire({ position: 'center', icon: 'error', title: 'Error de conexión', text: 'No se pudo conectar al servidor' });
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', cargarEstudiantes);
+})();
+</script>
   </body>
 </html>

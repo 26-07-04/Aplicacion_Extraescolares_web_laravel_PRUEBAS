@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Detalle de Actividad Extraescolar - {{ $actividad->nombre ?? 'Detalle' }}</title>
 
+  <!-- CSRF token requerido por fetch -->
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
   <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
   <!-- Bootstrap Icons (necesario para las clases bi bi-*) -->
@@ -48,49 +51,7 @@
                  </tr>
                </thead>
                <tbody id="tabla-estudiantes">
-                 <!-- Datos estáticos de ejemplo (para probar acciones) -->
-                 <tr>
-                   <td>María López</td>
-                   <td>2019001</td>
-                   <td>Ingeniería en Sistemas</td>
-                   <td>6</td>
-                   <td class="acciones-celda">
-                     <button class="btn-accion btn-editar" title="Editar" data-id="1" data-nombre="María López" data-numero_control="2019001" data-carrera="Ingeniería en Sistemas" data-semestre="6">
-                       <i class="bi bi-pen-fill" style="color:#002147; font-size:1.2em;"></i>
-                     </button>
-                     <button class="btn-accion btn-eliminar" title="Eliminar" data-id="1">
-                       <i class="bi bi-trash-fill" style="color:#002147; font-size:1.2em;"></i>
-                     </button>
-                   </td>
-                 </tr>
-                 <tr>
-                   <td>Carlos Pérez</td>
-                   <td>2019012</td>
-                   <td>Ingeniería Industrial</td>
-                   <td>4</td>
-                   <td class="acciones-celda">
-                     <button class="btn-accion btn-editar" title="Editar" data-id="2" data-nombre="Carlos Pérez" data-numero_control="2019012" data-carrera="Ingeniería Industrial" data-semestre="4">
-                       <i class="bi bi-pen-fill" style="color:#002147; font-size:1.2em;"></i>
-                     </button>
-                     <button class="btn-accion btn-eliminar" title="Eliminar" data-id="2">
-                       <i class="bi bi-trash-fill" style="color:#002147; font-size:1.2em;"></i>
-                     </button>
-                   </td>
-                 </tr>
-                 <tr>
-                   <td>Ana García</td>
-                   <td>2019025</td>
-                   <td>Licenciatura en Administración</td>
-                   <td>2</td>
-                   <td class="acciones-celda">
-                     <button class="btn-accion btn-editar" title="Editar" data-id="3" data-nombre="Ana García" data-numero_control="2019025" data-carrera="Licenciatura en Administración" data-semestre="2">
-                       <i class="bi bi-pen-fill" style="color:#002147; font-size:1.2em;"></i>
-                     </button>
-                     <button class="btn-accion btn-eliminar" title="Eliminar" data-id="3">
-                       <i class="bi bi-trash-fill" style="color:#002147; font-size:1.2em;"></i>
-                     </button>
-                   </td>
-                 </tr>
+                 <!-- filas cargadas dinámicamente por JS -->
                </tbody>
              </table>
            </div>
@@ -98,7 +59,7 @@
       </main>
 
       <!-- Modal para editar/agregar estudiante -->
-      <div id="modal-editar" class="modal" aria-hidden="true">
+      <div id="modal-editar" class="modal" aria-hidden="true" style="display:none;">
         <div class="modal-contenido" role="dialog" aria-modal="true" aria-labelledby="modal-titulo-editar">
           <div class="modal-header">
             <h3 id="modal-titulo-editar">Editar Estudiante</h3>
@@ -138,11 +99,7 @@
             <p>Abasolo S/N, Barrio del Agua Buena<br>Santiago Suchilquitongo Oaxaca, C.P. 68230</p>
             
             <h3>Contacto</h3>
-            <p>
-              Email: info@vetla.tecnm.mx<br>
-              Teléfono: 951 305 29 27
-            </p>
-            
+            <p>Email: info@vetla.tecnm.mx<br>Teléfono: 951 305 29 27</p>
             <h3>Preguntar por Whatsapp</h3>
             <a href="https://wa.me/9513052927?text=Buen%20d%C3%ADa%2C%20deseo%20informaci%C3%B3n%20" target="_blank" class="whatsapp-link">
               <img src="{{ asset('Imagenes/whatsapp.png') }}" alt="Whatsapp">
@@ -171,12 +128,7 @@
         // id pasado por query o desde servidor
         id_actividad: "{{ request()->query('id_actividad') ?? ($actividad->id ?? '') }}",
         endpoints: {
-          // usar endpoint REST de Laravel (show) para obtener actividad en JSON
-          obtenerActividad: "{{ url('administrador/actividades') }}", // se usará obtenerActividad + '/' + id
-          obtenerAlumnos: "{{ url('php/obtener_alumnos_inscritos_union.php') }}",
-          eliminarAlumno: "{{ url('php/eliminar_alumno_union.php') }}",
-          guardarAlumno: "{{ url('php/guardar_alumno_union.php') }}",
-          editarAlumno: "{{ url('php/editar_alumno_union.php') }}"
+          obtenerActividad: "{{ url('administrador/actividades') }}",
         }
       };
     </script>
@@ -211,10 +163,7 @@
         if ((!nombreServer || !descServer) && id && epBase) {
           const url = epBase.replace(/\/+$/,'') + '/' + encodeURIComponent(id);
           fetch(url, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
-            .then(r => {
-              if (!r.ok) return Promise.reject(r);
-              return r.json();
-            })
+            .then(r => { if (!r.ok) return Promise.reject(r); return r.json(); })
             .then(act => {
               if (!act) return;
               // el controller puede devolver la actividad dentro de 'data' o directamente
@@ -226,15 +175,172 @@
                 elDesc.textContent = actividad.descripcion;
               }
             })
-            .catch((err) => {
-              // suave fallback: no mostrar error al usuario aquí
-              console.debug('No se pudo obtener actividad por API:', err);
-            });
+            .catch(()=>{});
         }
       })();
     </script>
-   
-     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-     <script src="{{ asset('js/D_actividades.js') }}"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('js/D_actividades.js') }}"></script>
+
+    <script>
+(function(){
+  const actividadId = "{{ request()->query('id_actividad') ?? ($actividad->id ?? $actividad->id_actividad ?? '') }}";
+  if (!actividadId) return;
+  const tabla = document.getElementById('tabla-estudiantes');
+
+  async function cargarEstudiantes(){
+    tabla.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
+    try {
+      const res = await fetch(`/administrador/actividades/${encodeURIComponent(actividadId)}/estudiantes`, { credentials:'same-origin', headers:{'Accept':'application/json'}});
+      if (!res.ok) throw new Error('Error al obtener estudiantes');
+      const items = await res.json();
+      if (!items || items.length === 0) {
+        
+        return;
+      }
+      tabla.innerHTML = '';
+      items.forEach(e => {
+        const tr = document.createElement('tr');
+        tr.dataset.id = e.id_alumno;
+        tr.innerHTML = `
+          <td>${escapeHtml(e.nombre ?? '')}</td>
+          <td>${escapeHtml(e.numero_control ?? '')}</td>
+          <td>${escapeHtml(e.carrera ?? '')}</td>
+          <td>${escapeHtml(e.semestre ?? '')}</td>
+          <td class="acciones-celda">
+            <button class="btn-accion btn-editar" title="Editar" data-id="${e.id_alumno}" data-nombre="${escapeAttr(e.nombre)}" data-numero_control="${escapeAttr(e.numero_control)}" data-carrera="${escapeAttr(e.carrera)}" data-semestre="${escapeAttr(e.semestre)}">
+              <i class="bi bi-pen-fill" style="color:#002147; font-size:1.2em;"></i>
+            </button>
+            <button class="btn-accion btn-eliminar" title="Eliminar" data-id="${e.id_alumno}">
+              <i class="bi bi-trash-fill" style="color:#002147; font-size:1.2em;"></i>
+            </button>
+          </td>
+        `;
+        tabla.appendChild(tr);
+      });
+    } catch (err) {
+      console.error(err);
+      tabla.innerHTML = '<tr><td colspan="5">Error cargando estudiantes</td></tr>';
+    }
+  }
+
+  function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c])); }
+  function escapeAttr(s){ return String(s ?? '').replace(/"/g,'&quot;'); }
+
+  // eliminar por delegación (envía id_actividad como query para validación)
+  document.addEventListener('click', async (ev) => {
+    const btnEliminar = ev.target.closest && ev.target.closest('.btn-eliminar');
+    if (btnEliminar) {
+      const idEst = btnEliminar.getAttribute('data-id');
+      if (!idEst) return;
+      const confirmed = await Swal.fire({
+        title: 'Confirmar',
+        text: '¿Eliminar estudiante?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Eliminar',
+        cancelButtonText: 'Cancelar'
+      });
+      if (!confirmed.isConfirmed) return;
+      try {
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        const url = `/administrador/actividades/estudiantes/${encodeURIComponent(idEst)}?id_actividad=${encodeURIComponent(actividadId)}`;
+        const res = await fetch(url, {
+          method: 'DELETE',
+          headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+          credentials: 'same-origin'
+        });
+        const text = await res.text().catch(()=>null);
+        if (!res.ok) {
+          console.error('Delete response', res.status, text);
+          if (res.status === 403) return Swal.fire('Error','Operación no permitida','error');
+          if (res.status === 404) return Swal.fire('Error','Estudiante no encontrado','error');
+          return Swal.fire('Error','No se pudo eliminar','error');
+        }
+        await cargarEstudiantes();
+        // Toast de éxito (eliminación) - centrado
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: "Eliminado correctamente",
+          showConfirmButton: false,
+          timer: 1500
+        });
+      } catch (e) {
+        console.error(e);
+        Swal.fire('Error','No se pudo eliminar','error');
+      }
+    }
+  });
+
+  // abrir modal editar (delegación)
+  document.addEventListener('click', (ev) => {
+    const btnEditar = ev.target.closest && ev.target.closest('.btn-editar');
+    if (!btnEditar) return;
+    const idEst = btnEditar.getAttribute('data-id');
+    document.getElementById('editar-id').value = idEst || '';
+    document.getElementById('editar-nombre').value = btnEditar.getAttribute('data-nombre') || '';
+    document.getElementById('editar-numero-control').value = btnEditar.getAttribute('data-numero_control') || '';
+    document.getElementById('editar-carrera').value = btnEditar.getAttribute('data-carrera') || '';
+    document.getElementById('editar-semestre').value = btnEditar.getAttribute('data-semestre') || '';
+    document.getElementById('modal-editar').style.display = 'flex';
+  });
+
+  // submit editar -> actualiza en la base (envía id_actividad para validar)
+  document.getElementById('form-editar-estudiante').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const idEst = document.getElementById('editar-id').value;
+    if (!idEst) return Swal.fire({ position: 'center', icon: 'error', title: 'ID de estudiante no encontrado' });
+
+    const payload = new FormData();
+    payload.append('nombre', document.getElementById('editar-nombre').value.trim());
+    payload.append('numero_control', document.getElementById('editar-numero-control').value.trim());
+    payload.append('carrera', document.getElementById('editar-carrera').value.trim());
+    payload.append('semestre', document.getElementById('editar-semestre').value);
+    payload.append('_method','PUT');
+    payload.append('id_actividad', actividadId); // importante para validación en controlador
+
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+    try {
+      const res = await fetch(`/administrador/actividades/estudiantes/${encodeURIComponent(idEst)}`, {
+        method: 'POST',
+        headers: csrf ? { 'X-CSRF-TOKEN': csrf, 'Accept':'application/json' } : { 'Accept':'application/json' },
+        body: payload,
+        credentials: 'same-origin'
+      });
+
+      // parseo seguro del body (intentar json, si falla obtener texto)
+      let data = null;
+      const ct = res.headers.get('content-type') || '';
+      if (ct.includes('application/json')) {
+        data = await res.json().catch(()=>null);
+      } else {
+        const text = await res.text().catch(()=>null);
+        try { data = text ? JSON.parse(text) : null; } catch {_=>{ data = { message: text }; } }
+      }
+
+      if (res.ok) {
+        await cargarEstudiantes();
+        document.getElementById('modal-editar').style.display = 'none';
+      }
+
+      // manejo de errores según status
+      if (res.status === 422) {
+        const msgs = data?.errors ? Object.values(data.errors).flat().join('\n') : (data?.message || 'Error de validación');
+        return Swal.fire({ position: 'center', icon: 'error', title: 'Validación', text: msgs });
+      }
+      if (res.status === 403) return Swal.fire({ position: 'center', icon: 'error', title: 'Operación no permitida', text: data?.message || '' });
+      if (res.status === 404) return Swal.fire({ position: 'center', icon: 'error', title: 'Estudiante no encontrado' });
+    } catch (err) {
+      console.error('Fetch error update:', err);
+      return Swal.fire({ position: 'center', icon: 'error', title: 'Error de conexión', text: 'No se pudo conectar al servidor' });
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', cargarEstudiantes);
+})();
+</script>
   </body>
 </html>
