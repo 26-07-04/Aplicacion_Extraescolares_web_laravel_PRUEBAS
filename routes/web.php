@@ -22,6 +22,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UnidadController;
 use App\Http\Controllers\Administrador\ActividadController;
+use App\Http\Controllers\Administrador\EstudianteController;
 use Illuminate\Http\Request;
 /*
 Route::get('/', function () {
@@ -287,6 +288,13 @@ Route::prefix('administrador')->group(function () {
             'id_semestre'  => $request->query('id_semestre'),
         ]);
     })->name('administrador.actividades.detalle');
+});
+
+Route::prefix('administrador')->group(function () {
+    Route::get('actividades/{actividad}/estudiantes', [EstudianteController::class, 'index']);
+    Route::post('actividades/{actividad}/estudiantes', [EstudianteController::class, 'store']);
+    Route::put('actividades/estudiantes/{id}', [EstudianteController::class, 'update']);
+    Route::delete('actividades/estudiantes/{id}', [EstudianteController::class, 'destroy']);
 });
 
 require __DIR__.'/auth.php';
