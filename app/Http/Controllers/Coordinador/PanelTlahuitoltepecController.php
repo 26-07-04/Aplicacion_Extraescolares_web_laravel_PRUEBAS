@@ -27,6 +27,12 @@ class PanelTlahuitoltepecController extends Controller
             abort(404);
         }
 
-        return view('coordinador.tlahuitoltepec.panel', ['user' => $user, 'semestre' => $semestre, 'unidad' => 'Unidad Académica Santa María Tlahuitoltepec']);
+        $documentos = \App\Models\Documento::orderBy('created_at', 'desc')->get();
+        return view('coordinador.tlahuitoltepec.panel', [
+            'user' => $user,
+            'semestre' => $semestre,
+            'unidad' => 'Unidad Académica Santa María Tlahuitoltepec',
+            'documentos' => $documentos
+        ]);
     }
 }

@@ -125,6 +125,19 @@ Route::get('coordinador/valle-de-etla/panel/{id}', [PanelValleEtlaController::cl
     ->name('coordinador.valle.panel');
 
 
+    // Rutas para PDFs membretados (coordinador)
+Route::prefix('coordinador')->group(function () {
+    // Listar todos los PDFs membretados
+    Route::get('/documento-base', [App\Http\Controllers\Coordinador\DocumentoBaseController::class, 'index'])->name('documento-base.index');
+
+    // Ver información de un PDF membretado
+    Route::get('/documento-base/{id}', [App\Http\Controllers\Coordinador\DocumentoBaseController::class, 'show'])->name('documento-base.show');
+
+    // Descargar o visualizar el PDF membretado
+    Route::get('/documento-base/cargar/{id}', [App\Http\Controllers\Coordinador\DocumentoBaseController::class, 'cargar'])
+        ->name('documento-base.cargar');
+});
+
 // Panel principal del Coordinador para la Unidad Tlahuitoltepec (vista por semestre)
 Route::get('coordinador/tlahuitoltepec/panel/{id}', [PanelTlahuitoltepecController::class, 'show'])
     ->middleware('auth')
