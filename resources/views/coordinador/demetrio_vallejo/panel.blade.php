@@ -163,6 +163,7 @@
         <h1>Bienvenido al Sistema de Actividades Extraescolares</h1>
         <div class="unidad-nombre">Unidad Académica Demetrio Vallejo Martínez - El Espinal</div>
         <p>Semestre: <strong>{{ $semestre->nombre ?? '—' }}</strong></p>
+        
         <p>Desde este panel podrás gestionar estudiantes, constancias, informes y visualizar resultados para el semestre seleccionado.</p>
       </div>
 
@@ -215,26 +216,51 @@
 
         <div style="background:#f7fbff; padding:16px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.03);">
           <div class="activities-grid">
-            <div class="activity-card">
-              <div class="card-head"><h3 style="margin:0 0 8px 0; font-size:1.05rem; color:#111;">Futbol Rápido</h3></div>
-              <div class="img-wrap"><img src="{{ asset('Imagenes/futbol.png') }}" alt="Futbol Rápido" style="width:100%; height:100%; object-fit:cover; border-radius:6px;"></div>
-              <div class="card-body"><p style="margin:0; color:#444; font-size:0.85rem; line-height:1.35;">Entrena con tu equipo en horarios programados, mejora tu condición física y representa al TECNM en torneos locales y regionales.</p></div>
-            </div>
-
-            <div class="activity-card">
-              <div class="card-head"><h3 style="margin:0 0 8px 0; font-size:1.05rem; color:#111;">Basquetbol</h3></div>
-              <div class="img-wrap"><img src="{{ asset('Imagenes/basquetbol.png') }}" alt="Basquetbol" style="width:100%; height:100%; object-fit:cover; border-radius:6px;"></div>
-              <div class="card-body"><p style="margin:0; color:#444; font-size:0.85rem; line-height:1.35;">Practica tu habilidad y estrategias en ligas internas y torneos intercolegiales.</p></div>
-            </div>
-
-            <div class="activity-card">
-              <div class="card-head"><h3 style="margin:0 0 8px 0; font-size:1.05rem; color:#111;">Voleibol</h3></div>
-              <div class="img-wrap"><img src="{{ asset('Imagenes/voleibol.jpg') }}" alt="Voleibol" style="width:100%; height:100%; object-fit:cover; border-radius:6px;"></div>
-              <div class="card-body"><p style="margin:0; color:#444; font-size:0.85rem; line-height:1.35;">Entrena en equipo con enfoque en técnica, táctica y condición física.</p></div>
-            </div>
-
-            <div class="activity-card">
-            </div>
+            @if(!empty($actividades) && $actividades->count() > 0)
+              @foreach($actividades as $actividad)
+                <div class="activity-card">
+                  <div class="card-head"><h3 style="margin:0 0 8px 0; font-size:1.05rem; color:#111;">{{ $actividad->nombre_actividad }}</h3></div>
+                  <div class="img-wrap">
+                    @php $img = $actividad->imagen_url ?? null; @endphp
+                    @if($img)
+                      <img src="{{ asset($img) }}" alt="{{ $actividad->nombre_actividad }}" style="width:100%; height:100%; object-fit:cover; border-radius:6px;">
+                    @else
+                      <img src="{{ asset('Imagenes/placeholder-actividad.png') }}" alt="Actividad" style="width:100%; height:100%; object-fit:cover; border-radius:6px;">
+                    @endif
+                  </div>
+                  <div class="card-body"><p style="margin:0; color:#444; font-size:0.85rem; line-height:1.35;">{{ $actividad->descripcion ?? 'Sin descripción disponible.' }}</p></div>
+                </div>
+              @endforeach
+            @else
+              <div style="grid-column:1/-1; padding:18px; color:#444;">
+                <p style="margin:0;">No hay actividades registradas para este semestre y unidad académica.</p>
+                @if(!empty($actividades_semestre) && $actividades_semestre->count() > 0)
+                  <div style="margin-top:8px; font-size:0.9rem; color:#666;">
+                    <strong>Nota:</strong> Existen actividades en el semestre pero ninguna coincide con la unidad académica del usuario.
+                    <div style="margin-top:6px;">
+                      <table style="width:100%; border-collapse:collapse; font-size:0.9rem; color:#444;">
+                        <thead>
+                          <tr>
+                            <th style="text-align:left; padding:6px; border-bottom:1px solid #e6e6e6;">Actividad</th>
+                            <th style="text-align:left; padding:6px; border-bottom:1px solid #e6e6e6;">id_unidad</th>
+                            <th style="text-align:left; padding:6px; border-bottom:1px solid #e6e6e6;">unidad nombre</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @foreach($actividades_semestre_data as $row)
+                            <tr>
+                              <td style="padding:6px; border-bottom:1px solid #f0f0f0;">{{ $row['nombre_actividad'] }}</td>
+                              <td style="padding:6px; border-bottom:1px solid #f0f0f0;">{{ $row['id_unidad'] }}</td>
+                              <td style="padding:6px; border-bottom:1px solid #f0f0f0;">{{ $row['unidad_nombre'] ?? '—' }}</td>
+                            </tr>
+                          @endforeach
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                @endif
+              </div>
+            @endif
           </div>
         </div>
       </div>
