@@ -57,20 +57,7 @@ Route::get('admin/principal/{id?}', [PrincipalAdministradorController::class, 'i
     ->middleware('auth')
     ->name('admin.principal');
 
-// Rutas CRUD para gestión de usuarios (formularios en modales)
-Route::post('admin/usuarios', [AdminUserController::class, 'store'])
-    ->middleware('auth')
-    ->name('admin.usuarios.store');
-
-Route::put('admin/usuarios/{id}', [AdminUserController::class, 'update'])
-    ->middleware('auth')
-    ->name('admin.usuarios.update');
-
-Route::delete('admin/usuarios/{id}', [AdminUserController::class, 'destroy'])
-    ->middleware('auth')
-    ->name('admin.usuarios.destroy');
-
-// Nueva ruta: Gestión de semestres para administradores
+// Gestión de semestres (ya existente, equivalente a "semestres")
 Route::get('admin/semestres', [SemestresCursadosController::class, 'index'])
     ->middleware('auth')
     ->name('admin.semestres');
