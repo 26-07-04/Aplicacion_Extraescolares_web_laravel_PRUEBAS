@@ -213,26 +213,26 @@
 
         <div style="background:#f7fbff; padding:16px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.03);">
           <div class="activities-grid">
-            <div class="activity-card">
-              <div class="card-head"><h3 style="margin:0 0 8px 0; font-size:1.05rem; color:#111;">Futbol Rápido</h3></div>
-              <div class="img-wrap"><img src="{{ asset('Imagenes/futbol.png') }}" alt="Futbol Rápido" style="width:100%; height:100%; object-fit:cover; border-radius:6px;"></div>
-              <div class="card-body"><p style="margin:0; color:#444; font-size:0.85rem; line-height:1.35;">Entrena con tu equipo en horarios programados, mejora tu condición física y representa al TECNM en torneos locales y regionales.</p></div>
-            </div>
-
-            <div class="activity-card">
-              <div class="card-head"><h3 style="margin:0 0 8px 0; font-size:1.05rem; color:#111;">Basquetbol</h3></div>
-              <div class="img-wrap"><img src="{{ asset('Imagenes/basquetbol.png') }}" alt="Basquetbol" style="width:100%; height:100%; object-fit:cover; border-radius:6px;"></div>
-              <div class="card-body"><p style="margin:0; color:#444; font-size:0.85rem; line-height:1.35;">Practica tu habilidad y estrategias en ligas internas y torneos intercolegiales.</p></div>
-            </div>
-
-            <div class="activity-card">
-              <div class="card-head"><h3 style="margin:0 0 8px 0; font-size:1.05rem; color:#111;">Voleibol</h3></div>
-              <div class="img-wrap"><img src="{{ asset('Imagenes/voleibol.jpg') }}" alt="Voleibol" style="width:100%; height:100%; object-fit:cover; border-radius:6px;"></div>
-              <div class="card-body"><p style="margin:0; color:#444; font-size:0.85rem; line-height:1.35;">Entrena en equipo con enfoque en técnica, táctica y condición física.</p></div>
-            </div>
-
-            <div class="activity-card">
-            </div>
+            @if(!empty($actividades) && $actividades->count() > 0)
+              @foreach($actividades as $actividad)
+                <div class="activity-card">
+                  <div class="card-head"><h3 style="margin:0 0 8px 0; font-size:1.05rem; color:#111;">{{ $actividad->nombre_actividad }}</h3></div>
+                  <div class="img-wrap">
+                    @php $img = $actividad->imagen_url ?? null; @endphp
+                    @if($img)
+                      <img src="{{ asset($img) }}" alt="{{ $actividad->nombre_actividad }}" style="width:100%; height:100%; object-fit:cover; border-radius:6px;">
+                    @else
+                      <img src="{{ asset('Imagenes/placeholder-actividad.png') }}" alt="Actividad" style="width:100%; height:100%; object-fit:cover; border-radius:6px;">
+                    @endif
+                  </div>
+                  <div class="card-body"><p style="margin:0; color:#444; font-size:0.85rem; line-height:1.35;">{{ $actividad->descripcion ?? 'Sin descripción disponible.' }}</p></div>
+                </div>
+              @endforeach
+            @else
+              <div style="grid-column:1/-1; padding:18px; color:#444;">
+                <p style="margin:0;">No hay actividades registradas para este semestre y unidad académica.</p>
+              </div>
+            @endif
           </div>
         </div>
       </div>
