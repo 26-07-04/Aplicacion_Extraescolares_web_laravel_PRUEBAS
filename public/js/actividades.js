@@ -1,4 +1,4 @@
-// Gestión de actividades - Versión Mejorada
+// Gestión de actividades - Versión Optimizada para 4 Unidades
 class GestorActividades {
     constructor() {
         this.actividadEditando = null;
@@ -6,15 +6,27 @@ class GestorActividades {
         this.init();
     }
 
-    // helper: detectar la configuración activa (ActSMT, ActDV, ActUH, etc.)
+    // helper: detectar la configuración activa (ActSMT, ActDV, ActUH, ActVE)
     getActConfig() {
-        const keys = ['ActSMT','ActDV','ActUH','ActVE','ActUH'];
-        for (const k of keys) if (window[k]) return window[k];
-        // fallback: tomar cualquier window.Act* con rutas
-        for (const p in window) {
-            if (p.startsWith && p.startsWith('Act') && window[p] && window[p].rutas) return window[p];
+        // Buscar en orden específico
+        const keys = ['ActUH', 'ActDV', 'ActSMT', 'ActVE'];
+        for (const k of keys) {
+            if (window[k] && window[k].rutas) {
+                console.log(`Usando configuración: ${k}`);
+                return window[k];
+            }
         }
-        return window.ActUH || window.ActVE || null;
+        
+        // Fallback: tomar cualquier window.Act* con rutas
+        for (const p in window) {
+            if (p.startsWith('Act') && window[p] && window[p].rutas) {
+                console.log(`Usando configuración fallback: ${p}`);
+                return window[p];
+            }
+        }
+        
+        console.warn('No se encontró configuración de actividades');
+        return null;
     }
 
     // resolver URL completa de imagen según assetBase y si la ruta es relativa
@@ -88,10 +100,9 @@ class GestorActividades {
             if (archivo && archivo.type.startsWith('image/')) this.cargarImagen(archivo);
         });
 
-        // Evitar abrir el selector dos veces: no llamar a input.click() si el click vino desde un <label> (el label ya abre el selector)
+        // Evitar abrir el selector dos veces
         let openingFileDialog = false;
         dropArea.addEventListener('click', (e) => {
-            // si el click proviene de dentro de un label o del propio input, no disparamos el .click() manual
             if (e.target.closest && (e.target.closest('label') || e.target.closest('input[type="file"]'))) {
                 return;
             }
@@ -170,58 +181,109 @@ class GestorActividades {
 
     // Funciones auxiliares para obtener configuración
     obtenerUnidadId() {
-        // Múltiples formas de obtener el ID de unidad
-        if (window.ActUH && window.ActUH.unidadId) return window.ActUH.unidadId;
-        if (window.ActDV && window.ActDV.unidadId) return window.ActDV.unidadId;
-        
-        const unidadInput = document.getElementById('id_unidad');
-        if (unidadInput && unidadInput.value) return unidadInput.value;
-        
-        // Buscar en cualquier configuración global
-        for (const key in window) {
-            if (key.startsWith('Act') && window[key] && window[key].unidadId) {
-                return window[key].unidadId;
-            }
+        // PRIORIDAD 1: Configuración activa
+        const config = this.getActConfig();
+        if (config && config.unidadId) {
+            console.log('ID unidad obtenido de configuración:', config.unidadId);
+            return config.unidadId;
         }
         
+        // PRIORIDAD 2: Campo oculto específico
+        const unidadInput = document.getElementById('id-unidad-actividad');
+        if (unidadInput && unidadInput.value) return unidadInput.value;
+        
+        // PRIORIDAD 3: Input genérico
+        const unidadInputGen = document.getElementById('id_unidad');
+        if (unidadInputGen && unidadInputGen.value) return unidadInputGen.value;
+        
+        // PRIORIDAD 4: Query string de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const unidadFromUrl = urlParams.get('unidad');
+        if (unidadFromUrl) return this.convertirUnidadANumero(unidadFromUrl);
+        
+        // ÚLTIMO RECURSO: Determinar por URL
+        const path = window.location.pathname.toLowerCase();
+        if (path.includes('union-hidalgo') || path.includes('uh')) return 1;
+        if (path.includes('demetrio') || path.includes('dv')) return 2;
+        if (path.includes('tlahuitoltepec') || path.includes('smt')) return 3;
+        if (path.includes('valle-etla') || path.includes('ve')) return 4;
+        
+        console.warn('No se pudo determinar ID de unidad, usando valor por defecto');
         return null;
+    }
+
+    // Función auxiliar para convertir nombre de unidad a número
+    convertirUnidadANumero(unidadNombre) {
+        const unidades = {
+            'union hidalgo': 1,
+            'unión hidalgo': 1,
+            'uh': 1,
+            'demetrio vallejo': 2,
+            'demetrio': 2,
+            'dv': 2,
+            'tlahuitoltepec': 3,
+            'smt': 3,
+            'valle de etla': 4,
+            'valle': 4,
+            've': 4
+        };
+        
+        const nombreLower = unidadNombre.toLowerCase().trim();
+        return unidades[nombreLower] || null;
     }
 
     obtenerSemestreId() {
-        // Múltiples formas de obtener el ID de semestre
-        if (window.ActUH && window.ActUH.semestreId) return window.ActUH.semestreId;
-        if (window.ActDV && window.ActDV.semestreId) return window.ActDV.semestreId;
+        // PRIORIDAD 1: Campo oculto específico para actividades
+        const semestreInputActividad = document.getElementById('id-semestre-actividad');
+        if (semestreInputActividad && semestreInputActividad.value) {
+            console.log('ID semestre obtenido de campo oculto:', semestreInputActividad.value);
+            return semestreInputActividad.value;
+        }
         
+        // PRIORIDAD 2: Configuración activa
+        const config = this.getActConfig();
+        if (config && config.semestreId) {
+            console.log('ID semestre obtenido de configuración:', config.semestreId);
+            return config.semestreId;
+        }
+        
+        // PRIORIDAD 3: Query string de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const semestreFromUrl = urlParams.get('id_semestre');
+        if (semestreFromUrl) {
+            console.log('ID semestre obtenido de URL:', semestreFromUrl);
+            return semestreFromUrl;
+        }
+        
+        // PRIORIDAD 4: Input genérico
         const semestreInput = document.getElementById('id_semestre');
-        if (semestreInput && semestreInput.value) return semestreInput.value;
+        if (semestreInput && semestreInput.value) {
+            console.log('ID semestre obtenido de input genérico:', semestreInput.value);
+            return semestreInput.value;
+        }
         
-        return null;
+        // ÚLTIMO RECURSO: Valor por defecto
+        console.warn('No se pudo obtener ID de semestre, usando valor por defecto 1');
+        return 1;
     }
 
     obtenerUrlGuardado() {
-        // Buscar en todas las configuraciones posibles
-        const configs = [window.ActUH, window.ActDV, window.ActSMT, window.ActVE];
-        for (const config of configs) {
-            if (config && config.rutas && config.rutas.store) {
-                return config.rutas.store;
-            }
+        const config = this.getActConfig();
+        if (config && config.rutas && config.rutas.store) {
+            return config.rutas.store;
         }
-        // Fallback por tipo de actividad
-        if (window.location.pathname.includes('unidad-horaria')) {
-            return '/administrador/actividades-uh';
-        } else if (window.location.pathname.includes('dia-viernes')) {
-            return '/administrador/actividades-dv';
-        }
+        
+        console.warn('URL de guardado no encontrada en configuración, usando fallback');
         return '/administrador/actividades';
     }
 
     obtenerUrlEdicion(id) {
-        const configs = [window.ActUH, window.ActDV, window.ActSMT, window.ActVE];
-        for (const config of configs) {
-            if (config && config.rutas && config.rutas.showBase) {
-                return `${config.rutas.showBase}/${id}`;
-            }
+        const config = this.getActConfig();
+        if (config && config.rutas && config.rutas.showBase) {
+            return `${config.rutas.showBase}/${id}`;
         }
+        
+        console.warn('URL de edición no encontrada en configuración, usando fallback');
         return `/administrador/actividades/${id}`;
     }
 
@@ -300,6 +362,22 @@ class GestorActividades {
             return;
         }
 
+        // Obtener IDs de manera más robusta
+        const unidadId = this.obtenerUnidadId();
+        const semestreId = this.obtenerSemestreId();
+
+        console.log('=== DATOS PARA CREAR ACTIVIDAD ===');
+        console.log('Nombre:', nombre);
+        console.log('Descripción:', descripcion);
+        console.log('Unidad ID:', unidadId);
+        console.log('Semestre ID:', semestreId);
+        console.log('==============================');
+
+        if (!unidadId || !semestreId) {
+            this.mostrarAlerta('Error', 'No se pudo determinar la unidad o semestre. Recarga la página.', 'error');
+            return;
+        }
+
         // Mostrar loading
         const btnGuardar = document.getElementById('btn-guardar-actividad');
         const originalText = btnGuardar.textContent;
@@ -311,13 +389,12 @@ class GestorActividades {
             const fd = new FormData();
             fd.append('nombre_actividad', nombre.trim());
             fd.append('descripcion', descripcion.trim());
+            fd.append('id_unidad', unidadId);
+            fd.append('id_semestre', semestreId);
 
-            // Obtener IDs de manera más robusta
-            const unidadId = this.obtenerUnidadId();
-            const semestreId = this.obtenerSemestreId();
-
-            if (unidadId) fd.append('id_unidad', unidadId);
-            if (semestreId) fd.append('id_semestre', semestreId);
+            // Log para debug
+            console.log('Enviando id_unidad:', unidadId);
+            console.log('Enviando id_semestre:', semestreId);
 
             // Manejar imagen
             const inputFile = document.getElementById('imagen-actividad');
@@ -342,10 +419,10 @@ class GestorActividades {
                 method = 'POST';
             }
 
-            // Obtener CSRF token de manera más robusta
+            // Obtener CSRF token
             const csrf = this.obtenerCsrfToken();
 
-            console.log('Enviando datos a:', url, 'Método:', method); // Debug
+            console.log('Enviando datos a:', url, 'Método:', method);
 
             const res = await fetch(url, {
                 method: method,
@@ -408,12 +485,12 @@ class GestorActividades {
     }
 
     obtenerUrlListado() {
-        const configs = [window.ActUH, window.ActDV, window.ActSMT, window.ActVE];
-        for (const config of configs) {
-            if (config && config.rutas && config.rutas.list) {
-                return config.rutas.list;
-            }
+        const config = this.getActConfig();
+        if (config && config.rutas && config.rutas.list) {
+            return config.rutas.list;
         }
+        
+        console.warn('URL de listado no encontrada en configuración, usando fallback');
         return '/administrador/actividades';
     }
 
@@ -425,12 +502,18 @@ class GestorActividades {
             return;
         }
         
-        const loadingHtml = '<div class="loading-actividades" style="color:#666; text-align:center; padding:2rem;">Cargando actividades...</div>';
+        // Mostrar loading
+        const loadingHtml = '<div class="loading-actividades" style="color:#666; text-align:center; padding:2rem;"><i class="fas fa-spinner fa-spin"></i> Cargando actividades del semestre...</div>';
         cont.innerHTML = loadingHtml;
         
         try {
             const unidadId = this.obtenerUnidadId();
             const semestreId = this.obtenerSemestreId();
+            
+            console.log('=== SOLICITANDO ACTIVIDADES ===');
+            console.log('Unidad ID:', unidadId);
+            console.log('Semestre ID:', semestreId);
+            console.log('==============================');
             
             let url = this.obtenerUrlListado();
             const params = new URLSearchParams();
@@ -442,7 +525,7 @@ class GestorActividades {
                 url += (url.includes('?') ? '&' : '?') + params.toString();
             }
 
-            console.log('Cargando actividades desde:', url); // Debug
+            console.log('URL de solicitud:', url);
 
             const res = await fetch(url, { 
                 credentials: 'same-origin',
@@ -455,10 +538,20 @@ class GestorActividades {
                 throw new Error(`Error ${res.status} al cargar actividades`);
             }
 
-            const items = await res.json();
+            const data = await res.json();
             
-            if (!Array.isArray(items)) {
-                throw new Error('Formato de respuesta inválido');
+            console.log('Respuesta del servidor:', data);
+            
+            // Manejar diferentes estructuras de respuesta
+            let items = [];
+            if (Array.isArray(data)) {
+                items = data; // Formato antiguo
+            } else if (data && data.actividades) {
+                items = data.actividades; // Nuevo formato con metadata
+                console.log('Actividades filtradas por semestre:', data.id_semestre_filtrado);
+                console.log('Total actividades:', data.total);
+            } else if (data && Array.isArray(data.data)) {
+                items = data.data; // Formato paginado
             }
 
             // Limpiar y reconstruir contenedor
@@ -520,7 +613,9 @@ class GestorActividades {
         }
 
         const csrf = this.obtenerCsrfToken();
-        const baseShow = (window.ActUH && window.ActUH.rutas && window.ActUH.rutas.showBase) ? window.ActUH.rutas.showBase : '/administrador/actividades';
+        const config = this.getActConfig();
+        const baseShow = config && config.rutas && config.rutas.showBase ? 
+            config.rutas.showBase : '/administrador/actividades';
         const urlDel = baseShow.replace(/\/+$/,'') + '/' + encodeURIComponent(id);
 
         try {
@@ -535,7 +630,7 @@ class GestorActividades {
                 credentials: 'same-origin'
             });
 
-            // si DELETE directo no fue aceptado (p. ej. 405/403), intentar fallback POST + _method=DELETE
+            // si DELETE directo no fue aceptado, intentar fallback POST + _method=DELETE
             if (!res.ok) {
                 const fd = new FormData();
                 fd.append('_method', 'DELETE');
@@ -552,7 +647,7 @@ class GestorActividades {
 
             if (!res.ok) throw new Error('Error al eliminar en servidor');
 
-            // intentar parsear JSON, no bloquear si no es JSON
+            // intentar parsear JSON
             const json = await res.json().catch(()=>({ success: true }));
 
             if (json && json.success === false) throw new Error('Servidor rechazó la eliminación');
@@ -567,85 +662,81 @@ class GestorActividades {
         }
     }
 
-    // DATOS DE EJEMPLO: (DESACTIVADO) antes insertaba módulos estáticos
-    cargarDatosEjemplo() {
-        // función desactivada: ya no inserta actividades estáticas.
-        // Si necesitas cargar desde servidor, implementa aquí fetch('/api/actividades') y usa crearModuloActividad para renderizar.
-    }
-
-    crearModuloActividad(actividad /* objeto con id, nombre, descripcion, etc */) {
+    crearModuloActividad(actividad) {
         const modulo = document.createElement('div');
         modulo.classList.add('modulo','actividad');
-        // Añadir dataset necesario para la redirección (usar atributos consistentes)
-        // dataset
+        
+        // Añadir dataset necesario
         modulo.dataset.idActividad = actividad.id;
         modulo.dataset.nombre = actividad.nombre;
         modulo.dataset.descripcion = actividad.descripcion;
         if (actividad.id_semestre) modulo.dataset.idSemestre = actividad.id_semestre;
-        if (actividad.unidadId) modulo.dataset.unidadId = actividad.unidadId;
+        
+        // Obtener unidadId de la configuración activa
+        const config = this.getActConfig();
+        if (config && config.unidadId) {
+            modulo.dataset.unidadId = config.unidadId;
+        }
 
-         // La estructura visual se mantiene igual: usar la ruta de imagen tal cual (relativa a public/)
-         modulo.innerHTML = `
-             <img src="${actividad.imagen}" alt="${actividad.nombre}" onerror="this.src='/Imagenes/placeholder-actividad.jpg'">
-             <h3>${actividad.nombre}</h3>
-             <p>${actividad.descripcion}</p>
-             <div class="acciones-modulo">
-                 <button class="btn-accion btn-editar" aria-label="Editar actividad">
-                     <img src="/Imagenes/editar.png" alt="Editar">
-                 </button>
-                 <button class="btn-accion btn-eliminar" aria-label="Eliminar actividad">
-                     <img src="/Imagenes/eliminar.png" alt="Eliminar">
-                 </button>
-             </div>
-         `;
+        // Estructura HTML del módulo
+        modulo.innerHTML = `
+            <img src="${actividad.imagen}" alt="${actividad.nombre}" onerror="this.src='/Imagenes/placeholder-actividad.jpg'">
+            <h3>${actividad.nombre}</h3>
+            <p>${actividad.descripcion}</p>
+            <div class="acciones-modulo">
+                <button class="btn-accion btn-editar" aria-label="Editar actividad">
+                    <img src="/Imagenes/editar.png" alt="Editar">
+                </button>
+                <button class="btn-accion btn-eliminar" aria-label="Eliminar actividad">
+                    <img src="/Imagenes/eliminar.png" alt="Eliminar">
+                </button>
+            </div>
+        `;
 
-         // eventos en botones (delegación alternativa)
-         const btnEditar = modulo.querySelector('.btn-editar');
-         const btnEliminar = modulo.querySelector('.btn-eliminar');
+        // Eventos en botones
+        const btnEditar = modulo.querySelector('.btn-editar');
+        const btnEliminar = modulo.querySelector('.btn-eliminar');
 
-         if (btnEditar) btnEditar.addEventListener('click', (e) => {
-             e.stopPropagation();
-             this.editarActividad(modulo);
-         });
+        if (btnEditar) btnEditar.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.editarActividad(modulo);
+        });
 
-         if (btnEliminar) btnEliminar.addEventListener('click', (e) => {
-             e.stopPropagation();
-             this.eliminarActividad(modulo);
-         });
+        if (btnEliminar) btnEliminar.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.eliminarActividad(modulo);
+        });
 
-         // click en el módulo abre detalle (redirige a D_actividades_DV o la ruta configurada)
-         modulo.addEventListener('click', (e) => {
-            // evitar que clicks en los botones internos también disparen (si necesario)
+        // Click en el módulo abre detalle
+        modulo.addEventListener('click', (e) => {
             const target = e.target;
             if (target.closest('.btn-accion')) return;
 
-            // Prioridad rutas: ActDV.detail -> ActUH.rutas.detail -> gestorConfig.detalleBaseDV -> gestorConfig.detalleBase
-            const rutasDV = (window.ActDV && window.ActDV.rutas) ? window.ActDV.rutas : null;
-            const rutasUH = (window.ActUH && window.ActUH.rutas) ? window.ActUH.rutas : null;
-            const base = (rutasDV && rutasDV.detail) || (rutasUH && rutasUH.detail) || (window.gestorConfig && (window.gestorConfig.detalleBaseDV || window.gestorConfig.detalleBase)) || null;
-            if (!base) return;
+            // Obtener configuración activa
+            const config = this.getActConfig();
+            if (!config || !config.rutas || !config.rutas.detail) {
+                console.warn('No se encontró ruta de detalle en configuración');
+                return;
+            }
 
-            // obtener ids (prioridad: dataset del módulo -> configuración global -> inputs hidden)
-            const idActividad = modulo.dataset.idActividad || modulo.getAttribute('data-id-actividad') || actividad.id || null;
-            const unidadFromModule = modulo.dataset.unidadId || modulo.getAttribute('data-unidad') || null;
-            const semestreFromModule = modulo.dataset.idSemestre || modulo.getAttribute('data-id-semestre') || null;
+            // Obtener IDs
+            const idActividad = modulo.dataset.idActividad || actividad.id || null;
+            const unidadId = modulo.dataset.unidadId || config.unidadId || null;
+            const semestreId = modulo.dataset.idSemestre || config.semestreId || null;
 
-            const unidadGlobal = (window.ActDV && ('unidadId' in window.ActDV)) ? window.ActDV.unidadId : ((window.ActUH && ('unidadId' in window.ActUH)) ? window.ActUH.unidadId : null);
-            const semestreGlobal = (window.ActDV && ('semestreId' in window.ActDV)) ? window.ActDV.semestreId : ((window.ActUH && ('semestreId' in window.ActUH)) ? window.ActUH.semestreId : null);
+            if (!idActividad) {
+                console.warn('ID de actividad no encontrado');
+                return;
+            }
 
-            // fallback a inputs hidden si existen
-            const unidadInput = document.getElementById('id_unidad')?.value || null;
-            const semestreInput = document.getElementById('id_semestre')?.value || null;
-
+            // Construir URL
             const params = new URLSearchParams();
-            if (idActividad) params.append('id_actividad', idActividad);
-            const finalUnidad = unidadFromModule || unidadGlobal || unidadInput;
-            if (finalUnidad) params.append('id_unidad', finalUnidad);
-            const finalSemestre = semestreFromModule || semestreGlobal || semestreInput;
-            if (finalSemestre) params.append('id_semestre', finalSemestre);
+            params.append('id_actividad', idActividad);
+            if (unidadId) params.append('id_unidad', unidadId);
+            if (semestreId) params.append('id_semestre', semestreId);
 
-            const sep = base.includes('?') ? '&' : '?';
-            window.location.href = base + sep + params.toString();
+            const sep = config.rutas.detail.includes('?') ? '&' : '?';
+            window.location.href = config.rutas.detail + sep + params.toString();
         });
 
         return modulo;
@@ -663,11 +754,19 @@ class GestorActividades {
     }
 }
 
-// Exportar instancia global mejorada
+// Exportar instancia global
 document.addEventListener('DOMContentLoaded', function() {
     try {
         window.gestorActividades = new GestorActividades();
         console.log('Gestor de actividades inicializado correctamente');
+        
+        // Log para depuración
+        const configs = ['ActUH', 'ActDV', 'ActSMT', 'ActVE'];
+        configs.forEach(configName => {
+            if (window[configName]) {
+                console.log(`Configuración ${configName} encontrada:`, window[configName]);
+            }
+        });
     } catch (error) {
         console.error('Error inicializando gestor de actividades:', error);
     }
@@ -680,59 +779,3 @@ window.addEventListener('click', function(event) {
         if (window.gestorActividades) window.gestorActividades.cerrarModalActividad();
     }
 });
-
-// --- inicio: redirección a detalle de actividad (condicional) ---
-(function () {
-  function getDetalleBaseForModulo(modulo) {
-    // prioridad: data-unidad en el módulo -> window.gestorConfig.detalleBase{Unidad} -> window.gestorConfig.detalleBase
-    const unidad = (modulo && (modulo.dataset.unidad || modulo.getAttribute('data-unidad'))) || null;
-    if (unidad) {
-      const key = 'detalleBase' + unidad.toUpperCase(); // e.g. detalleBaseDV or detalleBaseUH
-      if (window.gestorConfig && window.gestorConfig[key]) return window.gestorConfig[key];
-    }
-    if (window.gestorConfig && window.gestorConfig.detalleBase) return window.gestorConfig.detalleBase;
-    return null;
-  }
-
-  document.addEventListener('click', function (e) {
-    // buscar módulo más cercano (ajusta selectores si tu HTML cambia)
-    const modulo = e.target.closest && e.target.closest('.modulo.actividad, .modulo.actividad-item, .modulo');
-    if (!modulo) return;
-
-    const base = getDetalleBaseForModulo(modulo);
-    if (!base) return;
-
-    const id = modulo.dataset.idActividad || modulo.dataset.id || modulo.getAttribute('data-id-actividad') || modulo.getAttribute('data-id');
-    if (!id) return;
-
-    const nombre = modulo.dataset.nombre || modulo.getAttribute('data-nombre') || '';
-    const descripcion = modulo.dataset.descripcion || modulo.getAttribute('data-descripcion') || '';
-    const sep = base.indexOf('?') === -1 ? '?' : '&';
-    let url = base + sep + 'id_actividad=' + encodeURIComponent(id);
-    if (nombre) url += '&nombre=' + encodeURIComponent(nombre);
-    if (descripcion) url += '&descripcion=' + encodeURIComponent(descripcion);
-    window.location.href = url;
-  }, false);
-
-  // helper público
-  window.gestorActividadesRedirect = {
-    detalleUrlForModulo(modulo) {
-      const base = getDetalleBaseForModulo(modulo);
-      if (!base) return null;
-      const id = modulo.dataset.idActividad || modulo.dataset.id || modulo.getAttribute('data-id-actividad') || modulo.getAttribute('data-id');
-      if (!id) return null;
-      const nombre = modulo.dataset.nombre || modulo.getAttribute('data-nombre') || '';
-      const descripcion = modulo.dataset.descripcion || modulo.getAttribute('data-descripcion') || '';
-      const sep = base.indexOf('?') === -1 ? '?' : '&';
-      let url = base + sep + 'id_actividad=' + encodeURIComponent(id);
-      if (nombre) url += '&nombre=' + encodeURIComponent(nombre);
-      if (descripcion) url += '&descripcion=' + encodeURIComponent(descripcion);
-      return url;
-    },
-    goToDetalleForModulo(modulo) {
-      const u = this.detalleUrlForModulo(modulo);
-      if (u) window.location.href = u;
-    }
-  };
-})();
-// --- fin: redirección ---
