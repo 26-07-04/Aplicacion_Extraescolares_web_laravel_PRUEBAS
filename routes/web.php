@@ -324,4 +324,13 @@ Route::post('coordinador/actividades/{actividad}/estudiantes/check-duplicates', 
     ->middleware('auth')
     ->name('coordinador.actividades.estudiantes.check-duplicates');
 
+// Rutas para CRUD de estudiantes en Demetrio Vallejo
+Route::post('coordinador/estudiantes/{id}/actualizar', [PanelDemetrioVallejoController::class, 'actualizarEstudiante'])
+    ->middleware('auth')
+    ->name('coordinador.estudiantes.actualizar');
+
+Route::post('coordinador/estudiantes/{id}/eliminar', [PanelDemetrioVallejoController::class, 'eliminarEstudiante'])
+    ->middleware('auth')
+    ->name('coordinador.estudiantes.eliminar');
+
 require __DIR__.'/auth.php';
