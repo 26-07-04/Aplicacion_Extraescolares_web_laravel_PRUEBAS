@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Semestre;
 use App\Models\Actividad;
 use App\Models\Unidad;
+use App\Models\Estudiante;
 
 class PanelDemetrioVallejoController extends Controller
 {
@@ -101,5 +102,64 @@ class PanelDemetrioVallejoController extends Controller
             'uaKeyword' => $uaKeyword,
             'user_unidad_id' => $user_unidad_id,
         ]);
+    }
+
+    public function actualizarEstudiante($id, Request $request)
+    {
+        $user = Auth::user();
+        if (!$user || ($user->rol ?? '') !== 'Coordinador') {
+            return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
+        }
+
+        try {
+            $estudiante = Estudiante::findOrFail($id);
+            
+            // Validar que el estudiante pertenezca a una actividad en la unidad del coordinador
+            $actividad = Actividad::findOrFail($estudiante->id_actividad);
+            
+            $user_unidad_id = $user->unidad_id ?? $user->unidad ?? null;
+            if ($user_unidad_id && $actividad->id_unidad != $user_unidad_id) {
+                return response()->json(['success' => false, 'message' => 'No tienes permiso para editar este estudiante'], 403);
+            }
+
+            $validated = $request->validate([
+                'nombre' => 'required|string|max:255',
+                'numero_control' => 'required|string|max:100',
+                'carrera' => 'required|string|max:255',
+                'semestre' => 'required|string|max:50'
+            ]);
+
+            $estudiante->update($validated);
+
+            return response()->json(['success' => true, 'message' => 'Estudiante actualizado exitosamente', 'data' => $estudiante]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 400);
+        }
+    }
+
+    public function eliminarEstudiante($id, Request $request)
+    {
+        $user = Auth::user();
+        if (!$user || ($user->rol ?? '') !== 'Coordinador') {
+            return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
+        }
+
+        try {
+            $estudiante = Estudiante::findOrFail($id);
+            
+            // Validar que el estudiante pertenezca a una actividad en la unidad del coordinador
+            $actividad = Actividad::findOrFail($estudiante->id_actividad);
+            
+            $user_unidad_id = $user->unidad_id ?? $user->unidad ?? null;
+            if ($user_unidad_id && $actividad->id_unidad != $user_unidad_id) {
+                return response()->json(['success' => false, 'message' => 'No tienes permiso para eliminar este estudiante'], 403);
+            }
+
+            $estudiante->delete();
+
+            return response()->json(['success' => true, 'message' => 'Estudiante eliminado exitosamente']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 400);
+        }
     }
 }

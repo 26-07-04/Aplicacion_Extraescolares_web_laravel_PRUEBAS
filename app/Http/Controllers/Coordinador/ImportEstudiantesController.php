@@ -11,13 +11,18 @@ class ImportEstudiantesController extends Controller
 {
     /**
      * Valida si los estudiantes ya existen en la actividad (para previsualización).
-     * Recibe JSON: { numeroControles: [...], id_actividad }
+     * Recibe JSON: { numeroControles: [...], id_actividad, id_semestre }
      * Retorna: { duplicados: { "20230016": true, ... } }
+     * 
+     * Un estudiante es "duplicado" si:
+     * 1. Ya existe en ESTA actividad, O
+     * 2. Ya existe en OTRA actividad del MISMO semestre
      */
     public function checkDuplicates($actividadId, Request $request)
     {
         $data = $request->all();
         $numeroControles = $data['numeroControles'] ?? [];
+        $id_semestre = $data['id_semestre'] ?? null;
 
         if (!is_array($numeroControles) || count($numeroControles) === 0) {
             return response()->json(['duplicados' => []]);
@@ -31,16 +36,27 @@ class ImportEstudiantesController extends Controller
             return response()->json(['duplicados' => []]);
         }
 
-        // Buscar existentes para esta actividad
-        $existentes = Estudiante::where('id_actividad', $actividadId)
+        // Buscar estudiantes que ya existen en ESTA ACTIVIDAD
+        $existentesEnEstaActividad = Estudiante::where('id_actividad', $actividadId)
             ->whereIn('numero_control', $numNormalizados)
             ->pluck('numero_control')
             ->toArray();
 
-        // Crear mapa: numero_control => true si existe
+        // Si hay id_semestre, también buscar en OTRAS actividades del MISMO semestre
+        $existentesEnOtraActividadDelMismoSemestre = [];
+        if ($id_semestre) {
+            $existentesEnOtraActividadDelMismoSemestre = Estudiante::where('id_semestre', $id_semestre)
+                ->where('id_actividad', '!=', $actividadId)
+                ->whereIn('numero_control', $numNormalizados)
+                ->pluck('numero_control')
+                ->toArray();
+        }
+
+        // Combinar: es duplicado si existe en esta actividad O en otra actividad del mismo semestre
         $duplicados = [];
         foreach ($numNormalizados as $no) {
-            $duplicados[$no] = in_array($no, $existentes);
+            $isDuplicado = in_array($no, $existentesEnEstaActividad) || in_array($no, $existentesEnOtraActividadDelMismoSemestre);
+            $duplicados[$no] = $isDuplicado;
         }
 
         return response()->json(['duplicados' => $duplicados]);
@@ -105,22 +121,29 @@ class ImportEstudiantesController extends Controller
                     continue;
                 }
 
-                // Verificar si el número de control ya existe en la tabla (la migración tiene UNIQUE en numero_control)
-                $global = Estudiante::where('numero_control', $no)->first();
-                if ($global) {
-                    // Si ya existe para la misma actividad (y semestre cuando aplica), considerarlo duplicado
-                    $sameActivity = ($global->id_actividad == $actividadId);
-                    $sameSemestre = true;
-                    if ($id_semestre) {
-                        $sameSemestre = ($global->id_semestre == $id_semestre);
-                    }
-                    if ($sameActivity && $sameSemestre) {
+                // Verificar si el número de control ya existe EN ESTA ACTIVIDAD (duplicado en misma actividad)
+                $existeEnEstaActividad = Estudiante::where('numero_control', $no)
+                    ->where('id_actividad', $actividadId)
+                    ->first();
+                
+                if ($existeEnEstaActividad) {
+                    $skipped++;
+                    try { @file_put_contents(storage_path('logs/import_debug.log'), "SKIPPED ROW " . ($i+1) . ": numero_control {$no} already exists in activity {$actividadId}.\n", FILE_APPEND); } catch (\Throwable $__) {}
+                    continue;
+                }
+
+                // Verificar si el estudiante ya existe en OTRA actividad del MISMO semestre
+                // Si es así, no permitir (estudiante no puede estar en 2 actividades del mismo semestre)
+                if ($id_semestre) {
+                    $existeEnOtraActividadDelMismoSemestre = Estudiante::where('numero_control', $no)
+                        ->where('id_semestre', $id_semestre)
+                        ->where('id_actividad', '!=', $actividadId)
+                        ->first();
+                    
+                    if ($existeEnOtraActividadDelMismoSemestre) {
                         $skipped++;
-                        continue;
-                    } else {
-                        $skipped++;
-                        $errors[] = ['row' => $i+1, 'reason' => "Número de control existe en otra entrada (id_alumno: {$global->id_alumno}, actividad: {$global->id_actividad}, id_semestre: {$global->id_semestre})"];
-                        try { @file_put_contents(storage_path('logs/import_debug.log'), "SKIPPED ROW " . ($i+1) . ": numero_control {$no} exists in DB (id_alumno: {$global->id_alumno}, actividad: {$global->id_actividad}).\n", FILE_APPEND); } catch (\Throwable $__) {}
+                        $errors[] = ['row' => $i+1, 'reason' => "Estudiante ya está en otra actividad de este semestre"];
+                        try { @file_put_contents(storage_path('logs/import_debug.log'), "SKIPPED ROW " . ($i+1) . ": numero_control {$no} already exists in another activity of semestre {$id_semestre}.\n", FILE_APPEND); } catch (\Throwable $__) {}
                         continue;
                     }
                 }
@@ -137,9 +160,33 @@ class ImportEstudiantesController extends Controller
                     ]);
                     $inserted++;
                 } catch (\Exception $ex) {
-                    $skipped++;
-                    $errors[] = ['row' => $i+1, 'reason' => $ex->getMessage()];
-                    try { @file_put_contents(storage_path('logs/import_debug.log'), "INSERT ERROR ROW " . ($i+1) . ": " . $ex->getMessage() . "\n" . $ex->getTraceAsString() . "\n", FILE_APPEND); } catch (\Throwable $__) {}
+                    // Si falla por UNIQUE constraint en numero_control, verificar si es porque existe en otra actividad
+                    if (strpos($ex->getMessage(), 'UNIQUE') !== false || strpos($ex->getMessage(), 'numero_control') !== false) {
+                        // El número de control ya existe en la BD pero en otra actividad/semestre
+                        // Obtener el registro existente
+                        $existing = Estudiante::where('numero_control', $no)->first();
+                        
+                        if ($existing) {
+                            // Verificar si es la misma actividad (error real)
+                            if ($existing->id_actividad == $actividadId) {
+                                $skipped++;
+                                try { @file_put_contents(storage_path('logs/import_debug.log'), "SKIPPED ROW " . ($i+1) . ": numero_control {$no} already exists in this activity.\n", FILE_APPEND); } catch (\Throwable $__) {}
+                            } else {
+                                // Es en otra actividad del mismo semestre - también es error
+                                $skipped++;
+                                $errors[] = ['row' => $i+1, 'reason' => "Estudiante ya está en otra actividad"];
+                                try { @file_put_contents(storage_path('logs/import_debug.log'), "SKIPPED ROW " . ($i+1) . ": numero_control {$no} exists in another activity.\n", FILE_APPEND); } catch (\Throwable $__) {}
+                            }
+                        } else {
+                            // No debería pasar esto
+                            $skipped++;
+                            $errors[] = ['row' => $i+1, 'reason' => $ex->getMessage()];
+                        }
+                    } else {
+                        $skipped++;
+                        $errors[] = ['row' => $i+1, 'reason' => $ex->getMessage()];
+                        try { @file_put_contents(storage_path('logs/import_debug.log'), "INSERT ERROR ROW " . ($i+1) . ": " . $ex->getMessage() . "\n" . $ex->getTraceAsString() . "\n", FILE_APPEND); } catch (\Throwable $__) {}
+                    }
                 }
             }
 
