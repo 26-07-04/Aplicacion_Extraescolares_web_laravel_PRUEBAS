@@ -100,6 +100,15 @@
     @media (max-width: 768px) {
         .table-controls { flex-direction: column; align-items: stretch; }
     }
+    table { white-space: nowrap; overflow-x: auto; }
+    th, td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+    th:nth-child(2), td:nth-child(2) { max-width: 250px; }
+    .pagination-container { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+    .btn-pagina { padding: 8px 12px; border-radius: 6px; background: #e0e0e0; color: #333; border: none; cursor: pointer; font-weight: 400; transition: var(--transicion-fluida); }
+    .btn-pagina.activo { background: #1B396A; color: #fff; font-weight: 700; }
+    .btn-paginacion { padding: 8px 12px; border-radius: 6px; background: #1B396A; color: #fff; border: none; cursor: pointer; }
+    .btn-paginacion:disabled { background: #ccc; cursor: not-allowed; }
+    .numero-pagina { padding: 0 8px; color: var(--color-texto-oscuro); font-weight: 500; }
 </style>
 
 <div class="container">
@@ -112,40 +121,78 @@
         <h3 class="title">Actividad</h3>
         <div class="controls-right">
             <button class="btn-action btn-export" onclick="exportToCSV()"><i class="fas fa-file-csv"></i> Exportar a CSV</button>
-            <div class="search-wrapper"><i class="fas fa-search"></i><input type="text" id="searchInput" onkeyup="renderTable()" placeholder="Buscar alumno..."></div>
+            <div class="search-wrapper"><i class="fas fa-search"></i><input type="text" id="searchInput" onkeyup="buscar()" placeholder="Buscar alumno..."></div>
         </div>
     </div>
-    <table>
-        <thead>
-            <tr>
-                <th class="sortable" data-column="numero_control">No. Control<i class="fas fa-sort sort-icon"></i></th>
-                <th class="sortable" data-column="nombre">Nombre<i class="fas fa-sort sort-icon"></i></th>
-                <th class="sortable" data-column="carrera">Carrera<i class="fas fa-sort sort-icon"></i></th>
-                <th class="sortable" data-column="semestre">Semestre<i class="fas fa-sort sort-icon"></i></th>
-                <th class="sortable" data-column="status">Estado<i class="fas fa-sort sort-icon"></i></th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody id="tabla-alumnos">
-            <!-- Filas de ejemplo; reemplazar con @@foreach($estudiantes as $estudiante) cuando se integre -->
-        </tbody>
-        <tbody id="empty-state-tbody" style="display: none;"><tr class="empty-row"><td colspan="6"></td></tr></tbody>
-    </table>
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th class="sortable" data-column="numero_control">No. Control</th>
+                    <th class="sortable" data-column="nombre">Nombre</th>
+                    <th class="sortable" data-column="carrera">Carrera</th>
+                    <th class="sortable" data-column="semestre">Semestre</th>
+                    <th class="sortable" data-column="status">Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-alumnos">
+            </tbody>
+            <tbody id="empty-state-tbody" style="display: none;"><tr class="empty-row"><td colspan="6">No hay estudiantes</td></tr></tbody>
+        </table>
+    </div>
+    
+    <!-- Paginación -->
+    <div class="pagination-container">
+        <button id="btnAnterior" class="btn-paginacion" onclick="paginaAnterior()">
+            <i class="fas fa-chevron-left"></i> Anterior
+        </button>
+        <div id="paginasContainer" style="display: flex; gap: 4px;"></div>
+        <button id="btnSiguiente" class="btn-paginacion" onclick="paginaSiguiente()">
+            Siguiente <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
 </div>
 
 <script>
-    // Datos de ejemplo (reemplazar con backend cuando esté listo)
-    const estudiantes = [
-        { numero_control: '20250001', nombre: 'María López', carrera: 'Ingeniería en Sistemas', semestre: 'Agosto-Diciembre 2026', status: 'completed' },
-        { numero_control: '20250002', nombre: 'Juan Pérez', carrera: 'Contaduría', semestre: 'Agosto-Diciembre 2026', status: 'pending' },
-        { numero_control: '20250003', nombre: 'Ana Gómez', carrera: 'Administración', semestre: 'Agosto-Diciembre 2026', status: 'completed' }
-    ];
-
-    // Estado de orden (no implementado por ahora) y elementos
+    // Datos de estudiantes cargados desde la base de datos
+    @php
+        $allEstudiantes = \App\Models\Estudiante::whereIn('estudiantes.id_actividad', 
+            $actividades->pluck('id_actividad')->toArray()
+        )
+        ->join('actividades', 'estudiantes.id_actividad', '=', 'actividades.id_actividad')
+        ->select('estudiantes.*', 'actividades.nombre_actividad')
+        ->orderBy('estudiantes.nombre', 'asc')
+        ->get();
+        
+        $estudiantesArray = [];
+        foreach ($allEstudiantes as $est) {
+            $estudiantesArray[] = [
+                'numero_control' => $est->numero_control ?? '',
+                'nombre' => $est->nombre ?? '',
+                'carrera' => $est->carrera ?? '',
+                'semestre' => $est->semestre ?? '',
+                'status' => 'pending',
+                'id_alumno' => $est->id_alumno ?? null,
+                'nombre_actividad' => $est->nombre_actividad ?? ''
+            ];
+        }
+    @endphp
+    
+    const todosEstudiantes = @json($estudiantesArray);
+    let estudiantesFiltrados = [...todosEstudiantes];
+    
     const tablaBody = document.getElementById('tabla-alumnos');
     const searchInput = document.getElementById('searchInput');
+    const paginasContainer = document.getElementById('paginasContainer');
+    const btnAnterior = document.getElementById('btnAnterior');
+    const btnSiguiente = document.getElementById('btnSiguiente');
+    
+    const estudiantesPorPagina = 10;
+    let paginaActual = 1;
+    let totalPaginas = 1;
 
-    function updateStats(list) {
+    function actualizarStats(list) {
         const total = list.length;
         const evaluated = list.filter(s => s.status === 'completed').length;
         const pending = list.filter(s => s.status !== 'completed').length;
@@ -154,41 +201,107 @@
         document.getElementById('stat-pending').textContent = pending;
     }
 
-    function renderTable() {
-        const q = (searchInput.value || '').toLowerCase();
-        const filtered = estudiantes.filter(s => {
-            return s.numero_control.toLowerCase().includes(q) || s.nombre.toLowerCase().includes(q) || s.carrera.toLowerCase().includes(q);
-        });
+    function renderizarPagina(pagina) {
+        if (pagina < 1 || pagina > totalPaginas) return;
+        
+        paginaActual = pagina;
+        const inicio = (pagina - 1) * estudiantesPorPagina;
+        const fin = inicio + estudiantesPorPagina;
+        const estudiantesEnPagina = estudiantesFiltrados.slice(inicio, fin);
 
+        // Limpiar tabla
         tablaBody.innerHTML = '';
-        if (filtered.length === 0) {
+
+        if (estudiantesEnPagina.length === 0) {
             document.getElementById('empty-state-tbody').style.display = '';
         } else {
             document.getElementById('empty-state-tbody').style.display = 'none';
-            filtered.forEach(s => {
+            estudiantesEnPagina.forEach(s => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${s.numero_control}</td>
-                    <td>${s.nombre}</td>
-                    <td>${s.carrera}</td>
-                    <td>${s.semestre}</td>
-                    <td><span class="status-badge ${s.status === 'completed' ? 'status-completed' : 'status-pending'}">${s.status === 'completed' ? 'CUMPLE' : 'PENDIENTE'}</span></td>
-                    <td class="actions-container"><button class="btn-generar-constancia">Generar</button></td>
+                    <td style="padding:12px 8px; border-bottom:1px solid #f2f2f2; max-width:120px;">${s.numero_control}</td>
+                    <td style="padding:12px 8px; border-bottom:1px solid #f2f2f2; max-width:180px; overflow:hidden; text-overflow:ellipsis;">${s.nombre}</td>
+                    <td style="padding:12px 8px; border-bottom:1px solid #f2f2f2; max-width:140px; overflow:hidden; text-overflow:ellipsis;">${s.carrera}</td>
+                    <td style="padding:12px 8px; border-bottom:1px solid #f2f2f2; max-width:120px;">${s.semestre}</td>
+                    <td style="padding:12px 8px; border-bottom:1px solid #f2f2f2;"><span class="status-badge ${s.status === 'completed' ? 'status-completed' : 'status-pending'}">${s.status === 'completed' ? 'CUMPLE' : 'PENDIENTE'}</span></td>
+                    <td style="padding:12px 8px; border-bottom:1px solid #f2f2f2; text-align:center;"><button class="btn-generar-constancia" data-id="${s.id_alumno}" onclick="evaluarEstudiante(this)">Evaluar</button></td>
                 `;
                 tablaBody.appendChild(tr);
             });
         }
 
-        updateStats(filtered);
+        actualizarStats(estudiantesFiltrados);
+        actualizarPaginacion();
+    }
+
+    function actualizarPaginacion() {
+        // Actualizar botones de páginas
+        paginasContainer.innerHTML = '';
+        const maxBotones = 5;
+        let inicio = Math.max(1, paginaActual - 2);
+        let fin = Math.min(totalPaginas, inicio + maxBotones - 1);
+        if (fin - inicio < maxBotones - 1) {
+            inicio = Math.max(1, fin - maxBotones + 1);
+        }
+
+        for (let i = inicio; i <= fin; i++) {
+            const btn = document.createElement('button');
+            btn.className = `btn-pagina ${i === paginaActual ? 'activo' : ''}`;
+            btn.textContent = i;
+            btn.onclick = () => renderizarPagina(i);
+            paginasContainer.appendChild(btn);
+        }
+
+        if (fin < totalPaginas) {
+            const span = document.createElement('span');
+            span.textContent = '...';
+            span.style.padding = '0 8px';
+            paginasContainer.appendChild(span);
+
+            const btnUltima = document.createElement('button');
+            btnUltima.className = 'btn-pagina';
+            btnUltima.textContent = totalPaginas;
+            btnUltima.onclick = () => renderizarPagina(totalPaginas);
+            paginasContainer.appendChild(btnUltima);
+        }
+
+        // Habilitar/Deshabilitar botones de navegación
+        btnAnterior.disabled = paginaActual === 1;
+        btnSiguiente.disabled = paginaActual === totalPaginas;
+    }
+
+    function paginaAnterior() {
+        renderizarPagina(paginaActual - 1);
+    }
+
+    function paginaSiguiente() {
+        renderizarPagina(paginaActual + 1);
+    }
+
+    function buscar() {
+        const termino = (searchInput.value || '').toLowerCase();
+        
+        if (termino.trim() === '') {
+            estudiantesFiltrados = [...todosEstudiantes];
+        } else {
+            estudiantesFiltrados = todosEstudiantes.filter(est =>
+                est.numero_control.toLowerCase().includes(termino) ||
+                est.nombre.toLowerCase().includes(termino) ||
+                est.carrera.toLowerCase().includes(termino)
+            );
+        }
+        
+        totalPaginas = Math.ceil(estudiantesFiltrados.length / estudiantesPorPagina);
+        if (totalPaginas === 0) totalPaginas = 1;
+        paginaActual = 1;
+        renderizarPagina(1);
     }
 
     function exportToCSV() {
         const rows = [
             ['No. Control','Nombre','Carrera','Semestre','Estado']
         ];
-        const q = (searchInput.value || '').toLowerCase();
-        const filtered = estudiantes.filter(s => s.numero_control.toLowerCase().includes(q) || s.nombre.toLowerCase().includes(q) || s.carrera.toLowerCase().includes(q));
-        filtered.forEach(s => rows.push([s.numero_control, s.nombre, s.carrera, s.semestre, s.status]));
+        estudiantesFiltrados.forEach(s => rows.push([s.numero_control, s.nombre, s.carrera, s.semestre, s.status]));
         const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(',')).join('\n');
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
@@ -201,8 +314,17 @@
         URL.revokeObjectURL(url);
     }
 
-    // Theme toggle removed — no JS required here
+    function evaluarEstudiante(button) {
+        const idAlumno = button.getAttribute('data-id');
+        if (!idAlumno) {
+            alert('Error: ID del alumno no encontrado');
+            return;
+        }
+        console.log('Evaluar estudiante con ID:', idAlumno);
+        alert('Funcionalidad de evaluación en desarrollo.\nEstudiante ID: ' + idAlumno);
+    }
 
     // Inicializar
-    renderTable();
+    totalPaginas = Math.ceil(estudiantesFiltrados.length / estudiantesPorPagina);
+    renderizarPagina(1);
 </script>
