@@ -492,7 +492,10 @@
                   'X-CSRF-TOKEN': __csrf,
                   'Accept': 'application/json'
                 },
-                body: JSON.stringify({ numeroControles: numeroControles })
+                body: JSON.stringify({ 
+                  numeroControles: numeroControles,
+                  id_semestre: __currentSemestreId
+                })
               }).then(r => r.json()).then(json => {
                 const duplicados = json.duplicados || {};
                 
