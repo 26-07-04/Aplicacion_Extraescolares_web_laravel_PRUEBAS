@@ -15,6 +15,7 @@ use App\Http\Controllers\Coordinador\PanelTlahuitoltepecController;
 use App\Http\Controllers\Coordinador\SemestresCursadosTlahuitoltepecController as CoordinadorSemestresTlahController;
 use App\Http\Controllers\Coordinador\SemestresCursadosDemetrioController as CoordinadorSemestresDemetrioController;
 use App\Http\Controllers\Coordinador\PanelDemetrioVallejoController;
+use App\Http\Controllers\Coordinador\ImportEstudiantesController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UnidadController;
@@ -289,8 +290,20 @@ Route::prefix('administrador')->group(function () {
 Route::prefix('administrador')->group(function () {
     Route::get('actividades/{actividad}/estudiantes', [EstudianteController::class, 'index']);
     Route::post('actividades/{actividad}/estudiantes', [EstudianteController::class, 'store']);
+    // Ruta para importación masiva (usada por coordinador desde el panel)
+    Route::post('actividades/{actividad}/estudiantes/import', [EstudianteController::class, 'bulkStore'])->name('administrador.actividades.estudiantes.import');
     Route::put('actividades/estudiantes/{id}', [EstudianteController::class, 'update']);
     Route::delete('actividades/estudiantes/{id}', [EstudianteController::class, 'destroy']);
 });
+
+// Ruta para importación usada por el panel del coordinador (controlador en carpeta Coordinador)
+Route::post('coordinador/actividades/{actividad}/estudiantes/import', [ImportEstudiantesController::class, 'import'])
+    ->middleware('auth')
+    ->name('coordinador.actividades.estudiantes.import');
+
+// Ruta para validar duplicados antes de subir
+Route::post('coordinador/actividades/{actividad}/estudiantes/check-duplicates', [ImportEstudiantesController::class, 'checkDuplicates'])
+    ->middleware('auth')
+    ->name('coordinador.actividades.estudiantes.check-duplicates');
 
 require __DIR__.'/auth.php';
