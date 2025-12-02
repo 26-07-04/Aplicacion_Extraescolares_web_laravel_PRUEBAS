@@ -87,6 +87,24 @@ Route::delete('admin/documentos/{id}', [DocumentoController::class, 'destroy'])
     ->middleware('auth')
     ->name('admin.documentos.destroy');
 
+// ============ RUTAS PARA GESTIÓN DE USUARIOS (ADMINISTRADOR) ============
+Route::middleware(['auth'])->prefix('admin')->group(function () {    // Gestión de usuarios
+    Route::prefix('usuarios')->group(function () {
+        Route::get('/', [AdminUserController::class, 'index'])->name('admin.usuarios.index');
+        Route::post('/', [AdminUserController::class, 'store'])->name('admin.usuarios.store');
+        Route::get('/{id}/edit', [AdminUserController::class, 'edit'])->name('admin.usuarios.edit');
+        Route::put('/{id}', [AdminUserController::class, 'update'])->name('admin.usuarios.update');
+        Route::delete('/{id}', [AdminUserController::class, 'destroy'])->name('admin.usuarios.destroy');
+    });
+
+    // Gestión de documentos
+    Route::prefix('documentos')->group(function () {
+        Route::get('/', [DocumentoController::class, 'index'])->name('admin.documentos.index');
+        Route::post('/', [DocumentoController::class, 'store'])->name('admin.documentos.store');
+        Route::delete('/{id}', [DocumentoController::class, 'destroy'])->name('admin.documentos.destroy');
+    });
+});
+
 // Ruta para activar un semestre (solo un semestre activo a la vez)
 Route::post('admin/semestres/{id}/activar', [SemestresCursadosController::class, 'activarSemestre'])
     ->middleware('auth')
