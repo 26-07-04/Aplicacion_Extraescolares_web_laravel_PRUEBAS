@@ -30,6 +30,7 @@ class PrincipalAdministradorController extends Controller
         $semestre = null;
         $actividades = collect();
         $estudiantes = collect();
+        $estudiantesPorActividad = []; // NUEVA VARIABLE
         $usuarios = collect();
         $id_semestre = null; // Inicialmente null
 
@@ -41,6 +42,7 @@ class PrincipalAdministradorController extends Controller
                 'semestre' => null,
                 'actividades' => $actividades,
                 'estudiantes' => $estudiantes,
+                'estudiantesPorActividad' => $estudiantesPorActividad,
                 'unidad' => null,
                 'view' => null,
                 'usuarios' => $usuarios,
@@ -108,18 +110,45 @@ class PrincipalAdministradorController extends Controller
             
             $actividades = $query->get();
             
-            // Obtener estudiantes para estas actividades
-            $estudianteIds = [];
+            // OBTENER ESTUDIANTES POR ACTIVIDAD - CORREGIDO
+            $estudiantesPorActividad = [];
             foreach ($actividades as $actividad) {
-                if (method_exists($actividad, 'estudiantes')) {
-                    $estudianteIds = array_merge($estudianteIds, 
-                        $actividad->estudiantes->pluck('id')->toArray()
-                    );
-                }
+                $actividadId = $actividad->id_actividad;
+                
+                // Obtener estudiantes de esta actividad específica
+                $estudiantesPorActividad[$actividadId] = $this->obtenerEstudiantesDeActividad($actividadId);
             }
             
+            // También obtener todos los estudiantes para compatibilidad
+            $estudianteIds = [];
+            $estudiantes = collect(); // Inicializar como colección vacía
+            
+            foreach ($actividades as $actividad) {
+                $actividadId = $actividad->id_actividad;
+                // Obtener estudiantes directamente por id_actividad
+                $estudiantesActividad = DB::table('estudiantes')
+                    ->where('id_actividad', $actividadId)
+                    ->select('id_alumno')
+                    ->get()
+                    ->pluck('id_alumno')
+                    ->toArray();
+                
+                $estudianteIds = array_merge($estudianteIds, $estudiantesActividad);
+            }
+
             if (!empty($estudianteIds)) {
-                $estudiantes = Estudiante::whereIn('id', array_unique($estudianteIds))->get();
+                $estudiantes = DB::table('estudiantes')
+                    ->whereIn('id_alumno', array_unique($estudianteIds))
+                    ->get()
+                    ->map(function($estudiante) {
+                        return (object) [
+                            'id' => $estudiante->id_alumno,
+                            'nombre' => $estudiante->nombre,
+                            'control' => $estudiante->numero_control,
+                            'semestre' => $estudiante->semestre,
+                            'carrera' => $estudiante->carrera
+                        ];
+                    });
             }
 
             return view('administrador.Principal_administrador', [
@@ -127,6 +156,7 @@ class PrincipalAdministradorController extends Controller
                 'semestre' => $semestre,
                 'actividades' => $actividades,
                 'estudiantes' => $estudiantes,
+                'estudiantesPorActividad' => $estudiantesPorActividad, // IMPORTANTE
                 'unidad' => $unidadNombre,
                 'view' => null,
                 'usuarios' => $usuarios,
@@ -142,18 +172,42 @@ class PrincipalAdministradorController extends Controller
                 // Obtener actividades para este semestre
                 $actividades = Actividad::where('id_semestre', $id_semestre)->get();
                 
-                // Obtener estudiantes para este semestre
-                $estudianteIds = [];
+                // Obtener estudiantes por actividad para este semestre
+                $estudiantesPorActividad = [];
                 foreach ($actividades as $actividad) {
-                    if (method_exists($actividad, 'estudiantes')) {
-                        $estudianteIds = array_merge($estudianteIds, 
-                            $actividad->estudiantes->pluck('id')->toArray()
-                        );
-                    }
+                    $actividadId = $actividad->id_actividad;
+                    $estudiantesPorActividad[$actividadId] = $this->obtenerEstudiantesDeActividad($actividadId);
                 }
                 
+                // Obtener estudiantes para este semestre
+                $estudianteIds = [];
+                $estudiantes = collect();
+                
+                foreach ($actividades as $actividad) {
+                    $actividadId = $actividad->id_actividad;
+                    $estudiantesActividad = DB::table('estudiantes')
+                        ->where('id_actividad', $actividadId)
+                        ->select('id_alumno')
+                        ->get()
+                        ->pluck('id_alumno')
+                        ->toArray();
+                    
+                    $estudianteIds = array_merge($estudianteIds, $estudiantesActividad);
+                }
+
                 if (!empty($estudianteIds)) {
-                    $estudiantes = Estudiante::whereIn('id', array_unique($estudianteIds))->get();
+                    $estudiantes = DB::table('estudiantes')
+                        ->whereIn('id_alumno', array_unique($estudianteIds))
+                        ->get()
+                        ->map(function($estudiante) {
+                            return (object) [
+                                'id' => $estudiante->id_alumno,
+                                'nombre' => $estudiante->nombre,
+                                'control' => $estudiante->numero_control,
+                                'semestre' => $estudiante->semestre,
+                                'carrera' => $estudiante->carrera
+                            ];
+                        });
                 }
                 
                 return view('administrador.Principal_administrador', [
@@ -161,6 +215,7 @@ class PrincipalAdministradorController extends Controller
                     'semestre' => $semestre,
                     'actividades' => $actividades,
                     'estudiantes' => $estudiantes,
+                    'estudiantesPorActividad' => $estudiantesPorActividad,
                     'unidad' => null,
                     'view' => null,
                     'usuarios' => $usuarios,
@@ -175,6 +230,7 @@ class PrincipalAdministradorController extends Controller
             'semestre' => null,
             'actividades' => collect(),
             'estudiantes' => collect(),
+            'estudiantesPorActividad' => [],
             'unidad' => null,
             'view' => null,
             'usuarios' => $usuarios,
@@ -199,6 +255,39 @@ class PrincipalAdministradorController extends Controller
         ];
         
         return $unidades[$nombre] ?? 1; // Default a Unión Hidalgo
+    }
+
+    /**
+     * Obtiene estudiantes de una actividad específica
+     */
+    private function obtenerEstudiantesDeActividad($actividadId)
+    {
+        try {
+            // Obtener estudiantes directamente desde la tabla estudiantes
+            // donde id_actividad = $actividadId
+            $estudiantes = DB::table('estudiantes')
+                ->where('id_actividad', $actividadId)
+                ->select('id_alumno as id', 'nombre', 'numero_control as control', 
+                         'semestre', 'carrera')
+                ->get()
+                ->map(function($estudiante) {
+                    return [
+                        'id' => $estudiante->id,
+                        'nombre' => $estudiante->nombre,
+                        'control' => $estudiante->control,
+                        'semestre' => $estudiante->semestre,
+                        'carrera' => $estudiante->carrera
+                    ];
+                })
+                ->toArray();
+                
+            return $estudiantes;
+            
+        } catch (\Exception $e) {
+            // Si hay error, devolver array vacío
+            \Illuminate\Support\Facades\Log::error("Error obteniendo estudiantes: " . $e->getMessage());
+        return [];
+        }
     }
 
     // Los demás métodos permanecen igual...
@@ -245,7 +334,7 @@ class PrincipalAdministradorController extends Controller
 
         if ($id) {
             try {
-                $actividad = DB::table('actividades')->where('id', $id)->first();
+                $actividad = DB::table('actividades')->where('id_actividad', $id)->first();
             } catch (\Throwable $e) {
                 $actividad = null;
             }
@@ -262,7 +351,7 @@ class PrincipalAdministradorController extends Controller
         $actividad = null;
         if ($id) {
             try {
-                $actividad = DB::table('actividades')->where('id', $id)->first();
+                $actividad = DB::table('actividades')->where('id_actividad', $id)->first();
             } catch (\Throwable $e) {
                 $actividad = null;
             }
@@ -278,7 +367,7 @@ class PrincipalAdministradorController extends Controller
         $actividad = null;
         if ($id) {
             try {
-                $actividad = DB::table('actividades')->where('id', $id)->first();
+                $actividad = DB::table('actividades')->where('id_actividad', $id)->first();
             } catch (\Throwable $e) {
                 $actividad = null;
             }
@@ -294,7 +383,7 @@ class PrincipalAdministradorController extends Controller
         $actividad = null;
         if ($id) {
             try {
-                $actividad = DB::table('actividades')->where('id', $id)->first();
+                $actividad = DB::table('actividades')->where('id_actividad', $id)->first();
             } catch (\Throwable $e) {
                 $actividad = null;
             }
