@@ -78,7 +78,6 @@
     $totalPaginas = ceil($totalEstudiantes / $estudiantesPorPagina);
   @endphp
 
-  @if($totalPaginas > 1)
   <div class="pagination-container" style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:16px; flex-wrap:wrap;">
     <button id="btnPaginaAnterior" class="btn-paginacion" style="padding:8px 12px; border-radius:6px; background:#1B396A; color:#fff; border:none; cursor:pointer; display:none;">
       <i class="fas fa-chevron-left"></i> Anterior
@@ -106,7 +105,6 @@
       Página <span id="numeroPagina">1</span> de {{ $totalPaginas }} ({{ $totalEstudiantes }} estudiantes)
     </span>
   </div>
-  @endif
 </div>
 
 <!-- Script para paginación -->
@@ -128,6 +126,93 @@
       console.log('btnAnterior:', btnAnterior);
       console.log('totalPaginas:', totalPaginas);
       console.log('allEstudiantes.length:', allEstudiantes.length);
+
+    // Event listeners para botones de acciones (se define primero para usarse en renderizarPagina)
+    function attachEventListeners() {
+      // Botones editar
+      document.querySelectorAll('.btn-editar').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          abrirModalEditar(this);
+        });
+      });
+
+      // Botones eliminar
+      document.querySelectorAll('.btn-eliminar').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const id = this.dataset.id;
+          const nombre = this.dataset.nombre;
+
+          // Mostrar alerta de confirmación directamente
+          Swal.fire({
+            title: '¿Estás seguro?',
+            text: `No podrás revertir la eliminación de ${nombre}`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ff7f00',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              // Proceder con la eliminación
+              const csrfToken = document.querySelector('input[name="_token"]')?.value || '{{ csrf_token() }}';
+
+              fetch(`/coordinador/estudiantes/${id}/eliminar`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRF-TOKEN': csrfToken,
+                  'Accept': 'application/json'
+                }
+              }).then(r => r.json()).then(json => {
+                if (json.success) {
+                  // Mostrar alerta de éxito
+                  Swal.fire({
+                    title: '¡Eliminado!',
+                    text: 'Estudiante eliminado exitosamente',
+                    icon: 'success'
+                  });
+                  setTimeout(() => {
+                    location.reload(); // Recargar página
+                  }, 1500);
+                } else {
+                  Swal.fire({
+                    title: 'Error',
+                    text: json.message || 'Error desconocido',
+                    icon: 'error'
+                  });
+                }
+              }).catch(err => {
+                console.error(err);
+                Swal.fire({
+                  title: 'Error',
+                  text: 'Error al comunicarse con el servidor',
+                  icon: 'error'
+                });
+              });
+            }
+          });
+        });
+      });
+    }
+
+    // Función para abrir modal de editar
+    function abrirModalEditar(btn) {
+      const id = btn.dataset.id;
+      const nombre = btn.dataset.nombre;
+      const numero = btn.dataset.numero;
+      const carrera = btn.dataset.carrera;
+      const semestre = btn.dataset.semestre;
+
+      document.getElementById('editId').value = id;
+      document.getElementById('editNombre').value = nombre;
+      document.getElementById('editNumero').value = numero;
+      document.getElementById('editCarrera').value = carrera;
+      document.getElementById('editSemestre').value = semestre;
+      document.getElementById('modalEditar').style.display = 'flex';
+    }
 
     function renderizarPagina(pagina) {
       if (pagina < 1 || pagina > totalPaginas) return;
@@ -178,6 +263,9 @@
       // Habilitar/Deshabilitar botones de navegación
       btnAnterior.style.display = pagina === 1 ? 'none' : 'inline-block';
       btnSiguiente.style.display = pagina === totalPaginas ? 'none' : 'inline-block';
+      
+      // Agregar event listeners a los botones de acciones
+      attachEventListeners();
     }
 
     // Event listeners
@@ -352,102 +440,8 @@
     `;
     document.head.appendChild(styleRecargar);
 
-    // Event listeners para botones de acciones (se agregan después de renderizar)
-    function attachEventListeners() {
-      // Botones editar
-      document.querySelectorAll('.btn-editar').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-          e.preventDefault();
-          abrirModalEditar(this);
-        });
-      });
-
-      // Botones eliminar
-      document.querySelectorAll('.btn-eliminar').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-          e.preventDefault();
-          const id = this.dataset.id;
-          const nombre = this.dataset.nombre;
-
-          // Mostrar alerta de confirmación directamente
-          Swal.fire({
-            title: '¿Estás seguro?',
-            text: `No podrás revertir la eliminación de ${nombre}`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#ff7f00',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
-          }).then((result) => {
-            if (result.isConfirmed) {
-              // Proceder con la eliminación
-              const csrfToken = document.querySelector('input[name="_token"]')?.value || '{{ csrf_token() }}';
-
-              fetch(`/coordinador/estudiantes/${id}/eliminar`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'X-CSRF-TOKEN': csrfToken,
-                  'Accept': 'application/json'
-                }
-              }).then(r => r.json()).then(json => {
-                if (json.success) {
-                  // Mostrar alerta de éxito
-                  Swal.fire({
-                    title: '¡Eliminado!',
-                    text: 'Estudiante eliminado exitosamente',
-                    icon: 'success'
-                  });
-                  setTimeout(() => {
-                    location.reload(); // Recargar página
-                  }, 1500);
-                } else {
-                  Swal.fire({
-                    title: 'Error',
-                    text: json.message || 'Error desconocido',
-                    icon: 'error'
-                  });
-                }
-              }).catch(err => {
-                console.error(err);
-                Swal.fire({
-                  title: 'Error',
-                  text: 'Error al comunicarse con el servidor',
-                  icon: 'error'
-                });
-              });
-            }
-          });
-        });
-      });
-    }
-
-    // Función para abrir modal de editar
-    function abrirModalEditar(btn) {
-      const id = btn.dataset.id;
-      const nombre = btn.dataset.nombre;
-      const numero = btn.dataset.numero;
-      const carrera = btn.dataset.carrera;
-      const semestre = btn.dataset.semestre;
-
-      document.getElementById('editId').value = id;
-      document.getElementById('editNombre').value = nombre;
-      document.getElementById('editNumero').value = numero;
-      document.getElementById('editCarrera').value = carrera;
-      document.getElementById('editSemestre').value = semestre;
-      document.getElementById('modalEditar').style.display = 'flex';
-    }
-
     // Agregar event listeners iniciales
     attachEventListeners();
-
-    // Re-agregar listeners después de cambiar de página
-    const originalRenderizar = renderizarPagina;
-    renderizarPagina = function(pagina) {
-      originalRenderizar.call(this, pagina);
-      attachEventListeners();
-    };
     })();
   });
 </script>
