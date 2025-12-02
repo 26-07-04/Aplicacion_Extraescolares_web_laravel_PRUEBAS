@@ -205,6 +205,43 @@
       </div>
       @endif
 
+      <!-- Modal de previsualización de Excel (abre al clicar en una actividad) -->
+      <div id="excelModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:3000; align-items:flex-start; justify-content:center; overflow:auto; padding-top:32px; padding-bottom:32px;">
+        <div style="background:#fff; width:92%; max-width:980px; border-radius:8px; padding:16px; box-shadow:0 10px 40px rgba(0,0,0,0.35);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div>
+              <h3 style="margin:0;">Previsualización — <span id="excelModalActividadName"></span></h3>
+              <div style="font-size:12px; color:#666; margin-top:6px;"><span id="excelModalInfo"></span></div>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <button id="excelModalUpload" style="padding:8px 10px; border-radius:6px; background:#28a745; color:#fff; border:none; cursor:pointer; display:none;">Subir estudiantes</button>
+              <button id="excelModalClose" style="padding:8px 10px; border-radius:6px; background:#6c757d; color:#fff; border:none; cursor:pointer;">Cerrar</button>
+            </div>
+          </div>
+          <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
+            <button id="excelModalSelectFile" style="padding:8px 10px; border-radius:6px; background:#1B396A; color:#fff; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:8px;"><i class="fas fa-file-excel"></i>Seleccionar archivo</button>
+            <div style="font-size:13px; color:#444;">Actividad seleccionada: <strong><span id="excelModalActividadNameSmall"></span></strong></div>
+          </div>
+          <div style="max-height:70vh; overflow:auto; background:#fff; border-radius:6px; box-shadow:0 3px 10px rgba(0,0,0,0.06);">
+            <table id="excelModalTable" style="width:100%; border-collapse:collapse; min-width:600px;">
+              <thead>
+                <tr>
+                  <th style="position:sticky; top:0; text-align:left; padding:10px 12px; border-bottom:2px solid rgba(0,0,0,0.08); background:#1B396A; color:#fff; font-weight:700; z-index:5;">No. Control</th>
+                  <th style="position:sticky; top:0; text-align:left; padding:10px 12px; border-bottom:2px solid rgba(0,0,0,0.08); background:#1B396A; color:#fff; font-weight:700; z-index:5;">Nombre</th>
+                  <th style="position:sticky; top:0; text-align:left; padding:10px 12px; border-bottom:2px solid rgba(0,0,0,0.08); background:#1B396A; color:#fff; font-weight:700; z-index:5;">Carrera</th>
+                  <th style="position:sticky; top:0; text-align:left; padding:10px 12px; border-bottom:2px solid rgba(0,0,0,0.08); background:#1B396A; color:#fff; font-weight:700; z-index:5;">Semestre</th>
+                  <th style="position:sticky; top:0; text-align:center; padding:10px 12px; border-bottom:2px solid rgba(0,0,0,0.08); background:#1B396A; color:#fff; font-weight:700; z-index:5; width:80px;">Estado</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input oculto global para Excel (usado por el modal) -->
+      <input type="file" id="fileExcelInputGlobal" accept=".xlsx,.xls,.csv" style="display:none;">
+
       <!-- Activities Section (estática para diseño) -->
       @if(empty($show))
       <div class="activities-section" style="margin:22px auto 0; max-width:1200px;">
@@ -216,7 +253,7 @@
           <div class="activities-grid">
             @if(!empty($actividades) && $actividades->count() > 0)
               @foreach($actividades as $actividad)
-                <div class="activity-card">
+                <div class="activity-card" data-actividad-id="{{ $actividad->id ?? $actividad->id_actividad ?? '' }}" data-actividad-nombre="{{ $actividad->nombre_actividad }}" style="cursor:pointer;">
                   <div class="card-head"><h3 style="margin:0 0 8px 0; font-size:1.05rem; color:#111;">{{ $actividad->nombre_actividad }}</h3></div>
                   <div class="img-wrap">
                     @php $img = $actividad->imagen_url ?? null; @endphp
@@ -314,6 +351,317 @@
         e.preventDefault();
         if (!logoutForm) return window.location.href = '/';
         logoutForm.submit();
+      });
+    })();
+  </script>
+
+  <!-- SheetJS y script para manejar la carga desde Activities list -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    (function(){
+      // Definir variables globales al inicio
+      const __csrf = '{{ csrf_token() }}';
+      const __currentSemestreId = '{{ $semestre->id ?? $semestre->id_semestre ?? request()->route('id') ?? 0 }}';
+      const __currentUnidadId = '{{ $user->id_unidad ?? 0 }}';
+      
+      // Mapear actividades a su id_unidad
+      const actividadesUnidadMap = {
+        @foreach($actividades ?? [] as $act)
+          '{{ $act->id_actividad }}': '{{ $act->id_unidad ?? 0 }}',
+        @endforeach
+      };
+
+      const fileInput = document.getElementById('fileExcelInputGlobal');
+      const modal = document.getElementById('excelModal');
+      const modalTableBody = document.querySelector('#excelModalTable tbody');
+      const modalActividadName = document.getElementById('excelModalActividadName');
+      const modalActividadNameSmall = document.getElementById('excelModalActividadNameSmall');
+      const modalInfo = document.getElementById('excelModalInfo');
+      const modalClose = document.getElementById('excelModalClose');
+      const modalUpload = document.getElementById('excelModalUpload');
+      const modalSelectFile = document.getElementById('excelModalSelectFile');
+
+      let actividadSeleccionada = { id: null, nombre: '' };
+
+      // Abrir modal al clicar la tarjeta completa (activity-card)
+      document.querySelectorAll('.activity-card[data-actividad-id]').forEach(el => {
+        el.addEventListener('click', function(){
+          actividadSeleccionada.id = this.dataset.actividadId || null;
+          actividadSeleccionada.nombre = this.dataset.actividadNombre || '';
+          // Mostrar modal
+          if (modal) {
+            modal.style.display = 'flex';
+            modalActividadName.textContent = actividadSeleccionada.nombre || '';
+            modalActividadNameSmall.textContent = actividadSeleccionada.nombre || '';
+            modalInfo.textContent = '';
+            modalTableBody.innerHTML = '<tr><td colspan="5" style="padding:12px; text-align:center; color:#666;">Seleccione un archivo para previsualizar</td></tr>';
+            if (modalUpload) modalUpload.style.display = 'none';
+          }
+        });
+      });
+
+      if (!fileInput) return;
+
+      // Cuando el usuario pulsa el botón dentro del modal para seleccionar archivo
+      if (modalSelectFile) modalSelectFile.addEventListener('click', function(){
+        // limpiar para permitir re-carga del mismo archivo
+        fileInput.value = null;
+        fileInput.click();
+      });
+
+      // Procesar archivo seleccionado
+      fileInput.addEventListener('change', function(e){
+        const f = e.target.files[0];
+        if (!f) return;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          try {
+            const data = evt.target.result;
+            const workbook = XLSX.read(data, { type: 'array' });
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            if (!rows || rows.length === 0) {
+              alert('El archivo está vacío o no se pudo leer.');
+              return;
+            }
+
+            // Normalizar encabezados (quitar acentos y caracteres especiales)
+            const rawHeaders = rows[0].map(h => ('' + (h || '')).trim());
+            function normalizeHeader(s) {
+              try { return String(s || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase(); }
+              catch (e) { return String(s || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase(); }
+            }
+
+            const normHeaders = rawHeaders.map(h => normalizeHeader(h));
+            const headerMap = {};
+            let headerRowPresent = false;
+            if (normHeaders.some(h => h && /[a-z]/i.test(h))) {
+              headerRowPresent = true;
+              normHeaders.forEach((h, i) => {
+                if (h.includes('nombre')) headerMap[i] = 'Nombre';
+                else if (h.includes('control') || h.includes('nocontrol') || h.includes('numcontrol')) headerMap[i] = 'No_control';
+                else if (h.includes('carrera')) headerMap[i] = 'Carrera';
+                else if (h.includes('semestre')) headerMap[i] = 'Semestre';
+                else headerMap[i] = h || ('col' + i);
+              });
+            } else {
+              headerMap[0] = 'No_control';
+              headerMap[1] = 'Nombre';
+              headerMap[2] = 'Carrera';
+              headerMap[3] = 'Semestre';
+              headerRowPresent = false;
+            }
+
+            const mapped = [];
+            const startRow = headerRowPresent ? 1 : 0;
+            for (let r = startRow; r < rows.length; r++) {
+              const row = rows[r];
+              if (!row || row.length === 0) continue;
+              const obj = {};
+              for (let c = 0; c < row.length; c++) {
+                const key = headerMap[c] || ('col' + c);
+                const val = row[c] !== undefined && row[c] !== null ? row[c] : '';
+                obj[key] = val;
+              }
+              if (!obj['Nombre'] && !obj['No_control']) continue;
+              mapped.push(obj);
+            }
+
+            if (modalInfo) {
+              modalInfo.textContent = headerRowPresent ? '' : 'Se usó mapeo automático por columnas (orden: No_control, Nombre, Carrera, Semestre).';
+            }
+
+            // Guardar mapeo en memoria para poder enviarlo al servidor
+            window.__lastExcelMapped = mapped;
+
+            // Render en modal
+            if (modalActividadName) modalActividadName.textContent = actividadSeleccionada.nombre || sheetName || '';
+            if (modalActividadNameSmall) modalActividadNameSmall.textContent = actividadSeleccionada.nombre || sheetName || '';
+            modalTableBody.innerHTML = '';
+            if (!mapped.length) {
+              modalTableBody.innerHTML = '<tr><td colspan="5" style="padding:12px; text-align:center; color:#666;">No hay registros.</td></tr>';
+            } else {
+              // Validar duplicados antes de renderizar
+              const numeroControles = mapped.map(r => r.No_control || r.no_control || r.Control || '');
+              
+              fetch('/coordinador/actividades/' + actividadSeleccionada.id + '/estudiantes/check-duplicates', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRF-TOKEN': __csrf,
+                  'Accept': 'application/json'
+                },
+                body: JSON.stringify({ numeroControles: numeroControles })
+              }).then(r => r.json()).then(json => {
+                const duplicados = json.duplicados || {};
+                
+                // Renderizar tabla con estado de duplicados
+                modalTableBody.innerHTML = mapped.map((r, idx) => {
+                  const no = r.No_control || r.no_control || r.Control || '';
+                  const esDuplicado = duplicados[no] === true;
+                  const bgColor = esDuplicado ? '#fff3cd' : '#fff';
+                  const textColor = esDuplicado ? '#856404' : '#000';
+                  
+                  return `
+                    <tr style="background:${bgColor}; ${esDuplicado ? 'opacity:0.7;' : ''}">
+                      <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2; color:${textColor};">${no}</td>
+                      <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2; color:${textColor};">${r.Nombre || r.nombre || ''}</td>
+                      <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2; color:${textColor};">${r.Carrera || r.carrera || ''}</td>
+                      <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2; color:${textColor};">${r.Semestre || r.semestre || '{{ $semestre->nombre ?? "" }}'}</td>
+                      <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2; text-align:center; color:${esDuplicado ? '#dc3545' : '#28a745'}; font-weight:700; width:60px;">
+                        ${esDuplicado ? '✗ Existe' : '✓ Nuevo'}
+                      </td>
+                    </tr>`;
+                }).join('');
+                
+                // Contar duplicados y actualizar estado del botón
+                const hayDuplicados = Object.values(duplicados).some(v => v === true);
+                const totalFilas = mapped.length;
+                const filasNuevas = totalFilas - Object.values(duplicados).filter(v => v === true).length;
+                
+                window.__hasDuplicates = hayDuplicados;
+                
+                if (modalUpload) {
+                  if (filasNuevas > 0) {
+                    // Hay al menos un alumno nuevo - permitir subida
+                    let btnText = 'Subir estudiantes';
+                    if (hayDuplicados) {
+                      btnText = `Subir ${filasNuevas} estudiante${filasNuevas !== 1 ? 's' : ''} (ignorando ${totalFilas - filasNuevas} duplicado${totalFilas - filasNuevas !== 1 ? 's' : ''})`;
+                    }
+                    modalUpload.textContent = btnText;
+                    modalUpload.disabled = false;
+                    modalUpload.style.opacity = '1';
+                    modalUpload.style.cursor = 'pointer';
+                  } else {
+                    // Todos son duplicados - no permitir subida
+                    modalUpload.textContent = 'Todos son duplicados (no hay nada que subir)';
+                    modalUpload.disabled = true;
+                    modalUpload.style.opacity = '0.5';
+                    modalUpload.style.cursor = 'not-allowed';
+                  }
+                }
+              }).catch(err => {
+                console.error('Error validando duplicados:', err);
+                // Si falla la validación, renderizar sin validación
+                modalTableBody.innerHTML = mapped.map(r => `
+                  <tr>
+                    <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">${r.No_control || r.no_control || r.Control || ''}</td>
+                    <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">${r.Nombre || r.nombre || ''}</td>
+                    <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">${r.Carrera || r.carrera || ''}</td>
+                    <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">${r.Semestre || r.semestre || '{{ $semestre->nombre ?? "" }}'}</td>
+                    <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2; text-align:center;">—</td>
+                  </tr>`).join('');
+                if (modalUpload) {
+                  modalUpload.textContent = 'Subir estudiantes';
+                  modalUpload.disabled = false;
+                }
+              });
+              
+              // Mostrar botón de subir
+              if (modalUpload) modalUpload.style.display = 'inline-block';
+            }
+
+            // Asegurar modal visible
+            if (modal) modal.style.display = 'flex';
+          } catch (err) {
+            console.error(err);
+            alert('Error al procesar el archivo. Asegúrate de que sea un Excel válido.');
+          }
+        };
+        reader.readAsArrayBuffer(f);
+      });
+
+      // Enviar al servidor la previsualización (bulk import)
+      if (modalUpload) modalUpload.addEventListener('click', function(){
+        const mapped = window.__lastExcelMapped || [];
+        if (!mapped || mapped.length === 0) {
+          alert('No hay datos para subir. Carga primero un archivo.');
+          return;
+        }
+        if (!actividadSeleccionada.id) {
+          alert('No se detectó la actividad seleccionada. Vuelve a abrir el modal desde la actividad deseada.');
+          return;
+        }
+
+        // Obtener id_unidad de la actividad, no del usuario
+        const unidadIdFromActividad = actividadesUnidadMap[actividadSeleccionada.id] || __currentUnidadId;
+
+        const payload = {
+          students: mapped,
+          id_unidad: unidadIdFromActividad,
+          id_semestre: __currentSemestreId
+        };
+
+        modalUpload.disabled = true;
+        modalUpload.textContent = 'Subiendo...';
+
+        fetch('/coordinador/actividades/' + actividadSeleccionada.id + '/estudiantes/import', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': __csrf,
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        }).then(r => r.json()).then(json => {
+          modalUpload.disabled = false;
+          modalUpload.textContent = 'Subir estudiantes';
+          if (json.inserted !== undefined) {
+            const actividadNombre = actividadSeleccionada.nombre || 'la actividad';
+            const insertados = json.inserted || 0;
+            const totalMsg = insertados === 1 ? '1 alumno ha' : insertados + ' alumnos han';
+            
+            // Mostrar alerta SweetAlert2 con auto-cierre
+            Swal.fire({
+              position: 'center',
+              icon: 'success',
+              title: 'Importación completada',
+              html: `<div style="font-size:14px;"><strong>${totalMsg} sido agregados</strong> a <strong>${actividadNombre}</strong>` + 
+                    (json.skipped > 0 ? `<br><small style="color:#666; font-size:12px;">(${json.skipped} omitidos)</small>` : '') + `</div>`,
+              showConfirmButton: false,
+              timer: 2500,
+              timerProgressBar: true,
+              didOpen: (modal) => {
+                const titleEl = modal.querySelector('.swal2-title');
+                if (titleEl) titleEl.style.fontSize = '18px';
+              }
+            });
+            
+            // Cerrar modal y limpiar
+            setTimeout(() => {
+              if (modal) modal.style.display = 'none';
+              modalTableBody.innerHTML = '';
+              if (modalInfo) modalInfo.textContent = '';
+            }, 500);
+          } else if (json.errors) {
+            alert('Error: ' + JSON.stringify(json));
+          } else {
+            alert('Respuesta inesperada del servidor.');
+          }
+        }).catch(err => {
+          console.error(err);
+          modalUpload.disabled = false;
+          modalUpload.textContent = 'Subir estudiantes';
+          alert('Error al comunicarse con el servidor. Revisa la consola.');
+        });
+      });
+
+      // Cerrar modal
+      if (modalClose) modalClose.addEventListener('click', function(){
+        if (modal) modal.style.display = 'none';
+        modalTableBody.innerHTML = '';
+        if (modalInfo) modalInfo.textContent = '';
+      });
+
+      // Cerrar al hacer click fuera del contenido
+      if (modal) modal.addEventListener('click', function(e){
+        if (e.target === modal) {
+          modal.style.display = 'none';
+          modalTableBody.innerHTML = '';
+          if (modalInfo) modalInfo.textContent = '';
+        }
       });
     })();
   </script>
