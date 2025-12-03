@@ -26,7 +26,7 @@ class PanelDemetrioVallejoController extends Controller
             abort(404);
         }
 
-        $documentos = \App\Models\Documento::orderBy('created_at', 'desc')->get();
+        $documentos = \App\Models\Documento::where('id_semestre', $id)->orderBy('created_at', 'desc')->get();
         return view('coordinador.demetrio_vallejo.panel', [
             'user' => $user,
             'semestre' => $semestre,
