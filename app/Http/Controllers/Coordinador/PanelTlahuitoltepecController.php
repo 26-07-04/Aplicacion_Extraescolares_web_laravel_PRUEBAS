@@ -30,7 +30,6 @@ class PanelTlahuitoltepecController extends Controller
         }
 
         $documentos = \App\Models\Documento::where('id_semestre', $id)->orderBy('created_at', 'desc')->get();
-        $documentos = \App\Models\Documento::orderBy('created_at', 'desc')->get();
 
         // Filtrar actividades por semestre y por la unidad académica del usuario
         $uaName = $user->unidad_academica ?? '';
