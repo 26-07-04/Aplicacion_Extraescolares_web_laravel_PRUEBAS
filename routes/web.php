@@ -333,4 +333,21 @@ Route::post('coordinador/estudiantes/{id}/eliminar', [PanelDemetrioVallejoContro
     ->middleware('auth')
     ->name('coordinador.estudiantes.eliminar');
 
+// ============ RUTAS PARA EVALUACIONES Y CONSTANCIAS (DEMETRIO VALLEJO) ============
+use App\Http\Controllers\Coordinador\EvaluacionDemetrioController;
+
+Route::middleware(['auth'])->prefix('coordinador/demetrio-vallejo')->group(function () {
+    // Guardar evaluación de estudiante
+    Route::post('evaluacion/guardar', [EvaluacionDemetrioController::class, 'guardarEvaluacion'])
+        ->name('demetrio.evaluacion.guardar');
+    
+    // Generar constancia en PDF
+    Route::get('constancia/{id_evaluacion}/pdf', [EvaluacionDemetrioController::class, 'generarConstancia'])
+        ->name('demetrio.constancia.pdf');
+    
+    // Obtener documentos membretados del semestre
+    Route::get('documentos-membrete/{id_semestre}', [EvaluacionDemetrioController::class, 'obtenerDocumentosMembrete'])
+        ->name('demetrio.documentos.membrete');
+});
+
 require __DIR__.'/auth.php';

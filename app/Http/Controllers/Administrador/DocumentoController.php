@@ -21,7 +21,8 @@ class DocumentoController extends Controller
             'descripcion' => 'nullable|string',
             // semestres primary key is `id_semestre`
             'id_semestre' => 'required|exists:semestres,id_semestre',
-            'archivo' => 'required|file|mimes:pdf|max:10240',
+            // permitir PDF y membretes en imagen (png/jpg/jpeg)
+            'archivo' => 'required|file|mimes:pdf,png,jpg,jpeg|max:10240',
         ]);
 
         if ($validator->fails()) {
@@ -68,7 +69,10 @@ class DocumentoController extends Controller
             return redirect()->back()->with('error', 'Archivo no encontrado.');
         }
 
-        return response()->download($filePath, $documento->nombre . '.pdf');
+        // determinar extensión original para descargar con nombre coherente
+        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+        $downloadName = $documento->nombre . '.' . strtolower($ext ?: 'pdf');
+        return response()->download($filePath, $downloadName);
     }
 
     /**
