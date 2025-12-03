@@ -182,6 +182,7 @@
         'unidad' => $unidad, 
         'actividades' => $actividades ?? [], 
         'estudiantes' => $estudiantes ?? [],
+        'estudiantesPorActividad' => $estudiantesPorActividad ?? [],
         'id_semestre' => $id_semestre ?? 0
       ])
     

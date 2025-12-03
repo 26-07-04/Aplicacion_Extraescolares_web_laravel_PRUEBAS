@@ -84,8 +84,28 @@
               <div class="semestre-info">
                 <p><i class="fas fa-calendar-alt"></i> <strong>Fecha inicio:</strong> {{ date('d/m/Y', strtotime($semestre->fecha_inicio)) }}</p>
                 <p><i class="fas fa-calendar-check"></i> <strong>Fecha fin:</strong> {{ date('d/m/Y', strtotime($semestre->fecha_fin)) }}</p>
-                <p><i class="fas fa-users"></i> <strong>Alumnos:</strong> 0</p>
-                <p><i class="fas fa-clipboard-list"></i> <strong>Actividades:</strong> 0</p>
+                @php
+// Actividades de este semestre
+$actividades_count = \Illuminate\Support\Facades\DB::table('actividades')
+    ->where('id_semestre', $semestre->id_semestre)
+    ->count();
+
+// Estudiantes de este semestre (a través de actividades)
+$estudiantes_count = 0;
+if ($actividades_count > 0) {
+    $actividad_ids = \Illuminate\Support\Facades\DB::table('actividades')
+        ->where('id_semestre', $semestre->id_semestre)
+        ->pluck('id_actividad')
+        ->toArray();
+    
+    $estudiantes_count = \Illuminate\Support\Facades\DB::table('estudiantes')
+        ->whereIn('id_actividad', $actividad_ids)
+        ->count();
+}
+@endphp
+
+<p><i class="fas fa-users"></i> <strong>Alumnos: </strong> {{ $estudiantes_count }}</p>
+<p><i class="fas fa-clipboard-list"></i> <strong>Actividades:</strong> {{ $actividades_count }}</p>
               </div>
             </div>
             <div class="semestre-footer">
