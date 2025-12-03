@@ -106,6 +106,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {    // Gestión
     });
 });
 
+>>>>>>> main
 // Ruta para activar un semestre (solo un semestre activo a la vez)
 Route::post('admin/semestres/{id}/activar', [SemestresCursadosController::class, 'activarSemestre'])
     ->middleware('auth')
