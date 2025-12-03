@@ -64,7 +64,12 @@
       @foreach($documentos as $doc)
         <div class="documento-card" data-id="{{ $doc->id }}">
           <div class="documento-main">
-            <div class="documento-icon"><i class="fas fa-file-pdf"></i></div>
+            @php
+              $ext = strtolower(pathinfo($doc->archivo ?? '', PATHINFO_EXTENSION));
+              // Usar un icono alternativo para PDF
+              $iconClass = $ext === 'pdf' ? 'fas fa-file-lines' : (in_array($ext, ['png','jpg','jpeg','gif','webp']) ? 'fas fa-file-image' : 'fas fa-file');
+            @endphp
+            <div class="documento-icon"><i class="{{ $iconClass }}"></i></div>
             <div style="flex:1;">
               <div class="documento-title">{{ $doc->nombre }}</div>
               <div class="documento-desc">{{ $doc->descripcion }}</div>
@@ -163,10 +168,10 @@
           <input type="hidden" id="id_semestre" name="id_semestre" value="{{ $semestreActual?->id_semestre }}">
         </div>
         <div class="form-group">
-          <label for="archivoDocumento">Archivo PDF</label>
+          <label for="archivoDocumento">Archivo (PDF o Imagen)</label>
           <div class="file-input-wrapper" style="position:relative;">
-            <button type="button" id="btnSeleccionarArchivo" class="file-input-button"><i class="fas fa-file-pdf"></i> Seleccionar archivo PDF</button>
-            <input id="archivoDocumento" name="archivo" type="file" accept="application/pdf" style="opacity:0;position:absolute;left:0;top:0;width:100%;height:100%;cursor:pointer;">
+            <button type="button" id="btnSeleccionarArchivo" class="file-input-button"><i class="fas fa-file-image"></i> Seleccionar archivo</button>
+            <input id="archivoDocumento" name="archivo" type="file" accept="application/pdf,image/png,image/jpeg" style="opacity:0;position:absolute;left:0;top:0;width:100%;height:100%;cursor:pointer;">
           </div>
           <small id="nombreArchivo" style="display:block;margin-top:6px;color:#666;"></small>
         </div>
