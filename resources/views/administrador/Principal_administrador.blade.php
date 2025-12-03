@@ -18,6 +18,21 @@
     .sidebar-section.admin-section ul li a { display: flex; align-items: center; gap: 8px; color: inherit; text-decoration: none; }
     .sidebar-section.admin-section ul li.admin-documentos { margin-bottom: 10px; }
     .sidebar-section.admin-section ul li.admin-usuarios { margin-top: 6px; }
+    
+    /* Estilo para el enlace INICIO */
+    .inicio-dashboard {
+      display: block;
+      padding: 10px 12px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .inicio-dashboard:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: white !important;
+      transform: translateX(5px);
+    }
   </style>
 </head>
 <body>
@@ -30,6 +45,7 @@
       <img src="{{ asset('Imagenes/Logo IT Valle de etla.png') }}" alt="Logo ITVE">
     </div>
     <div class="header-user" style="position: relative; display:flex; align-items:center; gap:20px;">
+      <!-- Botón regresar con id_semestre -->
       <a href="{{ route('admin.semestres') }}" class="btn-regresar-header" title="Regresar a Semestres cursados" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; background:#1B396A; color:#fff; padding:6px 14px; min-width:30px; border-radius:6px; text-decoration:none; margin-right:24px;">
         <i class="fas fa-arrow-left" style="font-size:18px; color:#fff; line-height:1;"></i>
       </a>
@@ -74,46 +90,80 @@
       <img src="{{ asset('Imagenes/ITVE.png') }}" alt="ITVE Logo" style="width: 60px; height: 60px; margin-bottom: 10px; margin-left: -10px;">
       <span>Extraescolares</span>
     </div>
+    
+    <!-- PANEL PRINCIPAL -->
     <div class="sidebar-section">
       <h3 style="font-family: 'Open Sans', sans-serif;">PANEL PRINCIPAL</h3>
       <ul style="font-family: 'Segoe UI', sans-serif; font-size: 16px; color: rgba(255, 255, 255, 0.7); background-color: #1B396A; border-radius: 6px; padding: 8px;">
-        <li style="margin-bottom: 10px; transition: all 0.3s; text-decoration: none; cursor: pointer;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)'" class="inicio-dashboard">
-          <a href="{{ route('admin.principal') }}" style="color:inherit; text-decoration:none; display:block;"><i class="fas fa-home" style="margin-right: 8px;"></i>Inicio</a>
+        <li class="inicio-dashboard" style="transition: all 0.3s; text-decoration: none; cursor: pointer;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)'">
+          <!-- INICIO: Sin id_semestre para mostrar vista de bienvenida -->
+          <a href="{{ route('admin.principal') }}" style="color:inherit; text-decoration:none; display:block;">
+            <i class="fas fa-home" style="margin-right: 8px;"></i>Inicio
+          </a>
         </li>
       </ul>
     </div>
+    
+    <!-- UNIDADES -->
     <div class="sidebar-section">
       <h3 style="font-family: 'Open Sans', sans-serif;">UNIDADES</h3>
       <ul style="font-family: 'Segoe UI', sans-serif; font-size: 16px; color: rgba(255, 255, 255, 0.7); background-color: #1B396A; border-radius: 6px; padding: 8px;">
-        <li style="margin-bottom: 10px; transition: all 0.3s; text-decoration: none; cursor: pointer;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)'." >
-          <a href="{{ route('admin.principal') }}?unidad=CIDERS+uni%C3%B3n+Hidalgo" style="color:inherit; text-decoration:none; display:block;"><i class="fas fa-building" style="margin-right: 8px;"></i>Unión Hidalgo</a>
+        <li style="margin-bottom: 10px; transition: all 0.3s; text-decoration: none; cursor: pointer;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)'">
+          <!-- UNIDADES: Con id_semestre para mantener el contexto -->
+          @php
+            // Determinar si hay un id_semestre en sesión o en la variable actual
+            $idSemestreParaUnidades = session('id_semestre_actual') ?? $id_semestre ?? 0;
+          @endphp
+          <a href="{{ route('admin.principal', ['id' => $idSemestreParaUnidades]) }}?unidad=Union+Hidalgo" style="color:inherit; text-decoration:none; display:block;">
+            <i class="fas fa-building" style="margin-right: 8px;"></i>Unión Hidalgo
+          </a>
         </li>
-        <li style="margin-bottom: 10px; transition: all 0.3s; text-decoration: none; cursor: pointer;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)'." >
-          <a href="{{ route('admin.principal') }}?unidad=Unidad+Demetrio+Vallejo+en+el+Espinal" style="color:inherit; text-decoration:none; display:block;"><i class="fas fa-building" style="margin-right: 8px;"></i>Demetrio Vallejo</a>
+        <li style="margin-bottom: 10px; transition: all 0.3s; text-decoration: none; cursor: pointer;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)'">
+          <a href="{{ route('admin.principal', ['id' => $idSemestreParaUnidades]) }}?unidad=Demetrio+Vallejo" style="color:inherit; text-decoration:none; display:block;">
+            <i class="fas fa-building" style="margin-right: 8px;"></i>Demetrio Vallejo
+          </a>
         </li>
-        <li style="margin-bottom: 10px; transition: all 0.3s; text-decoration: none; cursor: pointer;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)'." >
-          <a href="{{ route('admin.principal') }}?unidad=Unidad+acad%C3%A9mica+Tlahuitoltepec" style="color:inherit; text-decoration:none; display:block;"><i class="fas fa-building" style="margin-right: 8px;"></i>Tlahuitoltepec</a>
+        <li style="margin-bottom: 10px; transition: all 0.3s; text-decoration: none; cursor: pointer;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)'">
+          <a href="{{ route('admin.principal', ['id' => $idSemestreParaUnidades]) }}?unidad=Tlahuitoltepec" style="color:inherit; text-decoration:none; display:block;">
+            <i class="fas fa-building" style="margin-right: 8px;"></i>Tlahuitoltepec
+          </a>
         </li>
-        <li style="transition: all 0.3s; text-decoration: none; cursor: pointer;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)'." >
-          <a href="{{ route('admin.principal') }}?unidad=Valle+de+Etla" style="color:inherit; text-decoration:none; display:block;"><i class="fas fa-building" style="margin-right: 8px;"></i>Valle de Etla</a>
+        <li style="transition: all 0.3s; text-decoration: none; cursor: pointer;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)'">
+          <a href="{{ route('admin.principal', ['id' => $idSemestreParaUnidades]) }}?unidad=Valle+de+Etla" style="color:inherit; text-decoration:none; display:block;">
+            <i class="fas fa-building" style="margin-right: 8px;"></i>Valle de Etla
+          </a>
         </li>
       </ul>
     </div>
+    
+    <!-- ADMINISTRACIÓN -->
     <div class="sidebar-section admin-section">
       <h3 style="font-family: 'Open Sans', sans-serif;">ADMINISTRACIÓN</h3>
       <ul style="font-family: 'Segoe UI', sans-serif; font-size: 16px; color: rgba(255, 255, 255, 0.7); background-color: #1B396A; border-radius: 6px; padding: 8px;">
         @php
-          $baseUrl = isset($semestre) && $semestre ? route('admin.principal', ['id' => $semestre->id_semestre]) : route('admin.principal');
+          // Determinar la URL base según si hay id_semestre
+          $idSemestreActual = session('id_semestre_actual') ?? $id_semestre ?? null;
+          
+          if ($idSemestreActual) {
+            $baseUrl = route('admin.principal', ['id' => $idSemestreActual]);
+          } else {
+            $baseUrl = route('admin.principal');
+          }
+          
           $documentosUrl = $baseUrl . '?view=documentos';
           $usuariosUrl = $baseUrl . '?view=usuarios';
         @endphp
 
         <li class="admin-documentos" style="transition: all 0.3s; cursor: pointer;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)';">
-          <a href="{{ $documentosUrl }}"><i class="fas fa-file-alt" style="margin-right: 8px;"></i>Documentos</a>
+          <a href="{{ $documentosUrl }}">
+            <i class="fas fa-file-alt" style="margin-right: 8px;"></i>Documentos
+          </a>
         </li>
 
         <li class="admin-usuarios" style="transition: all 0.3s; cursor: pointer;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)';">
-          <a href="{{ $usuariosUrl }}"><i class="fas fa-users" style="margin-right: 8px;"></i>Gestión de Usuarios</a>
+          <a href="{{ $usuariosUrl }}">
+            <i class="fas fa-users" style="margin-right: 8px;"></i>Gestión de Usuarios
+          </a>
         </li>
       </ul>
     </div>
@@ -123,10 +173,18 @@
   <div class="main-content">
     @if(!empty($view) && $view === 'usuarios')
       @include('administrador.partials.gestion_usuarios')
+    
     @elseif(!empty($view) && $view === 'documentos')
       @include('administrador.partials.documentos')
+    
     @elseif(!empty($unidad))
-      @include('administrador.partials.unidad', ['unidad' => $unidad, 'actividades' => $actividades, 'estudiantes' => $estudiantes])
+      @include('administrador.partials.unidad', [
+        'unidad' => $unidad, 
+        'actividades' => $actividades ?? [], 
+        'estudiantes' => $estudiantes ?? [],
+        'id_semestre' => $id_semestre ?? 0
+      ])
+    
     @elseif(!empty($semestre))
       <div style="padding:18px;">
         <div class="semestre-card">
@@ -176,13 +234,17 @@
           </div>
         </div>
       </div>
+    
     @else
+      <!-- VISTA DE BIENVENIDA (sin parámetros) -->
       <div class="bienvenida-panel">
         <h1>Bienvenido al Panel Administrador</h1>
         <p>Aquí podrás gestionar las actividades extraescolares, administrar usuarios y mucho más.</p>
         <img src="{{ asset('Imagenes/Logo TecNM.png') }}" alt="Logo TecNM">
         <div class="accion-wrapper">
-          <a href="{{ route('coordinator.dashboard') }}" class="btn-coordinador"><i class="fas fa-user-cog"></i>Panel Coordinador</a>
+          <a href="{{ route('coordinator.dashboard') }}" class="btn-coordinador">
+            <i class="fas fa-user-cog"></i>Panel Coordinador
+          </a>
         </div>
       </div>
     @endif
@@ -195,8 +257,13 @@
       const btnCerrar = document.getElementById('btnCerrarSesion');
       const logoutForm = document.getElementById('logoutForm');
 
-      function hideDropdown() { if(dropdown) dropdown.style.display = 'none'; }
-      function showDropdown() { if(dropdown) dropdown.style.display = 'block'; }
+      function hideDropdown() { 
+        if(dropdown) dropdown.style.display = 'none'; 
+      }
+      
+      function showDropdown() { 
+        if(dropdown) dropdown.style.display = 'block'; 
+      }
 
       icon && icon.addEventListener('click', function (e) {
         e.stopPropagation();
@@ -217,6 +284,14 @@
         e.preventDefault();
         if (!logoutForm) return window.location.href = '/';
         logoutForm.submit();
+      });
+      
+      // Guardar id_semestre en localStorage para recuperarlo si se recarga
+      document.addEventListener('DOMContentLoaded', function() {
+        const idSemestre = {{ $id_semestre ?? 'null' }};
+        if (idSemestre) {
+          localStorage.setItem('last_semestre_id', idSemestre);
+        }
       });
     })();
   </script>

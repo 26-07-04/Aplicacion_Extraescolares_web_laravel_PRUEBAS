@@ -15,6 +15,7 @@ use App\Http\Controllers\Coordinador\PanelTlahuitoltepecController;
 use App\Http\Controllers\Coordinador\SemestresCursadosTlahuitoltepecController as CoordinadorSemestresTlahController;
 use App\Http\Controllers\Coordinador\SemestresCursadosDemetrioController as CoordinadorSemestresDemetrioController;
 use App\Http\Controllers\Coordinador\PanelDemetrioVallejoController;
+use App\Http\Controllers\Coordinador\ImportEstudiantesController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UnidadController;
@@ -57,20 +58,7 @@ Route::get('admin/principal/{id?}', [PrincipalAdministradorController::class, 'i
     ->middleware('auth')
     ->name('admin.principal');
 
-// Rutas CRUD para gestión de usuarios (formularios en modales)
-Route::post('admin/usuarios', [AdminUserController::class, 'store'])
-    ->middleware('auth')
-    ->name('admin.usuarios.store');
-
-Route::put('admin/usuarios/{id}', [AdminUserController::class, 'update'])
-    ->middleware('auth')
-    ->name('admin.usuarios.update');
-
-Route::delete('admin/usuarios/{id}', [AdminUserController::class, 'destroy'])
-    ->middleware('auth')
-    ->name('admin.usuarios.destroy');
-
-// Nueva ruta: Gestión de semestres para administradores
+// Gestión de semestres (ya existente, equivalente a "semestres")
 Route::get('admin/semestres', [SemestresCursadosController::class, 'index'])
     ->middleware('auth')
     ->name('admin.semestres');
@@ -86,7 +74,39 @@ Route::put('admin/semestres/{id}', [SemestresCursadosController::class, 'update'
 Route::delete('admin/semestres/{id}', [SemestresCursadosController::class, 'destroy'])
     ->middleware('auth')
     ->name('admin.semestres.destroy');
-    
+
+// Rutas para documentos (subir y descargar)
+Route::post('admin/documentos', [DocumentoController::class, 'store'])
+    ->middleware('auth')
+    ->name('admin.documentos.store');
+
+Route::get('admin/documentos/{id}/download', [DocumentoController::class, 'download'])
+    ->middleware('auth')
+    ->name('admin.documentos.download');
+
+Route::delete('admin/documentos/{id}', [DocumentoController::class, 'destroy'])
+    ->middleware('auth')
+    ->name('admin.documentos.destroy');
+
+// ============ RUTAS PARA GESTIÓN DE USUARIOS (ADMINISTRADOR) ============
+Route::middleware(['auth'])->prefix('admin')->group(function () {    // Gestión de usuarios
+    Route::prefix('usuarios')->group(function () {
+        Route::get('/', [AdminUserController::class, 'index'])->name('admin.usuarios.index');
+        Route::post('/', [AdminUserController::class, 'store'])->name('admin.usuarios.store');
+        Route::get('/{id}/edit', [AdminUserController::class, 'edit'])->name('admin.usuarios.edit');
+        Route::put('/{id}', [AdminUserController::class, 'update'])->name('admin.usuarios.update');
+        Route::delete('/{id}', [AdminUserController::class, 'destroy'])->name('admin.usuarios.destroy');
+    });
+
+    // Gestión de documentos
+    Route::prefix('documentos')->group(function () {
+        Route::get('/', [DocumentoController::class, 'index'])->name('admin.documentos.index');
+        Route::post('/', [DocumentoController::class, 'store'])->name('admin.documentos.store');
+        Route::delete('/{id}', [DocumentoController::class, 'destroy'])->name('admin.documentos.destroy');
+    });
+});
+
+>>>>>>> main
 // Ruta para activar un semestre (solo un semestre activo a la vez)
 Route::post('admin/semestres/{id}/activar', [SemestresCursadosController::class, 'activarSemestre'])
     ->middleware('auth')
@@ -289,8 +309,29 @@ Route::prefix('administrador')->group(function () {
 Route::prefix('administrador')->group(function () {
     Route::get('actividades/{actividad}/estudiantes', [EstudianteController::class, 'index']);
     Route::post('actividades/{actividad}/estudiantes', [EstudianteController::class, 'store']);
+    // Ruta para importación masiva (usada por coordinador desde el panel)
+    Route::post('actividades/{actividad}/estudiantes/import', [EstudianteController::class, 'bulkStore'])->name('administrador.actividades.estudiantes.import');
     Route::put('actividades/estudiantes/{id}', [EstudianteController::class, 'update']);
     Route::delete('actividades/estudiantes/{id}', [EstudianteController::class, 'destroy']);
 });
+
+// Ruta para importación usada por el panel del coordinador (controlador en carpeta Coordinador)
+Route::post('coordinador/actividades/{actividad}/estudiantes/import', [ImportEstudiantesController::class, 'import'])
+    ->middleware('auth')
+    ->name('coordinador.actividades.estudiantes.import');
+
+// Ruta para validar duplicados antes de subir
+Route::post('coordinador/actividades/{actividad}/estudiantes/check-duplicates', [ImportEstudiantesController::class, 'checkDuplicates'])
+    ->middleware('auth')
+    ->name('coordinador.actividades.estudiantes.check-duplicates');
+
+// Rutas para CRUD de estudiantes en Demetrio Vallejo
+Route::post('coordinador/estudiantes/{id}/actualizar', [PanelDemetrioVallejoController::class, 'actualizarEstudiante'])
+    ->middleware('auth')
+    ->name('coordinador.estudiantes.actualizar');
+
+Route::post('coordinador/estudiantes/{id}/eliminar', [PanelDemetrioVallejoController::class, 'eliminarEstudiante'])
+    ->middleware('auth')
+    ->name('coordinador.estudiantes.eliminar');
 
 require __DIR__.'/auth.php';

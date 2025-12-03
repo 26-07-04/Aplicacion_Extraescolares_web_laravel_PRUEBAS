@@ -5,62 +5,63 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Actividades Extraescolares - Valle de Etla</title>
 
-  <!-- CSS (mantén sólo los que uses para evitar duplicados) -->
+  <!-- CSS -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
   <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
   <link rel="stylesheet" href="{{ asset('css/Administrador/actividades.css') }}">
+  
+  <!-- IMPORTANTE: FontAwesome real -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- CSRF token requerido por fetch -->
+  <!-- CSRF token -->
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
-  <!-- Configuración usada por public/js/actividades.js (NO modifica estilos) -->
+  <!-- Configuración única (como en las otras) -->
   <script>
     (function(){
-      // intenta obtener semestre/unidad desde variables server o query params
-      const unidadServer = @json(isset($unidad) ? $unidad : null);
-      const semestreServer = @json(isset($semestre) ? $semestre : null);
-
-      function resolveUnidadId(u){
-        if (!u) return null;
-        if (typeof u === 'object' && u !== null && ('id_unidad' in u)) return Number(u.id_unidad) || null;
-        if (!isNaN(Number(u))) return Number(u);
-        return null;
-      }
-      function resolveSemestreId(s){
-        if (!s) return null;
-        if (typeof s === 'object' && s !== null && ('id_semestre' in s)) return Number(s.id_semestre) || null;
-        if (!isNaN(Number(s))) return Number(s);
-        return null;
+      // CAMBIO 1: Función simplificada para obtener id_semestre
+      function obtenerIdSemestre() {
+        const params = new URLSearchParams(window.location.search);
+        const qSemestre = params.get('id_semestre');
+        
+        // También intentar desde variables del servidor
+        const serverSemestre = @json(isset($id_semestre) ? $id_semestre : null);
+        
+        return qSemestre || serverSemestre || 4; // 4 como default para VE
       }
 
-      // fallback: leer query string si no hubo variable server
-      const params = new URLSearchParams(window.location.search);
-      const qUnidad = params.get('id_unidad') ?? params.get('unidad') ?? null;
-      const qSemestre = params.get('id_semestre') ?? params.get('semestre') ?? null;
-
-      window.ActUH = {
+      // CAMBIO 2: Configuración única (nota: cambiamos de ActUH a ActVE)
+      window.ActVE = {
         rutas: {
           list: "{{ route('administrador.actividades.index') }}",
           store: "{{ route('administrador.actividades.store') }}",
           showBase: "{{ url('administrador/actividades') }}",
           detail: "{{ url('administrador/vista_previa_U/D_actividades_VE') }}",
         },
-        unidadId: resolveUnidadId(unidadServer ?? qUnidad) ?? 4,
-        semestreId: resolveSemestreId(semestreServer ?? qSemestre) ?? 1,
+        unidadId: 4,  // Valle de Etla = 4
+        semestreId: obtenerIdSemestre(),
         assetBase: "{{ asset('') }}"
       };
+      
+      console.log('Configuración ActVE:', window.ActVE);
     })();
   </script>
 </head>
 <body>
+  <!-- CAMBIO 3: Agregar info del semestre como en las otras -->
   <div class="wrapper">
-    <a href="{{ url()->previous() }}"
-       onclick="event.preventDefault(); if (history.length > 1) history.back(); else window.location.href='{{ route('admin.semestres') }}';"
-       class="btn-flecha-back" title="Regresar" aria-label="Regresar">
-      <svg viewBox="0 0 24 24" class="icon-flecha" aria-hidden="true" focusable="false" role="img">
-        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path>
-      </svg>
-    </a>
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+      <a href="{{ route('admin.principal', ['id' => request()->input('id_semestre', 4)]) }}"
+         class="btn-flecha-back" title="Regresar al Panel Administrador" aria-label="Regresar">
+        <svg viewBox="0 0 24 24" class="icon-flecha" aria-hidden="true" focusable="false" role="img">
+          <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path>
+        </svg>
+      </a>
+      <span style="color: #1B396A; font-weight: bold; font-size: 14px;">
+        Semestre ID: <span id="current-semestre-id">{{ request()->input('id_semestre', 'N/A') }}</span>
+      </span>
+    </div>
+    
     <main>
       <!-- Logos -->
       <div class="header-main">
@@ -86,6 +87,14 @@
         Unidad Académica: Valle de Etla
       </div>
 
+      <!-- CAMBIO 4: Agregar sección de información del semestre -->
+      <div class="semestre-info" style="background: #f0f8ff; padding: 10px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #1B396A;">
+        <p style="margin: 0; color: #1B396A; font-weight: bold;">
+          <i class="fas fa-calendar-alt"></i> Actividades del Semestre ID: 
+          <span id="display-semestre-id">{{ request()->input('id_semestre', 'No especificado') }}</span>
+        </p>
+      </div>
+
       <div class="actividades-header">
         <h2>ACTIVIDADES EXTRAESCOLARES</h2>
         <hr class="linea-divisoria">
@@ -94,9 +103,9 @@
         <p>¡Tu crecimiento va más allá del aula! Participa, aprende y transforma.</p>
       </div>
 
-      <!-- Cuadro único para agregar / listar actividades (sin categorías) -->
+      <!-- Cuadro único para agregar / listar actividades -->
       <div class="contenedor" style="max-width:1100px; margin:20px auto; justify-content:center;">
-        <!-- Módulo para agregar actividad (clic abre modal de actividad) -->
+        <!-- Módulo para agregar actividad -->
         <div class="modulo agregar" role="button" aria-label="Agregar actividad" onclick="document.getElementById('modal-actividad').style.display='flex'">
           <div style="text-align:center;">
             <div style="font-size:50px; line-height:1;">+</div>
@@ -105,20 +114,26 @@
           </div>
         </div>
 
-        <!-- Contenedor donde se listarán las actividades (llenado por JS) -->
+        <!-- Contenedor donde se listarán las actividades -->
         <div id="actividades-list" style="width:100%; max-width:900px; margin-top:18px;">
           <div class="contenedor-tabla" style="padding:12px;">
             <div id="actividades-container" class="actividades-container" style="display:flex; flex-wrap:wrap; gap:16px; justify-content:flex-start;">
               <!-- Los módulos de actividad se insertarán aquí vía JS -->
+              <div style="width:100%; text-align:center; padding:20px; color:#666;" id="loading-actividades">
+                <i class="fas fa-spinner fa-spin"></i> Cargando actividades del semestre...
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Modal para agregar/editar actividad -->
+      <!-- CAMBIO 5: Agregar campo oculto para id_semestre -->
       <div id="modal-actividad" class="modal">
         <div class="modal-contenido">
           <h3 id="modal-titulo">Agregar Actividad Extraescolar</h3>
+          <input type="hidden" id="id-semestre-actividad" value="{{ request()->input('id_semestre', 4) }}">
+          
           <form id="formulario-actividad">
             <input type="text" id="nombre-actividad" placeholder="Nombre de la actividad" required>
             <textarea id="descripcion-actividad" placeholder="Descripción de la actividad" rows="4" required></textarea>
@@ -169,53 +184,31 @@
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+  
+  <!-- ELIMINA ESTA LÍNEA DUPLICADA -->
+  <!-- <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script> -->
 
-  <!-- Configuración para actividadesVE.js (NO tocar diseño) -->
-  <script>
-    window.ActVE = {
-      rutas: {
-        list: "{{ route('administrador.actividades.index') }}",
-        store: "{{ route('administrador.actividades.store') }}",
-        showBase: "{{ url('administrador/actividades') }}",
-        // ruta de detalle (vista que muestra estudiantes de la actividad)
-        detail: "{{ url('administrador/D_actividades_VE') }}",
-      },
-      unidadId: 4,
-      // asigna aquí el semestre actual (ej. pasarlo desde el controlador como $semestre->id_semestre)
-      semestreId: {{ isset($semestre) ? (int)$semestre->id_semestre : 1 }},
-      assetBase: "{{ asset('') }}"
-    };
-  </script>
-
-  <script>
-    // No sobrescribir si ya existe una configuración más precisa
-    if (!window.ActVE) {
-      window.ActVE = {
-        rutas: {
-          list: "{{ route('administrador.actividades.index') }}",
-          store: "{{ route('administrador.actividades.store') }}",
-          showBase: "{{ url('administrador/actividades') }}",
-          detail: "{{ url('administrador/vista_previa_U/D_actividades_VE') }}",
-        },
-        // unidad/semestre: preferir variables servidorales, si no usar query string, si no fallback
-        unidadId: @json($unidad->id_unidad ?? request()->query('id_unidad') ?? 4),
-        semestreId: @json($semestre->id_semestre ?? request()->query('id_semestre') ?? null),
-        assetBase: "{{ asset('') }}"
-      };
-    } else {
-      // si existe, asegúrate que tenga assetBase y rutas mínimas
-      window.ActVE.rutas = window.ActVE.rutas || {
-        list: "{{ route('administrador.actividades.index') }}",
-        store: "{{ route('administrador.actividades.store') }}",
-        showBase: "{{ url('administrador/actividades') }}",
-        detail: "{{ url('administrador/vista_previa_U/D_actividades_VE') }}"
-      };
-      window.ActVE.assetBase = window.ActVE.assetBase || "{{ asset('') }}";
-      // preservar semestre y unidad ya calculados en head (no cambiarlos aquí)
-    }
-  </script>
-
+  <!-- SCRIPT ÚNICO: actividades.js (el mismo que usa todas) -->
   <script src="{{ asset('js/actividades.js') }}"></script>
+  
+  <!-- CAMBIO 6: Script para manejar el semestre (igual que en las otras) -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Actualizar display del semestre ID
+      const semestreId = window.ActVE.semestreId;
+      document.querySelectorAll('#current-semestre-id, #display-semestre-id').forEach(el => {
+        el.textContent = semestreId;
+      });
+      
+      console.log('Actividades VE cargadas para Semestre ID:', semestreId, 'Unidad ID:', window.ActVE.unidadId);
+      
+      // Verificar que el script actividades.js esté usando estos parámetros
+      if (typeof cargarActividades === 'function') {
+        setTimeout(() => {
+          cargarActividades();
+        }, 100);
+      }
+    });
+  </script>
 </body>
 </html>

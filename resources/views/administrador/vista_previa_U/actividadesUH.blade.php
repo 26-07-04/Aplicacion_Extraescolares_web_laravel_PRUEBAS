@@ -13,31 +13,25 @@
   <!-- CSRF token requerido por fetch -->
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
-  <!-- Configuración usada por public/js/actividades.js (NO modifica estilos) -->
+  <!-- Configuración única para actividades (EVITAR DUPLICACIÓN) -->
   <script>
     (function(){
-      // intenta obtener semestre/unidad desde variables server o query params
-      const unidadServer = @json(isset($unidad) ? $unidad : null);
-      const semestreServer = @json(isset($semestre) ? $semestre : null);
-
-      function resolveUnidadId(u){
-        if (!u) return null;
-        if (typeof u === 'object' && u !== null && ('id_unidad' in u)) return Number(u.id_unidad) || null;
-        if (!isNaN(Number(u))) return Number(u);
-        return null;
-      }
-      function resolveSemestreId(s){
-        if (!s) return null;
-        if (typeof s === 'object' && s !== null && ('id_semestre' in s)) return Number(s.id_semestre) || null;
-        if (!isNaN(Number(s))) return Number(s);
-        return null;
+      // CAMBIO 1: Obtener id_semestre desde la URL o parámetros
+      function obtenerIdSemestre() {
+        // 1. Intentar desde query string (?id_semestre=)
+        const params = new URLSearchParams(window.location.search);
+        const qSemestre = params.get('id_semestre');
+        
+        // 2. Intentar desde parámetro de ruta (si la ruta es /actividades/{id_semestre})
+        const pathParts = window.location.pathname.split('/');
+        const lastPart = pathParts[pathParts.length - 1];
+        const rutaSemestre = !isNaN(lastPart) ? parseInt(lastPart) : null;
+        
+        // 3. Valor por defecto
+        return qSemestre || rutaSemestre || 1;
       }
 
-      // fallback: leer query string si no hubo variable server
-      const params = new URLSearchParams(window.location.search);
-      const qUnidad = params.get('id_unidad') ?? params.get('unidad') ?? null;
-      const qSemestre = params.get('id_semestre') ?? params.get('semestre') ?? null;
-
+      // CAMBIO 2: Configuración única
       window.ActUH = {
         rutas: {
           list: "{{ route('administrador.actividades.index') }}",
@@ -45,22 +39,29 @@
           showBase: "{{ url('administrador/actividades') }}",
           detail: "{{ url('administrador/vista_previa_U/D_actividades_UH') }}",
         },
-        unidadId: resolveUnidadId(unidadServer ?? qUnidad) ?? 1,        // si no hay unidad usa 1 por defecto
-        semestreId: resolveSemestreId(semestreServer ?? qSemestre),     // puede ser null si no existe
+        unidadId: 1,  // Siempre Unión Hidalgo = 1
+        semestreId: obtenerIdSemestre(),  // CAMBIO: Se obtiene dinámicamente
         assetBase: "{{ asset('') }}"
       };
+      
+      console.log('Configuración ActUH:', window.ActUH);
     })();
   </script>
 </head>
 <body>
+  <!-- CAMBIO 3: Mostrar información del semestre actual en el botón de regreso -->
   <div class="wrapper">
-    <a href="{{ url()->previous() }}"
-       onclick="event.preventDefault(); if (history.length > 1) history.back(); else window.location.href='{{ route('admin.semestres') }}';"
-       class="btn-flecha-back" title="Regresar" aria-label="Regresar">
-      <svg viewBox="0 0 24 24" class="icon-flecha" aria-hidden="true" focusable="false" role="img">
-        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path>
-      </svg>
-    </a>
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+      <a href="{{ route('admin.principal', ['id' => request()->input('id_semestre', 1)]) }}"
+         class="btn-flecha-back" title="Regresar al Panel Administrador" aria-label="Regresar">
+        <svg viewBox="0 0 24 24" class="icon-flecha" aria-hidden="true" focusable="false" role="img">
+          <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path>
+        </svg>
+      </a>
+      <span style="color: #1B396A; font-weight: bold; font-size: 14px;">
+        Semestre ID: <span id="current-semestre-id">{{ request()->input('id_semestre', 'N/A') }}</span>
+      </span>
+    </div>
     <main>
       <!-- Logos -->
       <div class="header-main">
@@ -84,6 +85,14 @@
 
       <div class="unidad">
         Unidad Académica: Centro de Investigación y Desarrollo de Energías Renovables en Unión Hidalgo
+      </div>
+
+      <!-- CAMBIO 4: Mostrar información del semestre actual -->
+      <div class="semestre-info" style="background: #f0f8ff; padding: 10px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #1B396A;">
+        <p style="margin: 0; color: #1B396A; font-weight: bold;">
+          <i class="fas fa-calendar-alt"></i> Actividades del Semestre ID: 
+          <span id="display-semestre-id">{{ request()->input('id_semestre', 'No especificado') }}</span>
+        </p>
       </div>
 
       <div class="actividades-header">
@@ -110,6 +119,9 @@
           <div class="contenedor-tabla" style="padding:12px;">
             <div id="actividades-container" class="actividades-container" style="display:flex; flex-wrap:wrap; gap:16px; justify-content:flex-start;">
               <!-- Los módulos de actividad se insertarán aquí vía JS -->
+              <div style="width:100%; text-align:center; padding:20px; color:#666;" id="loading-actividades">
+                <i class="fas fa-spinner fa-spin"></i> Cargando actividades del semestre...
+              </div>
             </div>
           </div>
         </div>
@@ -119,6 +131,9 @@
       <div id="modal-actividad" class="modal">
         <div class="modal-contenido">
           <h3 id="modal-titulo">Agregar Actividad Extraescolar</h3>
+          <!-- CAMBIO 5: Campo oculto para id_semestre en el formulario -->
+          <input type="hidden" id="id-semestre-actividad" value="{{ request()->input('id_semestre', 1) }}">
+          
           <form id="formulario-actividad">
             <input type="text" id="nombre-actividad" placeholder="Nombre de la actividad" required>
             <textarea id="descripcion-actividad" placeholder="Descripción de la actividad" rows="4" required></textarea>
@@ -171,51 +186,29 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
 
-  <!-- Configuración para actividadesUH.js (NO tocar diseño) -->
-  <script>
-    window.ActUH = {
-      rutas: {
-        list: "{{ route('administrador.actividades.index') }}",
-        store: "{{ route('administrador.actividades.store') }}",
-        showBase: "{{ url('administrador/actividades') }}",
-        // ruta de detalle (vista que muestra estudiantes de la actividad)
-        detail: "{{ url('administrador/D_actividades_UH') }}",
-      },
-      unidadId: 1,
-      // asigna aquí el semestre actual (ej. pasarlo desde el controlador como $semestre->id_semestre)
-      semestreId: {{ isset($semestre) ? (int)$semestre->id_semestre : 1 }},
-      assetBase: "{{ asset('') }}"
-    };
-  </script>
-
-  <script>
-    // No sobrescribir si ya existe una configuración más precisa
-    if (!window.ActUH) {
-      window.ActUH = {
-        rutas: {
-          list: "{{ route('administrador.actividades.index') }}",
-          store: "{{ route('administrador.actividades.store') }}",
-          showBase: "{{ url('administrador/actividades') }}",
-          detail: "{{ url('administrador/vista_previa_U/D_actividades_UH') }}",
-        },
-        // unidad/semestre: preferir variables servidorales, si no usar query string, si no fallback
-        unidadId: @json($unidad->id_unidad ?? request()->query('id_unidad') ?? 1),
-        semestreId: @json($semestre->id_semestre ?? request()->query('id_semestre') ?? null),
-        assetBase: "{{ asset('') }}"
-      };
-    } else {
-      // si existe, asegúrate que tenga assetBase y rutas mínimas
-      window.ActUH.rutas = window.ActUH.rutas || {
-        list: "{{ route('administrador.actividades.index') }}",
-        store: "{{ route('administrador.actividades.store') }}",
-        showBase: "{{ url('administrador/actividades') }}",
-        detail: "{{ url('administrador/vista_previa_U/D_actividades_UH') }}"
-      };
-      window.ActUH.assetBase = window.ActUH.assetBase || "{{ asset('') }}";
-      // preservar semestre y unidad ya calculados en head (no cambiarlos aquí)
-    }
-  </script>
-
+  <!-- SCRIPT ELIMINADO: Ya no se duplica la configuración -->
+  
   <script src="{{ asset('js/actividades.js') }}"></script>
- </body>
- </html>
+  
+  <!-- CAMBIO 6: Script adicional para manejar el semestre -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Actualizar display del semestre ID
+      const semestreId = window.ActUH.semestreId;
+      document.querySelectorAll('#current-semestre-id, #display-semestre-id').forEach(el => {
+        el.textContent = semestreId;
+      });
+      
+      console.log('Actividades cargadas para Semestre ID:', semestreId, 'Unidad ID:', window.ActUH.unidadId);
+      
+      // Verificar que el script actividades.js esté usando estos parámetros
+      if (typeof cargarActividades === 'function') {
+        // Esperar un momento para que el script se cargue
+        setTimeout(() => {
+          cargarActividades();
+        }, 100);
+      }
+    });
+  </script>
+</body>
+</html>
