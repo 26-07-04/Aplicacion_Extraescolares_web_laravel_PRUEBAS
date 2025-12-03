@@ -335,6 +335,7 @@ Route::post('coordinador/estudiantes/{id}/eliminar', [PanelDemetrioVallejoContro
 
 // ============ RUTAS PARA EVALUACIONES Y CONSTANCIAS (DEMETRIO VALLEJO) ============
 use App\Http\Controllers\Coordinador\EvaluacionDemetrioController;
+use App\Http\Controllers\Coordinador\EvaluacionTlahuitoltepecController;
 
 Route::middleware(['auth'])->prefix('coordinador/demetrio-vallejo')->group(function () {
     // Guardar evaluación de estudiante
@@ -348,6 +349,21 @@ Route::middleware(['auth'])->prefix('coordinador/demetrio-vallejo')->group(funct
     // Obtener documentos membretados del semestre
     Route::get('documentos-membrete/{id_semestre}', [EvaluacionDemetrioController::class, 'obtenerDocumentosMembrete'])
         ->name('demetrio.documentos.membrete');
+});
+
+// ============ RUTAS PARA EVALUACIONES Y CONSTANCIAS (TLAHUITOLTEPEC) ============
+Route::middleware(['auth'])->prefix('coordinador/tlahuitoltepec')->group(function () {
+    // Guardar evaluación de estudiante
+    Route::post('evaluacion/guardar', [EvaluacionTlahuitoltepecController::class, 'guardarEvaluacion'])
+        ->name('tlahuitoltepec.evaluacion.guardar');
+    
+    // Generar constancia en PDF
+    Route::get('constancia/{id_evaluacion}/pdf', [EvaluacionTlahuitoltepecController::class, 'generarConstancia'])
+        ->name('tlahuitoltepec.constancia.pdf');
+    
+    // Obtener documentos membretados del semestre
+    Route::get('documentos-membrete/{id_semestre}', [EvaluacionTlahuitoltepecController::class, 'obtenerDocumentosMembrete'])
+        ->name('tlahuitoltepec.documentos.membrete');
 });
 
 require __DIR__.'/auth.php';
