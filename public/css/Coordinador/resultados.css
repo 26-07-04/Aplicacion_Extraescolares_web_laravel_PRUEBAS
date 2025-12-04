@@ -1,3 +1,48 @@
+/* Firmas */
+.footer-firmas {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  width: 100%;
+  margin-top: auto;
+  padding: 40px 0 20px;
+  position: relative;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 900px;
+}
+
+.firma {
+  flex: 1;
+  text-align: center;
+  padding: 0 10px;
+}
+
+.firma div {
+  border-bottom: 2px solid #000 !important;
+  margin-bottom: 6px;
+  height: 60px;
+}
+
+.firma span {
+  font-size: 0.98em;
+  color: #000 !important;
+}
+
+/* Posición en impresión */
+@media print {
+  .footer-firmas {
+    display: flex !important;
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+  }
+}
 
 :root {
   --azul-marino: #1a3a5f;
@@ -154,41 +199,6 @@ body {
   opacity: 0.9;
 }
 
-/* ====== ESTILOS DEL PDF (SE MANTIENEN SIN CAMBIOS) ====== */
-/* Oculta las firmas en la web, solo muestra al imprimir */
-.solo-pdf {
-  display: none;
-}
-@media print {
-  .solo-pdf {
-    display: flex !important;
-  }
-}
-
-/* Estilos para lugar/fecha y firmas */
-.lugar-fecha-container {
-  margin-top: 40px;
-  text-align: left;
-}
-.lugar-fecha label {
-  font-weight: bold;
-  margin-right: 8px;
-}
-.documento-firmas {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 40px;
-}
-.documento-firma {
-  text-align: center;
-  width: 45%;
-}
-.linea-firma {
-  border-bottom: 1.5px solid #000;
-  width: 80%;
-  margin: 0 auto 8px auto;
-  height: 0;
-}
 /* Ajusta el ancho de la columna NOMBRE DEL EVENTO */
 th:nth-child(2), td:nth-child(2) {
   width: 220px !important;
@@ -251,50 +261,6 @@ input, textarea.table-cell-input {
   border: none !important;
 }
 
-/* === Lugar y Fecha === */
-.lugar-fecha-container {
-  margin-top: 30px;
-  margin-bottom: 20px;
-}
-.lugar-fecha {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-/* === Firmas === */
-.footer-firmas {
-  margin-top: 40px;
-}
-.footer-content {
-  display: flex;
-  justify-content: space-between;
-}
-.firma {
-  text-align: center;
-}
-.firma div {
-  width: 200px;
-  height: 1px;
-  background-color: #333;
-  margin: 0 auto 5px;
-}
-
-.documento-firmas {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 60px;
-}
-
-.documento-firma {
-  text-align: center;
-  width: 45%;
-}
-
-.linea-firma {
-  border-top: 1px solid #333;
-  width: 80%;
-  margin: 0 auto 5px;
-}
 
 /* Scroll para la tabla (solo se ven 5 filas aprox) */
 .scroll-wrapper {
