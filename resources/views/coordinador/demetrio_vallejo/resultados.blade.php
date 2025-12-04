@@ -11,44 +11,38 @@
 
 <div class="contenedor-principal">
   <div class="encabezado">
-    <h1>Generador de Informe de Actividades</h1>
-    <p>Complete los campos y genere el pdf del informe de actividades extraescolares</p>
+    <h1>Resultados de Actividades</h1>
+    <p>Complete los campos y genere el pdf de los resultados de actividades extraescolares</p>
   </div>
 
   <div class="seccion">
     <h2 class="seccion-titulo">Documento Base Membretado</h2>
-    <div class="documentos-container" id="documentosLista" style="margin-top:8px;">
+    <div class="contenedor-tarjetas" id="documentosLista" style="margin-top:8px; display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 10px; padding-bottom: 4px; min-height: 140px;">
       @if(isset($documentos) && $documentos->isEmpty())
-        <div class="empty-state" id="emptyState">
+        <div class="sin-documentos" id="emptyState">
           <i class="fas fa-folder-open" style="font-size:40px;color:#bdc3c7;margin-bottom:8px;"></i>
           <h3>No hay PDFs membretados disponibles</h3>
           <p>Contacte al administrador para cargar documentos membretados.</p>
         </div>
       @else
-        <div style="max-height:340px;overflow-y:auto;">
         @foreach($documentos as $doc)
-          <div class="documento-card" data-id="{{ $doc->id }}" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:12px;border:1px solid #eee;border-radius:6px;margin-bottom:10px;background:#fff;">
-            <div class="documento-main" style="display:flex;gap:12px;align-items:flex-start;flex:1;">
-              <div class="documento-icon" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;background:#f8f9fa;border-radius:6px;font-size:18px;color:#d9534f;"><i class="fas fa-file-pdf"></i></div>
-              <div style="flex:1;">
-                <div class="documento-title" style="font-weight:600;margin-bottom:4px;">{{ $doc->nombre }}</div>
-                <div class="documento-desc" style="color:#666;margin-bottom:6px;">{{ $doc->descripcion }}</div>
-                <div class="documento-info" style="color:#444;font-size:13px;display:flex;gap:12px;flex-wrap:wrap;">
-                  <span>Subido: {{ $doc->created_at->format('d/m/Y') }}</span>
-                </div>
-              </div>
+          <div class="tarjeta-documento documento-card" data-id="{{ $doc->id }}" style="min-width:200px;max-width:220px;flex:0 0 200px;padding:10px 10px 8px 10px;">
+            <div class="tarjeta-icono"><i class="fas fa-file-pdf" style="font-size:22px;color:#d9534f;"></i></div>
+            <div class="tarjeta-contenido">
+              <div class="tarjeta-titulo documento-title" style="font-size:0.93rem;">{{ $doc->nombre }}</div>
+                <div class="tarjeta-descripcion documento-desc" style="font-size:0.78rem;">{{ $doc->descripcion }}</div>
+                <div class="tarjeta-fecha documento-info" style="font-size:0.7rem;">Subido: {{ $doc->created_at->format('d/m/Y') }}</div>
             </div>
-            <div class="documento-actions" style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+            <div class="tarjeta-acciones documento-actions" style="gap:6px;margin-top:6px;">
               @if($doc->archivo)
-                <a href="{{ asset($doc->archivo) }}" target="_blank" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:4px;padding:0;font-size:14px;line-height:1;border:none;cursor:pointer;color:#fff;background:#3498db;" title="Ver PDF"><i class="fas fa-eye"></i></a>
-                <button class="btn-cargar-pdf" data-id="{{ $doc->id }}" style="background:#2ecc71;color:#fff;border-radius:4px;padding:0 12px;height:32px;border:none;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;gap:6px;" title="Usar este PDF"><i class="fas fa-check"></i> Usar PDF</button>
+                <a href="{{ asset($doc->archivo) }}" target="_blank" class="boton-accion boton-ver-pdf" title="Ver PDF" style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;padding:0;"><i class="fas fa-eye" style="font-size:15px;"></i></a>
+                <button class="boton-accion btn-cargar-pdf" data-id="{{ $doc->id }}" title="Usar este PDF" style="background:#2ecc71;color:#fff;font-size:0.85rem;padding:0 8px;height:26px;"><i class="fas fa-check"></i> Usar PDF</button>
               @else
-                <button disabled style="background:#f0f0f0;color:#9aa0a6;cursor:default;width:32px;height:32px;border-radius:4px;"><i class="fas fa-eye"></i></button>
+                <button disabled class="boton-accion boton-ver-pdf" style="color:#9aa0a6;cursor:default;"><i class="fas fa-eye"></i></button>
               @endif
             </div>
           </div>
         @endforeach
-        </div>
       @endif
     </div>
     <div id="pdfSeleccionadoInfo" style="margin-top:10px;"></div>
@@ -56,10 +50,10 @@
 
 
   <div class="seccion">
-    <h2 class="seccion-titulo">Datos de las Actividades</h2>
+    <h2 class="seccion-titulo">Datos de los resultados</h2>
     <div class="contenedor-tabla">
       <div class="tabla-titulo">
-        Registro de Actividades
+        Resultado de Actividades
         <span>18 registros disponibles</span>
       </div>
       <div id="contenedorTabla" class="scroll-wrapper">
@@ -110,23 +104,26 @@
       Generar PDF Final
     </button>
   </div>
+
+<!-- Firmas -->
+<div class="footer-firmas" style="display:none;">
+  <div class="footer-content">
+    <div class="firma">
+      <div></div>
+      <span>Promotor Cultural o Deportivo</span>
+    </div>
+    <div class="firma">
+      <div></div>
+      <span>Jefe(a) de Oficinas de Promoción</span>
+    </div>
+    <div class="firma">
+      <div></div>
+      <span>Alejandro Loma Bolaños<br>Jefe de Departamentos de Oficinas Extraescolares</span>
+    </div>
+  </div>
+</div>
 </div>
 
-<!-- Firmas solo para PDF, ocultas en la web -->
-<div class="documento-firmas solo-pdf">
-  <div class="documento-firma" style="display:none;">
-    <div class="linea-firma"></div>
-    <span>Promotor Cultural o Deportivo.</span>
-  </div>
-  <div class="documento-firma" style="display:none;">
-    <div class="linea-firma"></div>
-    <span>Jefe de Oficina de Promoción Cultural o Deportiva.<br>Alejandro Loma Bolaños</span>
-  </div>
-  <div class="documento-firma" style="display:none;">
-    <div class="linea-firma"></div>
-    <span>Jefe de Departamento de Actividades Extraescolares.</span>
-  </div>
-</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
@@ -365,7 +362,7 @@ async function generarPDF() {
     tabla.style.maxHeight = prevMaxHeight;
     tabla.style.overflowY = prevOverflowY;
 
-    // Embebido de imagen
+    // Embebido de imagen de la tabla
     const imgData = canvas.toDataURL("image/png");
     const imgEmbed = await pdfDoc.embedPng(imgData);
     const imgWidth = pageWidth - 60;
@@ -380,75 +377,32 @@ async function generarPDF() {
       height: imgHeight
     });
 
-    // Lugar y Fecha y Firmas
-    let yFirmas = (margenSuperior - imgHeight) + 14 - 40;
-    const lugarFecha = document.getElementById('lugarFecha').value || '';
-    centerText(`Lugar y Fecha: ${lugarFecha}`, yFirmas + 28, 10, font);
-    yFirmas -= 36;
-    const firmaWidth = 160;
-    const firmaLineY = yFirmas;
-    // Posiciones para tres firmas
-    const firma1X = pageWidth / 6 - firmaWidth / 2;
-    const firma2X = pageWidth / 2 - firmaWidth / 2;
-    const firma3X = (5 * pageWidth) / 6 - firmaWidth / 2;
-    // Líneas de firma
-    page.drawLine({
-      start: { x: firma1X, y: firmaLineY },
-      end: { x: firma1X + firmaWidth, y: firmaLineY },
-      thickness: 1,
-      color: PDFLib.rgb(0, 0, 0)
-    });
-    page.drawLine({
-      start: { x: firma2X, y: firmaLineY },
-      end: { x: firma2X + firmaWidth, y: firmaLineY },
-      thickness: 1,
-      color: PDFLib.rgb(0, 0, 0)
-    });
-    page.drawLine({
-      start: { x: firma3X, y: firmaLineY },
-      end: { x: firma3X + firmaWidth, y: firmaLineY },
-      thickness: 1,
-      color: PDFLib.rgb(0, 0, 0)
-    });
-    // Textos de las firmas
-    const firma1Text = 'Promotor Cultural o Deportivo.';
-    const firma2Text = 'Jefe de Oficina de Promoción Cultural o Deportiva.\nAlejandro Loma Bolaños';
-    const firma3Text = 'Jefe de Departamento de Actividades Extraescolares.';
-    const firma1TextWidth = font.widthOfTextAtSize(firma1Text, 10);
-    const firma2TextWidth = font.widthOfTextAtSize('Jefe de Oficina de Promoción Cultural o Deportiva.', 10);
-    const firma2TextWidth2 = font.widthOfTextAtSize('Alejandro Loma Bolaños', 10);
-    const firma3TextWidth = font.widthOfTextAtSize(firma3Text, 10);
-    // Firma 1
-    page.drawText(firma1Text, {
-      x: firma1X + (firmaWidth - firma1TextWidth) / 2,
-      y: firmaLineY - 15,
-      size: 10,
-      font: font,
-      color: PDFLib.rgb(0, 0, 0)
-    });
-    // Firma 2 (dos líneas)
-    page.drawText('Jefe de Oficina de Promoción Cultural o Deportiva.', {
-      x: firma2X + (firmaWidth - firma2TextWidth) / 2,
-      y: firmaLineY - 15,
-      size: 10,
-      font: font,
-      color: PDFLib.rgb(0, 0, 0)
-    });
-    page.drawText('Alejandro Loma Bolaños', {
-      x: firma2X + (firmaWidth - firma2TextWidth2) / 2,
-      y: firmaLineY - 28,
-      size: 10,
-      font: font,
-      color: PDFLib.rgb(0, 0, 0)
-    });
-    // Firma 3
-    page.drawText(firma3Text, {
-      x: firma3X + (firmaWidth - firma3TextWidth) / 2,
-      y: firmaLineY - 15,
-      size: 10,
-      font: font,
-      color: PDFLib.rgb(0, 0, 0)
-    });
+    // --- Agregar firmas como imagen ---
+    const firmas = document.querySelector('.footer-firmas');
+    if (firmas) {
+      // Mostrar temporalmente si está oculta
+      const prevDisplay = firmas.style.display;
+      firmas.style.display = 'flex';
+      await new Promise(r => setTimeout(r, 120));
+      const canvasFirmas = await html2canvas(firmas, {
+        scale: 2,
+        backgroundColor: null
+      });
+      firmas.style.display = prevDisplay;
+      const imgFirmasData = canvasFirmas.toDataURL("image/png");
+      const imgFirmasEmbed = await pdfDoc.embedPng(imgFirmasData);
+      const firmasWidth = pageWidth - 120;
+      const firmasRatio = imgFirmasEmbed.height / imgFirmasEmbed.width;
+      const firmasHeight = firmasWidth * firmasRatio;
+      // Colocar firmas al final de la página
+      // Subir firmas 1cm (aprox 28.35 puntos)
+      page.drawImage(imgFirmasEmbed, {
+        x: 60,
+        y: 68,
+        width: firmasWidth,
+        height: firmasHeight
+      });
+    }
 
     // Descargar PDF final
     const pdfFinal = await pdfDoc.save();
