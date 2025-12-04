@@ -336,6 +336,7 @@ Route::post('coordinador/estudiantes/{id}/eliminar', [PanelDemetrioVallejoContro
 // ============ RUTAS PARA EVALUACIONES Y CONSTANCIAS (DEMETRIO VALLEJO) ============
 use App\Http\Controllers\Coordinador\EvaluacionDemetrioController;
 use App\Http\Controllers\Coordinador\EvaluacionTlahuitoltepecController;
+use App\Http\Controllers\Coordinador\EvaluacionUnionHidalgoController;
 
 Route::middleware(['auth'])->prefix('coordinador/demetrio-vallejo')->group(function () {
     // Guardar evaluación de estudiante
@@ -364,6 +365,21 @@ Route::middleware(['auth'])->prefix('coordinador/tlahuitoltepec')->group(functio
     // Obtener documentos membretados del semestre
     Route::get('documentos-membrete/{id_semestre}', [EvaluacionTlahuitoltepecController::class, 'obtenerDocumentosMembrete'])
         ->name('tlahuitoltepec.documentos.membrete');
+});
+
+// ============ RUTAS PARA EVALUACIONES Y CONSTANCIAS (UNIÓN HIDALGO) ============
+Route::middleware(['auth'])->prefix('coordinador/union-hidalgo')->group(function () {
+    // Guardar evaluación de estudiante
+    Route::post('evaluacion/guardar', [EvaluacionUnionHidalgoController::class, 'guardarEvaluacion'])
+        ->name('unionhidalgo.evaluacion.guardar');
+    
+    // Generar constancia en PDF
+    Route::get('constancia/{id_evaluacion}/pdf', [EvaluacionUnionHidalgoController::class, 'generarConstancia'])
+        ->name('unionhidalgo.constancia.pdf');
+    
+    // Obtener documentos membretados del semestre
+    Route::get('documentos-membrete/{id_semestre}', [EvaluacionUnionHidalgoController::class, 'obtenerDocumentosMembrete'])
+        ->name('unionhidalgo.documentos.membrete');
 });
 
 require __DIR__.'/auth.php';
