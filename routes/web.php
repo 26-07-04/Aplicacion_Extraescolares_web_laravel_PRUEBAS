@@ -337,6 +337,7 @@ Route::post('coordinador/estudiantes/{id}/eliminar', [PanelDemetrioVallejoContro
 use App\Http\Controllers\Coordinador\EvaluacionDemetrioController;
 use App\Http\Controllers\Coordinador\EvaluacionTlahuitoltepecController;
 use App\Http\Controllers\Coordinador\EvaluacionUnionHidalgoController;
+use App\Http\Controllers\Coordinador\EvaluacionValleEtlaController;
 
 Route::middleware(['auth'])->prefix('coordinador/demetrio-vallejo')->group(function () {
     // Guardar evaluación de estudiante
@@ -380,6 +381,21 @@ Route::middleware(['auth'])->prefix('coordinador/union-hidalgo')->group(function
     // Obtener documentos membretados del semestre
     Route::get('documentos-membrete/{id_semestre}', [EvaluacionUnionHidalgoController::class, 'obtenerDocumentosMembrete'])
         ->name('unionhidalgo.documentos.membrete');
+});
+
+// ============ RUTAS PARA EVALUACIONES Y CONSTANCIAS (VALLE DE ETLA) ============
+Route::middleware(['auth'])->prefix('coordinador/valle-de-etla')->group(function () {
+    // Guardar evaluación de estudiante
+    Route::post('evaluacion/guardar', [EvaluacionValleEtlaController::class, 'guardarEvaluacion'])
+        ->name('valleetla.evaluacion.guardar');
+    
+    // Generar constancia en PDF
+    Route::get('constancia/{id_evaluacion}/pdf', [EvaluacionValleEtlaController::class, 'generarConstancia'])
+        ->name('valleetla.constancia.pdf');
+    
+    // Obtener documentos membretados del semestre
+    Route::get('documentos-membrete/{id_semestre}', [EvaluacionValleEtlaController::class, 'obtenerDocumentosMembrete'])
+        ->name('valleetla.documentos.membrete');
 });
 
 require __DIR__.'/auth.php';
