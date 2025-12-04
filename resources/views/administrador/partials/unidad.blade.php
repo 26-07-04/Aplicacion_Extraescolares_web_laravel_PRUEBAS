@@ -64,7 +64,7 @@
     <img src="{{ asset('Imagenes/Logo TecNM.png') }}" alt="Logo TecNM" class="logo-modal">
     <div>
       <h2 class="titulo-modal">Actividades Extraescolares - {{ $unidadNombre }}</h2>
-      <div style="color: #1B396A; font-size: 14px; margin-top: 5px;">
+      <div style="color: #1B396A; font-size: 14px; margin-top: 5px; display:none;">
         <i class="fas fa-calendar-alt"></i> Semestre ID: {{ $id_semestre }}
       </div>
     </div>
