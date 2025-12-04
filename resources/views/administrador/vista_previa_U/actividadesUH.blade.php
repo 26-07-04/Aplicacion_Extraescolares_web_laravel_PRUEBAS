@@ -58,7 +58,7 @@
           <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path>
         </svg>
       </a>
-      <span style="color: #1B396A; font-weight: bold; font-size: 14px;">
+      <span style="color: #1B396A; font-weight: bold; font-size: 14px; display:none;">
         Semestre ID: <span id="current-semestre-id">{{ request()->input('id_semestre', 'N/A') }}</span>
       </span>
     </div>
@@ -89,7 +89,7 @@
 
       <!-- CAMBIO 4: Mostrar información del semestre actual -->
       <div class="semestre-info" style="background: #f0f8ff; padding: 10px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #1B396A;">
-        <p style="margin: 0; color: #1B396A; font-weight: bold;">
+        <p style="margin: 0; color: #1B396A; font-weight: bold; display:none;">
           <i class="fas fa-calendar-alt"></i> Actividades del Semestre ID: 
           <span id="display-semestre-id">{{ request()->input('id_semestre', 'No especificado') }}</span>
         </p>
