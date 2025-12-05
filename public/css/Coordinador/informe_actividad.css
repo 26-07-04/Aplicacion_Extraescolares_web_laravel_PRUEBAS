@@ -1,3 +1,34 @@
+/* Color especial para botón seleccionado de PDF */
+.seleccionado-pdf {
+  background-color: var(--naranja) !important;
+  color: var(--blanco) !important;
+}
+.boton-secundario {
+  background-color: var(--azul-marino);
+  color: var(--blanco);
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  gap: 8px;
+}
+.boton-secundario:hover {
+  background-color: var(--azul-marino-claro);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(26, 58, 95, 0.2);
+}
+/* ====== PAGINACION PDF ====== */
+.pdf-paginacion {
+  text-align: right;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: var(--gris-oscuro);
+}
 
 :root {
   --azul-marino: #1a3a5f;
@@ -85,6 +116,118 @@ body {
 /* ====== ESTILOS DE FORMULARIOS ====== */
 .grupo-formulario {
   margin-bottom: 15px;
+}
+
+/* ====== DOCUMENTOS BASE MEMBRETADO ====== */
+.documentos-container {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc #f5f7fa;
+}
+
+.documento-card {
+  min-width: 270px;
+  max-width: 270px;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  margin-bottom: 0;
+}
+
+.documento-main {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  flex: 1;
+}
+
+.documento-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  border-radius: 6px;
+  font-size: 16px;
+  color: #d9534f;
+}
+
+.documento-title {
+  font-weight: 600;
+  margin-bottom: 2px;
+  font-size: 15px;
+}
+
+.documento-desc {
+  color: #666;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.documento-info {
+  color: #444;
+  font-size: 12px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.documento-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.documento-actions a,
+.documento-actions button {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  min-width: 36px;
+  padding: 0 14px;
+  border-radius: 6px;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 4px rgba(52,152,219,0.08);
+}
+.documento-actions a {
+  background: #3498db;
+  color: #fff;
+}
+.documento-actions a:hover {
+  background: #217dbb;
+}
+.documento-actions .btn-cargar-pdf {
+  background: #2ecc71;
+  color: #fff;
+  font-weight: 500;
+}
+.documento-actions .btn-cargar-pdf:hover {
+  background: #27ae60;
+}
+.documento-actions button[disabled] {
+  background: #f0f0f0;
+  color: #9aa0a6;
+  cursor: default;
+  box-shadow: none;
 }
 
 .grupo-formulario label {

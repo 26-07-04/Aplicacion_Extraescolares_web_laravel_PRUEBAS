@@ -1,4 +1,3 @@
-<html lang="es">
 <head>
   <link rel="stylesheet" href="{{ asset('css/Coordinador/informe_actividad.css') }}">
 <meta charset="UTF-8">
@@ -10,6 +9,15 @@
 <body>
 
 <div class="contenedor-principal">
+  @if(isset($pdf) && $pdf)
+    <div style="text-align: right; font-size: 14px; font-weight: bold; margin-bottom: 10px;">Página 1 de 1</div>
+  @endif
+          {{-- Paginación dinámica --}}
+          @if(isset($page) && isset($totalPages))
+            <div style="text-align:right; font-size:15px; color:#444; margin-bottom:8px;">
+              Página {{ $page }} de {{ $totalPages }}
+            </div>
+          @endif
   <div class="encabezado">
     <h1>Generador de Informe de Actividades</h1>
     <p>Complete los campos y genere el pdf del informe de actividades extraescolares</p>
@@ -17,7 +25,7 @@
 
   <div class="seccion">
     <h2 class="seccion-titulo">Documento Base Membretado</h2>
-    <div class="documentos-container" id="documentosLista" style="margin-top:8px;">
+    <div class="documentos-container" id="documentosLista">
       @if(isset($documentos) && $documentos->isEmpty())
         <div class="empty-state" id="emptyState">
           <i class="fas fa-folder-open" style="font-size:40px;color:#bdc3c7;margin-bottom:8px;"></i>
@@ -25,30 +33,28 @@
           <p>Contacte al administrador para cargar documentos membretados.</p>
         </div>
       @else
-        <div style="max-height:340px;overflow-y:auto;">
         @foreach($documentos as $doc)
-          <div class="documento-card" data-id="{{ $doc->id }}" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:12px;border:1px solid #eee;border-radius:6px;margin-bottom:10px;background:#fff;">
-            <div class="documento-main" style="display:flex;gap:12px;align-items:flex-start;flex:1;">
-              <div class="documento-icon" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;background:#f8f9fa;border-radius:6px;font-size:18px;color:#d9534f;"><i class="fas fa-file-pdf"></i></div>
+          <div class="documento-card" data-id="{{ $doc->id }}">
+            <div class="documento-main">
+              <div class="documento-icon"><i class="fas fa-file-pdf"></i></div>
               <div style="flex:1;">
-                <div class="documento-title" style="font-weight:600;margin-bottom:4px;">{{ $doc->nombre }}</div>
-                <div class="documento-desc" style="color:#666;margin-bottom:6px;">{{ $doc->descripcion }}</div>
-                <div class="documento-info" style="color:#444;font-size:13px;display:flex;gap:12px;flex-wrap:wrap;">
+                <div class="documento-title">{{ $doc->nombre }}</div>
+                <div class="documento-desc">{{ $doc->descripcion }}</div>
+                <div class="documento-info">
                   <span>Subido: {{ $doc->created_at->format('d/m/Y') }}</span>
                 </div>
               </div>
             </div>
-            <div class="documento-actions" style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+            <div class="documento-actions">
               @if($doc->archivo)
-                <a href="{{ asset($doc->archivo) }}" target="_blank" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:4px;padding:0;font-size:14px;line-height:1;border:none;cursor:pointer;color:#fff;background:#3498db;" title="Ver PDF"><i class="fas fa-eye"></i></a>
-                <button class="btn-cargar-pdf" data-id="{{ $doc->id }}" style="background:#2ecc71;color:#fff;border-radius:4px;padding:0 12px;height:32px;border:none;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;gap:6px;" title="Usar este PDF"><i class="fas fa-check"></i> Usar PDF</button>
+                <a href="{{ asset($doc->archivo) }}" target="_blank" title="Ver PDF"><i class="fas fa-eye"></i></a>
+                <button class="btn-cargar-pdf" data-id="{{ $doc->id }}" title="Usar este PDF"><i class="fas fa-check"></i> Usar PDF</button>
               @else
-                <button disabled style="background:#f0f0f0;color:#9aa0a6;cursor:default;width:32px;height:32px;border-radius:4px;"><i class="fas fa-eye"></i></button>
+                <button disabled><i class="fas fa-eye"></i></button>
               @endif
             </div>
           </div>
         @endforeach
-        </div>
       @endif
     </div>
     <div id="pdfSeleccionadoInfo" style="margin-top:10px;"></div>
@@ -115,6 +121,9 @@
           </tbody>
         </table>
       </div>
+      <button id="btnAgregarEvento" class="boton boton-secundario" style="margin-bottom:10px; margin-top:15px;">
+        + Agregar Evento
+      </button>
     </div>
   </div>
 
@@ -157,6 +166,31 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const btnAgregar = document.getElementById("btnAgregarEvento");
+  const tbody = document.querySelector("#contenedorTabla table tbody");
+  btnAgregar.addEventListener("click", function () {
+    // Contar las filas actuales
+    const filas = tbody.querySelectorAll("tr").length;
+    const nuevoNumero = filas + 1;
+    // Crear nueva fila (con el mismo formato que las demás)
+    const nuevaFila = document.createElement("tr");
+    nuevaFila.innerHTML = `
+      <td><input type="text" value="${nuevoNumero}"></td>
+      <td><input type="text"></td>
+      <td><input type="text"></td>
+      <td><input type="date"></td>
+      <td><input type="number"></td>
+      <td><input type="number" class="small-input"></td>
+      <td><input type="number" class="small-input"></td>
+      <td><input type="text"></td>
+    `;
+    // Agregar fila a la tabla
+    tbody.appendChild(nuevaFila);
+  });
+});
+</script>
 
 <script>
 // Establece valor por defecto en el campo Lugar y Fecha
@@ -330,6 +364,20 @@ async function generarPDF() {
     centerText('Subdirección de Planeación y Vinculación', y, 10, fontBold); y -= 13;
     centerText('DEPARTAMENTO DE ACTIVIDADES EXTRAESCOLARES', y, 10, fontBold); y -= 13;
     centerText('OFICINA DE PROMOCIÓN CULTURAL O DEPORTIVA', y, 10, fontBold); y -= 20;
+
+    // Paginación PDF (ajustada)
+    const paginacionText = 'Página 1 de 1';
+    const paginacionSize = 9; // tamaño reducido
+    const paginacionFont = fontBold;
+    const paginacionY = pageHeight - 103; // ligeramente más abajo
+    const paginacionX = pageWidth - paginacionFont.widthOfTextAtSize(paginacionText, paginacionSize) - 145; // más a la izquierda
+    page.drawText(paginacionText, {
+      x: paginacionX,
+      y: paginacionY,
+      size: paginacionSize,
+      font: paginacionFont,
+      color: PDFLib.rgb(0, 0, 0)
+    });
 
     // Datos principales
     const periodo = document.getElementById('periodoInput').value;
