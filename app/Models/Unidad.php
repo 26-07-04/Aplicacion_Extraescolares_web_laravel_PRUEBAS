@@ -13,4 +13,9 @@ class Unidad extends Model
         'nombre_unidad',
         'id_semestre'
     ];
+
+    public function actividades()
+    {
+        return $this->hasMany(\App\Models\Actividad::class, 'id_unidad', 'id_unidad');
+    }
 }

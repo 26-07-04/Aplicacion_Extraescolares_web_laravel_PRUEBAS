@@ -168,6 +168,11 @@ Route::get('coordinador/union-hidalgo/resultados/print/{id}', [PanelUnionHidalgo
     ->middleware('auth')
     ->name('coordinador.union_hidalgo.resultados.print');
 
+// Ruta de impresión de resultados (Valle de Etla)
+Route::get('coordinador/valle-de-etla/resultados/print/{id}', [PanelValleEtlaController::class, 'printResultados'])
+    ->middleware('auth')
+    ->name('coordinador.valle.resultados.print');
+
 Route::get('coordinador/semestres/tlahuitoltepec', [CoordinadorSemestresTlahController::class, 'index'])
     ->middleware('auth')
     ->name('coordinador.semestres.tlahuitoltepec');
@@ -364,6 +369,15 @@ Route::post('coordinador/union-hidalgo/estudiantes/{id}/actualizar', [App\Http\C
 Route::post('coordinador/union-hidalgo/estudiantes/{id}/eliminar', [App\Http\Controllers\Coordinador\PanelUnionHidalgoController::class, 'eliminarEstudiante'])
     ->middleware('auth')
     ->name('coordinador.union_hidalgo.estudiantes.eliminar');
+
+// Rutas para CRUD de estudiantes en Valle de Etla (usar desde panel Valle de Etla)
+Route::post('coordinador/valle-de-etla/estudiantes/{id}/actualizar', [App\Http\Controllers\Coordinador\PanelValleEtlaController::class, 'actualizarEstudiante'])
+    ->middleware('auth')
+    ->name('coordinador.valle_de_etla.estudiantes.actualizar');
+
+Route::post('coordinador/valle-de-etla/estudiantes/{id}/eliminar', [App\Http\Controllers\Coordinador\PanelValleEtlaController::class, 'eliminarEstudiante'])
+    ->middleware('auth')
+    ->name('coordinador.valle_de_etla.estudiantes.eliminar');
 
 // ============ RUTAS PARA EVALUACIONES Y CONSTANCIAS (DEMETRIO VALLEJO) ============
 use App\Http\Controllers\Coordinador\EvaluacionDemetrioController;
