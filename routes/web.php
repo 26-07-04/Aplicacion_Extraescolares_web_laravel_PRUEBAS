@@ -153,6 +153,10 @@ Route::get('coordinador/tlahuitoltepec/panel/{id}', [PanelTlahuitoltepecControll
 Route::get('coordinador/demetrio-vallejo/panel/{id}', [PanelDemetrioVallejoController::class, 'show'])
     ->middleware('auth')
     ->name('coordinador.demetrio.panel');
+// Ruta de impresión de resultados (Demetrio Vallejo)
+Route::get('coordinador/demetrio-vallejo/resultados/print/{id}', [PanelDemetrioVallejoController::class, 'printResultados'])
+    ->middleware('auth')
+    ->name('coordinador.demetrio.resultados.print');
 
 Route::get('coordinador/semestres/tlahuitoltepec', [CoordinadorSemestresTlahController::class, 'index'])
     ->middleware('auth')
