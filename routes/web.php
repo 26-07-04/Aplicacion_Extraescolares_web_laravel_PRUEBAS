@@ -163,6 +163,11 @@ Route::get('coordinador/tlahuitoltepec/resultados/print/{id}', [PanelTlahuitolte
     ->middleware('auth')
     ->name('coordinador.tlahuitoltepec.resultados.print');
 
+// Ruta de impresión de resultados (Unión Hidalgo)
+Route::get('coordinador/union-hidalgo/resultados/print/{id}', [PanelUnionHidalgoController::class, 'printResultados'])
+    ->middleware('auth')
+    ->name('coordinador.union_hidalgo.resultados.print');
+
 Route::get('coordinador/semestres/tlahuitoltepec', [CoordinadorSemestresTlahController::class, 'index'])
     ->middleware('auth')
     ->name('coordinador.semestres.tlahuitoltepec');
@@ -350,6 +355,15 @@ Route::post('coordinador/tlahuitoltepec/estudiantes/{id}/actualizar', [App\Http\
 Route::post('coordinador/tlahuitoltepec/estudiantes/{id}/eliminar', [App\Http\Controllers\Coordinador\PanelTlahuitoltepecController::class, 'eliminarEstudiante'])
     ->middleware('auth')
     ->name('coordinador.tlahuitoltepec.estudiantes.eliminar');
+
+// Rutas para CRUD de estudiantes en Unión Hidalgo (usar desde panel Unión Hidalgo)
+Route::post('coordinador/union-hidalgo/estudiantes/{id}/actualizar', [App\Http\Controllers\Coordinador\PanelUnionHidalgoController::class, 'actualizarEstudiante'])
+    ->middleware('auth')
+    ->name('coordinador.union_hidalgo.estudiantes.actualizar');
+
+Route::post('coordinador/union-hidalgo/estudiantes/{id}/eliminar', [App\Http\Controllers\Coordinador\PanelUnionHidalgoController::class, 'eliminarEstudiante'])
+    ->middleware('auth')
+    ->name('coordinador.union_hidalgo.estudiantes.eliminar');
 
 // ============ RUTAS PARA EVALUACIONES Y CONSTANCIAS (DEMETRIO VALLEJO) ============
 use App\Http\Controllers\Coordinador\EvaluacionDemetrioController;
