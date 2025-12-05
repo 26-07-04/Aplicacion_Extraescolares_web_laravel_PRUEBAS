@@ -9,6 +9,7 @@ use App\Models\Semestre;
 use App\Models\Actividad;
 use App\Models\Unidad;
 use App\Models\Estudiante;
+use App\Models\Evaluacion;
 
 class PanelDemetrioVallejoController extends Controller
 {
@@ -89,6 +90,24 @@ class PanelDemetrioVallejoController extends Controller
             ];
         })->toArray();
 
+        // Obtener evaluaciones del semestre y unidad actual
+        $evaluacionesQuery = Evaluacion::with(['estudiante', 'actividad'])
+            ->where('id_semestre', $id);
+        
+        // Filtrar por unidad solo si tenemos id_unidad
+        if (!empty($user_unidad_id)) {
+            $evaluacionesQuery->where('id_unidad', $user_unidad_id);
+        } elseif (!empty($uaKeyword)) {
+            // Si no hay id_unidad, filtrar por nombre de unidad usando relación
+            $evaluacionesQuery->whereHas('unidad', function ($q) use ($uaKeyword) {
+                $q->where('nombre_unidad', 'like', '%' . $uaKeyword . '%');
+            });
+        }
+        
+        $evaluaciones = $evaluacionesQuery->get()->sortBy(function($evaluacion) {
+            return $evaluacion->estudiante->nombre ?? '';
+        })->values();
+
         return view('coordinador.demetrio_vallejo.panel', [
             'user' => $user,
             'semestre' => $semestre,
@@ -102,6 +121,84 @@ class PanelDemetrioVallejoController extends Controller
             'uaName' => $uaName,
             'uaKeyword' => $uaKeyword,
             'user_unidad_id' => $user_unidad_id,
+            'evaluaciones' => $evaluaciones,
+        ]);
+    }
+
+    public function printResultados($id)
+    {
+        $user = Auth::user();
+        if (!$user || ($user->rol ?? '') !== 'Coordinador') {
+            abort(403);
+        }
+
+        $ua = $user->unidad_academica ?? '';
+        if (stripos($ua, 'Demetrio') === false && stripos($ua, 'Vallejo') === false && stripos($ua, 'Espinal') === false) {
+            abort(403);
+        }
+
+        $semestre = Semestre::find($id);
+        if (!$semestre) {
+            abort(404);
+        }
+
+        $uaName = $user->unidad_academica ?? '';
+        $user_unidad_id = $user->unidad_id ?? $user->unidad ?? null;
+        $uaKeyword = null;
+        $candidates = ['Demetrio','Vallejo','Unión','Union','Espinal'];
+        foreach ($candidates as $cand) {
+            if (!empty($uaName) && stripos($uaName, $cand) !== false) {
+                $uaKeyword = $cand;
+                break;
+            }
+        }
+
+        $evaluacionesQuery = Evaluacion::with(['estudiante', 'actividad'])
+            ->where('id_semestre', $id);
+
+        if (!empty($user_unidad_id)) {
+            $evaluacionesQuery->where('id_unidad', $user_unidad_id);
+        } elseif (!empty($uaKeyword)) {
+            $evaluacionesQuery->whereHas('unidad', function ($q) use ($uaKeyword) {
+                $q->where('nombre_unidad', 'like', '%' . $uaKeyword . '%');
+            });
+        }
+
+        // Filtrar por tipo de actividad si viene en la petición ("cultural" | "deportiva")
+        $tipo = strtolower(request()->get('tipo', 'cultural'));
+        if (in_array($tipo, ['cultural', 'deportiva'])) {
+            $evaluacionesQuery->whereHas('actividad', function ($q) use ($tipo) {
+                // Filtrar únicamente por palabras clave en nombre_actividad para evitar columnas inexistentes
+                if ($tipo === 'cultural') {
+                    $q->where(function($qw){
+                        $keywords = [
+                            'cultural','arte','artística','artistica','danzas','danza','folklor','folklórica','folklorica','baile',
+                            'música','musica','teatro','pintura','coro','orquesta','ajedrez','lectura','fotografía','fotografia','rondalla','escolta','banda de guerra'
+                        ];
+                        foreach ($keywords as $kw) { $qw->orWhere('nombre_actividad', 'like', "%$kw%"); }
+                    });
+                } else {
+                    $q->where(function($qw){
+                        $keywords = [
+                            'deportiva','deporte','fútbol','futbol','basquetbol','basket','voleibol','atletismo','natación','natacion',
+                            'tenis','gimnasia','acondicionamiento','acondicionamiento fisico','acondicionamiento físico','preparacion fisica'
+                        ];
+                        foreach ($keywords as $kw) { $qw->orWhere('nombre_actividad', 'like', "%$kw%"); }
+                    });
+                }
+            });
+        }
+
+        $evaluaciones = $evaluacionesQuery->get()->sortBy(function($evaluacion) {
+            return $evaluacion->estudiante->nombre ?? '';
+        })->values();
+
+        return view('coordinador.demetrio_vallejo.pdf.resultados', [
+            'user' => $user,
+            'semestre' => $semestre,
+            'unidad' => 'Unidad Académica Demetrio Vallejo Martínez - El Espinal',
+            'evaluaciones' => $evaluaciones,
+            'tipo' => in_array($tipo, ['cultural','deportiva']) ? $tipo : 'cultural',
         ]);
     }
 
