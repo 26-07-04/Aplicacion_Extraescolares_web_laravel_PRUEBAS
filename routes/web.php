@@ -158,6 +158,11 @@ Route::get('coordinador/demetrio-vallejo/resultados/print/{id}', [PanelDemetrioV
     ->middleware('auth')
     ->name('coordinador.demetrio.resultados.print');
 
+// Ruta de impresión de resultados (Tlahuitoltepec)
+Route::get('coordinador/tlahuitoltepec/resultados/print/{id}', [PanelTlahuitoltepecController::class, 'printResultados'])
+    ->middleware('auth')
+    ->name('coordinador.tlahuitoltepec.resultados.print');
+
 Route::get('coordinador/semestres/tlahuitoltepec', [CoordinadorSemestresTlahController::class, 'index'])
     ->middleware('auth')
     ->name('coordinador.semestres.tlahuitoltepec');
@@ -336,6 +341,15 @@ Route::post('coordinador/estudiantes/{id}/actualizar', [PanelDemetrioVallejoCont
 Route::post('coordinador/estudiantes/{id}/eliminar', [PanelDemetrioVallejoController::class, 'eliminarEstudiante'])
     ->middleware('auth')
     ->name('coordinador.estudiantes.eliminar');
+
+// Rutas para CRUD de estudiantes en Tlahuitoltepec (usar desde panel Tlahuitoltepec)
+Route::post('coordinador/tlahuitoltepec/estudiantes/{id}/actualizar', [App\Http\Controllers\Coordinador\PanelTlahuitoltepecController::class, 'actualizarEstudiante'])
+    ->middleware('auth')
+    ->name('coordinador.tlahuitoltepec.estudiantes.actualizar');
+
+Route::post('coordinador/tlahuitoltepec/estudiantes/{id}/eliminar', [App\Http\Controllers\Coordinador\PanelTlahuitoltepecController::class, 'eliminarEstudiante'])
+    ->middleware('auth')
+    ->name('coordinador.tlahuitoltepec.estudiantes.eliminar');
 
 // ============ RUTAS PARA EVALUACIONES Y CONSTANCIAS (DEMETRIO VALLEJO) ============
 use App\Http\Controllers\Coordinador\EvaluacionDemetrioController;
