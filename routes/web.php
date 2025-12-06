@@ -1,4 +1,3 @@
-
 <?php
 
 use App\Http\Controllers\ProfileController;
@@ -19,6 +18,7 @@ use App\Http\Controllers\Coordinador\PanelDemetrioVallejoController;
 use App\Http\Controllers\Coordinador\ImportEstudiantesController;
 use App\Http\Controllers\Coordinador\InformeDemetrioController;
 use App\Http\Controllers\Coordinador\InformeTlahuitoltepecController;
+use App\Http\Controllers\Coordinador\InformeUnionHidalgoController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UnidadController;
@@ -148,8 +148,11 @@ Route::prefix('coordinador')->group(function () {
 });
 
 
-
-
+// Rutas para el informe de Unión Hidalgo (unidad)
+Route::get('/coordinador/union-hidalgo/informe', [InformeUnionHidalgoController::class, 'index'])->name('informe_union_hidalgo.index');
+Route::post('/coordinador/union-hidalgo/informe/guardar', [InformeUnionHidalgoController::class, 'guardarDatos'])->name('informe_union_hidalgo.guardar');
+Route::post('/coordinador/union-hidalgo/informe/subir-pdf', [InformeUnionHidalgoController::class, 'subirPDF'])->name('informe_union_hidalgo.subir_pdf');
+Route::post('/coordinador/union-hidalgo/informe/generar-pdf', [InformeUnionHidalgoController::class, 'generarPDFLaravel'])->name('informe_union_hidalgo.generar_pdf');
 
 
 
@@ -158,9 +161,6 @@ Route::get('/coordinador/tlahuitoltepec/informe', [InformeTlahuitoltepecControll
 Route::post('/coordinador/tlahuitoltepec/informe/guardar', [InformeTlahuitoltepecController::class, 'guardarDatos'])->name('informe_tlahuitoltepec.guardar');
 Route::post('/coordinador/tlahuitoltepec/informe/subir-pdf', [InformeTlahuitoltepecController::class, 'subirPDF'])->name('informe_tlahuitoltepec.subir_pdf');
 Route::post('/coordinador/tlahuitoltepec/informe/generar-pdf', [InformeTlahuitoltepecController::class, 'generarPDFLaravel'])->name('informe_tlahuitoltepec.generar_pdf');
-
-
-
 
 // ============ RUTAS PARA INFORME FINAL (DEMETRIO VALLEJO) ============
 Route::middleware(['auth'])->prefix('coordinador/demetrio-vallejo')->group(function () {
