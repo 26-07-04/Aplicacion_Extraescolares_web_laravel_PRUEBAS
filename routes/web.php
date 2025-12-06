@@ -154,6 +154,11 @@ Route::post('/coordinador/union-hidalgo/informe/guardar', [InformeUnionHidalgoCo
 Route::post('/coordinador/union-hidalgo/informe/subir-pdf', [InformeUnionHidalgoController::class, 'subirPDF'])->name('informe_union_hidalgo.subir_pdf');
 Route::post('/coordinador/union-hidalgo/informe/generar-pdf', [InformeUnionHidalgoController::class, 'generarPDFLaravel'])->name('informe_union_hidalgo.generar_pdf');
 
+// Rutas para el informe de Valle de Etla (unidad)
+Route::get('/coordinador/valle-de-etla/informe', [App\Http\Controllers\Coordinador\informeValleDeEtlaController::class, 'index'])->name('informe_valle_de_etla.index');
+Route::post('/coordinador/valle-de-etla/informe/guardar', [App\Http\Controllers\Coordinador\informeValleDeEtlaController::class, 'guardarDatos'])->name('informe_valle_de_etla.guardar');
+Route::post('/coordinador/valle-de-etla/informe/subir-pdf', [App\Http\Controllers\Coordinador\informeValleDeEtlaController::class, 'subirPDF'])->name('informe_valle_de_etla.subir_pdf');
+Route::post('/coordinador/valle-de-etla/informe/generar-pdf', [App\Http\Controllers\Coordinador\informeValleDeEtlaController::class, 'generarPDFLaravel'])->name('informe_valle_de_etla.generar_pdf');
 
 
 // Rutas para el informe de Tlahuitoltepec (unidad)
