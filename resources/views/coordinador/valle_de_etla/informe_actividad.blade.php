@@ -1,29 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
 <head>
-  <link rel="stylesheet" href="{{ asset('css/Coordinador/informe_actividad.css') }}">
 <meta charset="UTF-8">
+<link rel="stylesheet" href="{{ asset('css/Coordinador/informe_actividad.css') }}">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tabla para PDF</title>
-
+<title>Informe de Actividades - ITVE</title>
 
 </head>
+
 <body>
 
-<div class="contenedor-principal">
-  @if(isset($pdf) && $pdf)
-    <div style="text-align: right; font-size: 14px; font-weight: bold; margin-bottom: 10px;">Página 1 de 1</div>
-  @endif
-          {{-- Paginación dinámica --}}
-          @if(isset($page) && isset($totalPages))
-            <div style="text-align:right; font-size:15px; color:#444; margin-bottom:8px;">
-              Página {{ $page }} de {{ $totalPages }}
-            </div>
-          @endif
-  <div class="encabezado">
-    <h1>Generador de Informe de Actividades</h1>
-    <p>Complete los campos y genere el pdf del informe de actividades extraescolares</p>
-  </div>
+<!-- Título principal simplificado -->
+<div class="titulo-principal">
+  <h1>Informe de Actividades</h1>
+  <p>Sistema de generación de informes</p>
+</div>
 
-  <div class="seccion">
+<!-- Indicador de progreso -->
+<div class="progreso-contenedor">
+  <div class="barra-progreso">
+    <div class="progreso" id="barraProgreso"></div>
+  </div>
+  
+  <div class="etapas">
+    <div class="etapa activa" id="etapa1">
+      <div class="etapa-numero">1</div>
+      <div class="etapa-texto">Documento</div>
+    </div>
+    
+    <div class="etapa" id="etapa2">
+      <div class="etapa-numero">2</div>
+      <div class="etapa-texto">Información</div>
+    </div>
+    
+    <div class="etapa" id="etapa3">
+      <div class="etapa-numero">3</div>
+      <div class="etapa-texto">Eventos</div>
+    </div>
+    
+    <div class="etapa" id="etapa4">
+      <div class="etapa-numero">4</div>
+      <div class="etapa-texto">Resumen</div>
+    </div>
+  </div>
+</div>
+
+<!-- Contenedor de secciones -->
+<div class="seccion-contenedor">
+  
+  <!-- Sección 1: Configuración del documento -->
+  <div class="seccion activa" id="seccion1">
     <h2 class="seccion-titulo">Documento Base Membretado</h2>
     <div class="documentos-container" id="documentosLista">
       @if(isset($documentos) && $documentos->isEmpty())
@@ -33,168 +59,211 @@
           <p>Contacte al administrador para cargar documentos membretados.</p>
         </div>
       @else
+        <div class="tarjetas-documentos">
         @foreach($documentos as $doc)
-          <div class="documento-card" data-id="{{ $doc->id }}">
-            <div class="documento-main">
-              <div class="documento-icon"><i class="fas fa-file-pdf"></i></div>
+          <div class="documento-card tarjeta-documento" data-id="{{ $doc->id }}" style="background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); padding: 16px; min-width: 260px; max-width: 300px; display: flex; flex-direction: column; align-items: flex-start; border: 1px solid #e1e5eb;">
+            <div class="documento-main" style="display: flex; align-items: center; width: 100%;">
+              <div class="documento-icon" style="margin-right: 12px; color: #e74c3c; font-size: 32px;"><i class="fas fa-file-pdf"></i></div>
               <div style="flex:1;">
-                <div class="documento-title">{{ $doc->nombre }}</div>
-                <div class="documento-desc">{{ $doc->descripcion }}</div>
-                <div class="documento-info">
+                <div class="documento-title" style="font-weight: 600; color: #1a365d; font-size: 1rem;">{{ $doc->nombre }}</div>
+                <div class="documento-desc" style="color: #6c757d; font-size: 0.95rem; margin-bottom: 4px;">{{ $doc->descripcion }}</div>
+                <div class="documento-info" style="font-size: 0.85rem; color: #888;">
                   <span>Subido: {{ $doc->created_at->format('d/m/Y') }}</span>
                 </div>
               </div>
             </div>
-            <div class="documento-actions">
+            <div class="documento-actions" style="margin-top: 10px; display: flex; gap: 8px;">
               @if($doc->archivo)
-                <a href="{{ asset($doc->archivo) }}" target="_blank" title="Ver PDF"><i class="fas fa-eye"></i></a>
-                <button class="btn-cargar-pdf" data-id="{{ $doc->id }}" title="Usar este PDF"><i class="fas fa-check"></i> Usar PDF</button>
+                <a href="{{ asset($doc->archivo) }}" target="_blank" title="Ver PDF" style="background: #1a365d; border-radius: 5px; padding: 6px 10px; color: #fff; font-size: 1rem; border: none;"><i class="fas fa-eye"></i></a>
+                <button class="btn-cargar-pdf" data-id="{{ $doc->id }}" title="Usar este PDF" style="background: #2ecc71; color: #fff; border: none; border-radius: 5px; padding: 6px 12px; font-weight: 600; cursor: pointer;"><i class="fas fa-check"></i> Usar PDF</button>
               @else
-                <button disabled><i class="fas fa-eye"></i></button>
+                <button disabled style="background: #eee; border-radius: 5px; padding: 6px 10px; color: #aaa;"><i class="fas fa-eye"></i></button>
               @endif
             </div>
           </div>
         @endforeach
+        </div>
+        <style>
+        .tarjetas-documentos {
+          display: flex;
+          flex-wrap: nowrap;
+          gap: 16px;
+          overflow-x: auto;
+          padding-bottom: 8px;
+        }
+        .tarjeta-documento {
+          flex: 0 0 auto;
+        }
+        </style>
       @endif
     </div>
     <div id="pdfSeleccionadoInfo" style="margin-top:10px;"></div>
-  </div>
-
-  <div class="seccion">
-    <h2 class="seccion-titulo">Información del Informe</h2>
-    <div class="grupo-formulario">
-      <label for="periodoInput" class="indicador-obligatorio">Periodo</label>
-      <input type="text" id="periodoInput" placeholder="Ej: Enero - Junio 2023" class="campo-entrada">
-    </div>
-    
-    <div style="display: flex; gap: 15px;">
-      <div class="grupo-formulario" style="flex: 1;">
-        <label for="actividadCulturalInput">Actividad Cultural</label>
-        <input type="text" id="actividadCulturalInput" placeholder="Ej: Festival de Danza" class="campo-entrada">
-      </div>
-      
-      <div class="grupo-formulario" style="flex: 1;">
-        <label for="actividadDeportivaInput">Actividad Deportiva</label>
-        <input type="text" id="actividadDeportivaInput" placeholder="Ej: Torneo Interescolar" class="campo-entrada">
-      </div>
-    </div>
-  </div>
-
-  <div class="seccion">
-    <h2 class="seccion-titulo">Datos de las Actividades</h2>
-    <div class="contenedor-tabla">
-      <div class="tabla-titulo">
-        Registro de Actividades
-        <span>18 registros disponibles</span>
-      </div>
-      <div id="contenedorTabla" class="scroll-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>NO.</th>
-              <th>NOMBRE DEL EVENTO</th>
-              <th>INSTITUCIÓN ORGANIZADORA</th>
-              <th>FECHA DE REALIZACIÓN</th>
-              <th>NO. DE PARTICIPANTES</th>
-              <th>M</th>
-              <th>H</th>
-              <th>RESULTADOS</th>
-            </tr>
-          </thead>
-          <tbody>
-            <script>
-              for (let i = 1; i <= 18; i++) {
-                document.write(`
-                  <tr>
-                    <td><input type="text" value="${i}"></td>
-                    <td><input type="text"></td>
-                    <td><input type="text"></td>
-                    <td><input type="date"></td>
-                    <td><input type="number"></td>
-                    <td><input type="number" class="small-input"></td>
-                    <td><input type="number" class="small-input"></td>
-                    <td><input type="text"></td>
-                  </tr>
-                `);
-              }
-            </script>
-          </tbody>
-        </table>
-      </div>
-      <button id="btnAgregarEvento" class="boton boton-secundario" style="margin-bottom:10px; margin-top:15px;">
-        + Agregar Evento
+    <div class="controles-navegacion">
+      <button class="boton boton-atras" disabled>
+        <i>←</i> Atrás
+      </button>
+      <button class="boton boton-continuar" onclick="siguienteSeccion()">
+        Continuar <i>→</i>
       </button>
     </div>
   </div>
-
-  <div class="seccion">
-    <h2 class="seccion-titulo">Información Adicional</h2>
+  
+  <!-- Sección 2: Información del informe -->
+  <div class="seccion" id="seccion2">
+    <div class="seccion-titulo">Información del Informe</div>
+    
     <div class="grupo-formulario">
-      <label for="lugarFecha" class="indicador-obligatorio">Lugar y Fecha</label>
-      <input type="text" id="lugarFecha" placeholder="Oaxaca, 06 de agosto de 2025" class="campo-entrada">
-      <div class="ayuda-texto">Se establecerá automáticamente la fecha actual si no se especifica</div>
+      <label for="periodo" class="requerido">Periodo Semestral:</label>
+      <input type="text" id="periodo" class="input-estilo" placeholder="Ej: Enero - Junio 2025">
+      <div class="mensaje-error" id="errorPeriodo">Este campo es requerido</div>
+    </div>
+    
+    <div class="grupo-formulario">
+      <label>Actividades:</label>
+      <div style="display: flex; gap: 16px; align-items: center;">
+        <input type="text" id="actividadCultural" class="input-estilo input-medio" placeholder="Actividad Cultural">
+        <input type="text" id="actividadDeportiva" class="input-estilo input-medio" placeholder="Actividad Deportiva">
+      </div>
+      <div class="nota">Complete al menos una de las dos actividades</div>
+    </div>
+    
+    <div class="controles-navegacion">
+      <button class="boton boton-atras" onclick="anteriorSeccion()">
+        <i>←</i> Atrás
+      </button>
+      
+      <button class="boton boton-continuar" onclick="siguienteSeccion()">
+        Continuar <i>→</i>
+      </button>
     </div>
   </div>
-
-  <div class="contenedor-botones">
-    <button id="btnLimpiar" class="boton boton-secundario">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-        <path d="M2 2v4h1v9a1 1 0 001 1h8a1 1 0 001-1V6h1V2H2zm3 12V7h1v7H5zm3 0V7h1v7H8zm3 0V7h1v7h-1zM4 3h8v2H4V3z"/>
-      </svg>
-      Limpiar
+  
+  <!-- Sección 3: Registro de eventos -->
+  <div class="seccion" id="seccion3">
+    <div class="seccion-titulo">Registro de Eventos</div>
+    
+    <button class="boton boton-agregar" onclick="agregarEvento()">
+      <i>+</i> Agregar evento
     </button>
-    <button id="btnGenerarPDF" class="boton boton-principal">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-        <path d="M14 0H2a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V2a2 2 0 00-2-2zM5 4h6a1 1 0 010 2H5a1 1 0 010-2zm3 4a1 1 0 010 2H5a1 1 0 010-2h3zm0 4a1 1 0 010 2H5a1 1 0 010-2h3z"/>
-      </svg>
-      Generar PDF Final
-    </button>
+    
+    <div class="contenedor-tabla">
+      <table class="tabla-eventos" id="tablaEventos">
+        <thead>
+          <tr>
+            <th>NO.</th>
+            <th>NOMBRE DEL EVENTO</th>
+            <th>INSTITUCIÓN ORGANIZADORA</th>
+            <th>FECHA DE REALIZACIÓN</th>
+            <th>NO. DE PARTICIPANTES</th>
+            <th>M</th>
+            <th>H</th>
+            <th>RESULTADOS</th>
+          </tr>
+        </thead>
+        <tbody id="cuerpoTabla"></tbody>
+      </table>
+    </div>
+    
+    <div class="controles-navegacion">
+      <button class="boton boton-atras" onclick="anteriorSeccion()">
+        <i>←</i> Atrás
+      </button>
+      
+      <button class="boton boton-continuar" onclick="siguienteSeccion()">
+        Continuar <i>→</i>
+      </button>
+    </div>
+  </div>
+  
+  <!-- Sección 4: Resumen y validación -->
+  <div class="seccion" id="seccion4">
+    <div class="seccion-titulo">Resumen y Validación</div>
+    
+    <div class="resumen-contenedor">
+      <div class="resumen-item">
+        <span class="resumen-etiqueta">Periodo:</span>
+        <span class="resumen-valor" id="resumenPeriodo">No especificado</span>
+      </div>
+      
+      <div class="resumen-item">
+        <span class="resumen-etiqueta">Actividad Cultural:</span>
+        <span class="resumen-valor" id="resumenCultural">No especificada</span>
+      </div>
+      
+      <div class="resumen-item">
+        <span class="resumen-etiqueta">Actividad Deportiva:</span>
+        <span class="resumen-valor" id="resumenDeportiva">No especificada</span>
+      </div>
+      
+      <div class="resumen-item">
+        <span class="resumen-etiqueta">Total de Eventos:</span>
+        <span class="resumen-valor" id="resumenEventos">0</span>
+      </div>
+      
+      <div class="resumen-item">
+        <span class="resumen-etiqueta">Lugar y Fecha:</span>
+        <span class="resumen-valor" id="resumenFecha">No especificada</span>
+      </div>
+    </div>
+    
+    <div class="grupo-formulario">
+      <label for="lugarFecha" class="requerido">Lugar y Fecha:</label>
+      <input type="text" id="lugarFecha" class="input-estilo" placeholder="Oaxaca, 06 de agosto de 2025">
+      <div class="nota fecha-actual" id="notaFecha">Se establecerá automáticamente la fecha actual si no se especifica</div>
+    </div>
+    
+    <div class="loading" id="loadingGeneracion">
+      <div class="spinner"></div>
+      <p>Generando PDF, por favor espere...</p>
+    </div>
+    
+    <div class="controles-navegacion">
+      <button class="boton boton-atras" onclick="anteriorSeccion()">
+        <i>←</i> Atrás
+      </button>
+      
+      <button class="boton boton-finalizar" onclick="generarPDF()">
+        <i>📄</i> Generar PDF
+      </button>
+    </div>
   </div>
 </div>
 
-<!-- Firmas solo para PDF, ocultas en la web -->
-<div class="documento-firmas solo-pdf">
-  <div class="documento-firma" style="display:none;">
-    <div class="linea-firma"></div>
-    <span>Jefe(a) de la oficina de promoción</span>
-  </div>
-  <div class="documento-firma" style="display:none;">
-    <div class="linea-firma"></div>
-    <span>Jefe(a) del Departamento</span>
-  </div>
+<!-- Elementos solo para PDF (siempre ocultos) -->
+<div class="paginacion-pdf solo-pdf" style="display: none !important;">
+  Página 1 de 1
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-  const btnAgregar = document.getElementById("btnAgregarEvento");
-  const tbody = document.querySelector("#contenedorTabla table tbody");
-  btnAgregar.addEventListener("click", function () {
-    // Contar las filas actuales
-    const filas = tbody.querySelectorAll("tr").length;
-    const nuevoNumero = filas + 1;
-    // Crear nueva fila (con el mismo formato que las demás)
-    const nuevaFila = document.createElement("tr");
-    nuevaFila.innerHTML = `
-      <td><input type="text" value="${nuevoNumero}"></td>
-      <td><input type="text"></td>
-      <td><input type="text"></td>
-      <td><input type="date"></td>
-      <td><input type="number"></td>
-      <td><input type="number" class="small-input"></td>
-      <td><input type="number" class="small-input"></td>
-      <td><input type="text"></td>
-    `;
-    // Agregar fila a la tabla
-    tbody.appendChild(nuevaFila);
-  });
-});
-</script>
+<div class="documento-firmas solo-pdf" style="display: none !important;">
+    <div class="documento-firma">
+        <div class="linea-firma"></div>
+        <span>Jefe(a) de la oficina de promoción</span>
+    </div>
+    <div class="documento-firma">
+        <div class="linea-firma"></div>
+        <span>Jefe(a) del Departamento</span>
+    </div>
+</div>
+
+<!-- JS LIBRARIES -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
 
 <script>
-// Establece valor por defecto en el campo Lugar y Fecha
+// -------------------------------------------
+// VARIABLES GLOBALES
+// -------------------------------------------
+let seccionActual = 1;
+const totalSecciones = 4;
+
+// -------------------------------------------
+// INICIALIZACIÓN
+// -------------------------------------------
 document.addEventListener('DOMContentLoaded', function() {
+  // Agregar un evento inicial
+  agregarEvento();
+  // Configurar fecha automática
   const lugarFechaInput = document.getElementById('lugarFecha');
   if (lugarFechaInput && !lugarFechaInput.value) {
     const hoy = new Date();
@@ -205,316 +274,436 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     lugarFechaInput.value = `Oaxaca, ${fechaFormateada}`;
   }
-  
-  // Botón limpiar
-  document.getElementById('btnLimpiar').addEventListener('click', function() {
-    if (confirm('¿Está seguro de que desea limpiar todos los campos?')) {
-      document.getElementById('periodoInput').value = '';
-      document.getElementById('actividadCulturalInput').value = '';
-      document.getElementById('actividadDeportivaInput').value = '';
-      document.getElementById('lugarFecha').value = '';
-      
-      // Limpiar tabla
-      const inputs = document.querySelectorAll('#contenedorTabla input');
-      inputs.forEach((input, index) => {
-        if (index % 8 === 0) {
-          // Primera columna (número)
-          input.value = Math.floor(index / 8) + 1;
-        } else {
-          input.value = '';
-        }
+  // Actualizar resumen
+  actualizarResumen();
+  // Inicializar selección de PDF membretado
+  inicializarSeleccionPDF();
+});
+
+// -------------------------------------------
+// SELECCIÓN DE PDF MEMBRETADO
+// -------------------------------------------
+function inicializarSeleccionPDF() {
+  window.pdfSeleccionado = null;
+  const cargarBtns = document.querySelectorAll('.btn-cargar-pdf');
+  const infoDiv = document.getElementById('pdfSeleccionadoInfo');
+  cargarBtns.forEach(btn => {
+    btn.addEventListener('click', function () {
+      const id = btn.getAttribute('data-id');
+      const card = btn.closest('.documento-card');
+      const nombre = card.querySelector('.documento-title').innerText;
+      const archivo = card.querySelector("a[target='_blank']").href;
+      window.pdfSeleccionado = { id, nombre, archivo };
+      infoDiv.innerHTML = `
+        <div style="color:#2ecc71; font-weight:600;">
+          PDF seleccionado:
+          <a href="${archivo}" target="_blank">${nombre}</a>
+        </div>
+      `;
+      cargarBtns.forEach(b => {
+        b.style.background = '#2ecc71';
+        b.style.color = '#fff';
       });
-    }
-  });
-  
-
-// --- SELECCIÓN DE PDF MEMBRETADO (CORREGIDO Y FUNCIONAL) ---
-
-const cargarBtns = document.querySelectorAll('.btn-cargar-pdf');
-const infoDiv = document.getElementById('pdfSeleccionadoInfo');
-
-window.pdfSeleccionado = null;
-
-cargarBtns.forEach(btn => {
-  btn.addEventListener('click', function () {
-    const id = btn.getAttribute('data-id');
-    const card = btn.closest('.documento-card');
-
-    const nombre = card.querySelector('.documento-title').innerText;
-    const archivo = card.querySelector("a[target='_blank']").href;
-
-    window.pdfSeleccionado = { id, nombre, archivo };
-
-    infoDiv.innerHTML = `
-      <div style="color:#2ecc71; font-weight:600;">
-        PDF seleccionado:
-        <a href="${archivo}" target="_blank">${nombre}</a>
-      </div>
-    `;
-
-    cargarBtns.forEach(b => {
-      b.style.background = '#2ecc71';
-      b.style.color = '#fff';
+      btn.style.background = '#ff9800';
+      btn.style.color = '#fff';
     });
-
-    btn.style.background = '#ff9800';
-    btn.style.color = '#fff';
   });
-});
-
-// Función pública para obtener el PDF seleccionado
-window.getPDFSeleccionado = function () {
+  // Función pública para obtener el PDF seleccionado
+  window.getPDFSeleccionado = function () {
     return window.pdfSeleccionado;
-};
-});
-
-// Convierte input en textarea si el texto es largo y ajusta el alto automáticamente
-function ajustarInputsTabla() {
-  const cells = document.querySelectorAll('#contenedorTabla td input');
-  cells.forEach(input => {
-    input.addEventListener('input', function() {
-      // Detecta el ancho real de la celda
-      const cell = this.parentNode;
-      const cellWidth = cell.offsetWidth;
-      // Si el texto sobrepasa el ancho visual, convierte a textarea
-      const tempSpan = document.createElement('span');
-      tempSpan.style.visibility = 'hidden';
-      tempSpan.style.position = 'absolute';
-      tempSpan.style.whiteSpace = 'pre';
-      tempSpan.style.fontSize = window.getComputedStyle(this).fontSize;
-      tempSpan.style.fontFamily = window.getComputedStyle(this).fontFamily;
-      tempSpan.textContent = this.value;
-      document.body.appendChild(tempSpan);
-      const textWidth = tempSpan.offsetWidth;
-      document.body.removeChild(tempSpan);
-      if (textWidth > cellWidth && this.tagName === 'INPUT') {
-        const textarea = document.createElement('textarea');
-        textarea.className = 'table-cell-input';
-        textarea.value = this.value;
-        textarea.oninput = this.oninput;
-        textarea.style.height = '20px';
-        textarea.style.textAlign = 'center';
-        textarea.style.width = cellWidth + 'px';
-        this.parentNode.replaceChild(textarea, this);
-        textarea.focus();
-        ajustarAlturaTextarea(textarea);
-      } else if (this.tagName === 'TEXTAREA') {
-        this.style.width = cellWidth + 'px';
-        ajustarAlturaTextarea(this);
-      }
-    });
-  });
+  };
 }
 
-function ajustarAlturaTextarea(textarea) {
-  textarea.style.height = '20px';
-  textarea.style.height = (textarea.scrollHeight) + 'px';
-}
-
-window.addEventListener('DOMContentLoaded', ajustarInputsTabla);
-
-// Enlaza el botón correctamente
-document.addEventListener('DOMContentLoaded', function() {
-  const btn = document.getElementById('btnGenerarPDF');
-  if (btn) {
-    btn.addEventListener('click', generarPDF);
-  }
-});
-
-
-// Función corregida para generar PDF
-async function generarPDF() {
-  const pdfSeleccionado = window.pdfSeleccionado;
-  if (!pdfSeleccionado || !pdfSeleccionado.archivo) {
-    alert("Selecciona primero el PDF membretado usando el botón 'Usar PDF'.");
+// -------------------------------------------
+// NAVEGACIÓN ENTRE SECCIONES
+// -------------------------------------------
+function siguienteSeccion() {
+  // Validar sección actual antes de continuar
+  if (!validarSeccionActual()) {
     return;
   }
-  try {
-    // Descargar PDF base
-    const response = await fetch(pdfSeleccionado.archivo);
-    if (!response.ok) throw new Error('No se pudo descargar el PDF.');
-    const pdfBytes = await response.arrayBuffer();
-    const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
-    const page = pdfDoc.getPage(0);
-    const pageWidth = page.getWidth();
-    const pageHeight = page.getHeight();
+  
+  // Marcar etapa como completada
+  document.getElementById(`etapa${seccionActual}`).classList.add('completada');
+  document.getElementById(`etapa${seccionActual}`).classList.remove('activa');
+  
+  // Ocultar sección actual
+  document.getElementById(`seccion${seccionActual}`).classList.remove('activa');
+  
+  // Avanzar a siguiente sección
+  seccionActual++;
+  
+  // Mostrar siguiente sección
+  document.getElementById(`seccion${seccionActual}`).classList.add('activa');
+  document.getElementById(`etapa${seccionActual}`).classList.add('activa');
+  
+  // Actualizar barra de progreso
+  actualizarBarraProgreso();
+  
+  // Actualizar resumen si estamos en la última sección
+  if (seccionActual === totalSecciones) {
+    actualizarResumen();
+  }
+  
+  // Desplazar hacia arriba
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-    // Fuentes
-    const fontBold = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
-    const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
-    function centerText(text, y, size, fontType) {
-      const textWidth = fontType.widthOfTextAtSize(text, size);
-      const x = (pageWidth - textWidth) / 2;
-      page.drawText(text, { x, y, size, font: fontType });
+function anteriorSeccion() {
+  // Marcar etapa actual como no activa
+  document.getElementById(`etapa${seccionActual}`).classList.remove('activa');
+  
+  // Ocultar sección actual
+  document.getElementById(`seccion${seccionActual}`).classList.remove('activa');
+  
+  // Retroceder a sección anterior
+  seccionActual--;
+  
+  // Mostrar sección anterior
+  document.getElementById(`seccion${seccionActual}`).classList.add('activa');
+  document.getElementById(`etapa${seccionActual}`).classList.add('activa');
+  document.getElementById(`etapa${seccionActual}`).classList.remove('completada');
+  
+  // Actualizar barra de progreso
+  actualizarBarraProgreso();
+  
+  // Desplazar hacia arriba
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// -------------------------------------------
+// ACTUALIZAR INTERFAZ
+// -------------------------------------------
+function actualizarBarraProgreso() {
+  const porcentaje = ((seccionActual - 1) / (totalSecciones - 1)) * 100;
+  document.getElementById('barraProgreso').style.width = `${porcentaje}%`;
+}
+
+function actualizarResumen() {
+  // Actualizar valores del resumen
+  document.getElementById('resumenPeriodo').textContent = 
+    document.getElementById('periodo').value || 'No especificado';
+  
+  document.getElementById('resumenCultural').textContent = 
+    document.getElementById('actividadCultural').value || 'No especificada';
+  
+  document.getElementById('resumenDeportiva').textContent = 
+    document.getElementById('actividadDeportiva').value || 'No especificada';
+  
+  document.getElementById('resumenEventos').textContent = 
+    document.querySelectorAll('#cuerpoTabla tr').length;
+  
+  document.getElementById('resumenFecha').textContent = 
+    document.getElementById('lugarFecha').value || 'No especificada';
+}
+
+// -------------------------------------------
+// VALIDACIONES
+// -------------------------------------------
+function configurarValidaciones() {
+  // Validación para periodo
+  const periodoInput = document.getElementById('periodo');
+  periodoInput.addEventListener('input', function() {
+    if (this.value.trim()) {
+      this.classList.remove('invalido');
+      this.classList.add('valido');
+      document.getElementById('errorPeriodo').style.display = 'none';
+    } else {
+      this.classList.remove('valido');
+      this.classList.add('invalido');
+      document.getElementById('errorPeriodo').style.display = 'block';
     }
+  });
+}
 
-    // Capa blanca para dar contraste (opcional)
-    page.drawRectangle({
-      x: 0,
-      y: 0,
-      width: pageWidth,
-      height: pageHeight,
-      color: PDFLib.rgb(1, 1, 1),
-      opacity: 0.15
-    });
-
-    // Encabezado
-    let y = pageHeight - 145;
-    centerText('INSTITUTO TECNOLÓGICO DEL VALLE DE ETLA', y, 12, fontBold); y -= 16;
-    centerText('Subdirección de Planeación y Vinculación', y, 10, fontBold); y -= 13;
-    centerText('DEPARTAMENTO DE ACTIVIDADES EXTRAESCOLARES', y, 10, fontBold); y -= 13;
-    centerText('OFICINA DE PROMOCIÓN CULTURAL O DEPORTIVA', y, 10, fontBold); y -= 20;
-
-    // Paginación PDF (ajustada)
-    const paginacionText = 'Página 1 de 1';
-    const paginacionSize = 9; // tamaño reducido
-    const paginacionFont = fontBold;
-    const paginacionY = pageHeight - 103; // ligeramente más abajo
-    const paginacionX = pageWidth - paginacionFont.widthOfTextAtSize(paginacionText, paginacionSize) - 145; // más a la izquierda
-    page.drawText(paginacionText, {
-      x: paginacionX,
-      y: paginacionY,
-      size: paginacionSize,
-      font: paginacionFont,
-      color: PDFLib.rgb(0, 0, 0)
-    });
-
-    // Datos principales
-    const periodo = document.getElementById('periodoInput').value;
-    const actC = document.getElementById('actividadCulturalInput').value;
-    const actD = document.getElementById('actividadDeportivaInput').value;
-    centerText(`Informe Semestral del Periodo: ${periodo}`, y, 10, fontBold); y -= 20;
-    centerText(`Actividad Cultural: ${actC}    Deportiva: ${actD}`, y, 10, fontBold); y -= 30;
-
-
-    // Capturar tabla con fondo blanco y letras en negrita para el PDF
-    const tabla = document.getElementById("contenedorTabla");
-    const ths = tabla.querySelectorAll('th');
-    const tds = tabla.querySelectorAll('td');
-    const inputs = tabla.querySelectorAll('input, textarea');
-    // Guardar estilos previos
-    const prevMaxHeight = tabla.style.maxHeight;
-    const prevOverflowY = tabla.style.overflowY;
-    const prevThBg = [];
-    const prevThColor = [];
-    const prevThFontWeight = [];
-    const prevTdBg = [];
-    const prevTdColor = [];
-    const prevTdFontWeight = [];
-    const prevInputFontWeight = [];
-    ths.forEach((th, i) => {
-      prevThBg[i] = th.style.backgroundColor;
-      prevThColor[i] = th.style.color;
-      prevThFontWeight[i] = th.style.fontWeight;
-      th.style.backgroundColor = '#fff';
-      th.style.color = '#000';
-      th.style.fontWeight = 'bold';
-    });
-    tds.forEach((td, i) => {
-      prevTdBg[i] = td.style.backgroundColor;
-      prevTdColor[i] = td.style.color;
-      prevTdFontWeight[i] = td.style.fontWeight;
-      td.style.backgroundColor = '#fff';
-      td.style.color = '#000';
-      td.style.fontWeight = 'bold';
-    });
-    inputs.forEach((input, i) => {
-      prevInputFontWeight[i] = input.style.fontWeight;
-      input.style.fontWeight = 'bold';
-    });
-    tabla.style.maxHeight = "none";
-    tabla.style.overflowY = "visible";
-    await new Promise(r => setTimeout(r, 100));
-
-    const canvas = await html2canvas(tabla, {
-      scale: 2,
-      backgroundColor: "#ffffff"
-    });
-
-    // Restaurar estilos originales
-    ths.forEach((th, i) => {
-      th.style.backgroundColor = prevThBg[i];
-      th.style.color = prevThColor[i];
-      th.style.fontWeight = prevThFontWeight[i];
-    });
-    tds.forEach((td, i) => {
-      td.style.backgroundColor = prevTdBg[i];
-      td.style.color = prevTdColor[i];
-      td.style.fontWeight = prevTdFontWeight[i];
-    });
-    inputs.forEach((input, i) => {
-      input.style.fontWeight = prevInputFontWeight[i];
-    });
-    tabla.style.maxHeight = prevMaxHeight;
-    tabla.style.overflowY = prevOverflowY;
-
-    // Embebido de imagen
-    const imgData = canvas.toDataURL("image/png");
-    const imgEmbed = await pdfDoc.embedPng(imgData);
-    const imgWidth = pageWidth - 60;
-    const ratio = imgEmbed.height / imgEmbed.width;
-    const imgHeight = imgWidth * ratio;
-    const margenSuperior = y;
-    page.drawImage(imgEmbed, {
-      x: 30,
-      y: (margenSuperior - imgHeight) + 14,
-      width: imgWidth,
-      height: imgHeight
-    });
-
-    // Lugar y Fecha y Firmas
-    let yFirmas = (margenSuperior - imgHeight) + 14 - 40;
-    const lugarFecha = document.getElementById('lugarFecha').value || '';
-    centerText(`Lugar y Fecha: ${lugarFecha}`, yFirmas + 28, 10, font);
-    yFirmas -= 36;
-    const firmaWidth = 180;
-    const firmaLineY = yFirmas;
-    const firma1X = pageWidth / 4 - firmaWidth / 2;
-    const firma2X = (3 * pageWidth) / 4 - firmaWidth / 2;
-    page.drawLine({
-      start: { x: firma1X, y: firmaLineY },
-      end: { x: firma1X + firmaWidth, y: firmaLineY },
-      thickness: 1,
-      color: PDFLib.rgb(0, 0, 0)
-    });
-    page.drawLine({
-      start: { x: firma2X, y: firmaLineY },
-      end: { x: firma2X + firmaWidth, y: firmaLineY },
-      thickness: 1,
-      color: PDFLib.rgb(0, 0, 0)
-    });
-    const firma1Text = 'Jefe(a) de la oficina de promoción';
-    const firma2Text = 'Jefe(a) del Departamento';
-    const firma1TextWidth = font.widthOfTextAtSize(firma1Text, 10);
-    const firma2TextWidth = font.widthOfTextAtSize(firma2Text, 10);
-    page.drawText(firma1Text, {
-      x: firma1X + (firmaWidth - firma1TextWidth) / 2,
-      y: firmaLineY - 15,
-      size: 10,
-      font: font,
-      color: PDFLib.rgb(0, 0, 0)
-    });
-    page.drawText(firma2Text, {
-      x: firma2X + (firmaWidth - firma2TextWidth) / 2,
-      y: firmaLineY - 15,
-      size: 10,
-      font: font,
-      color: PDFLib.rgb(0, 0, 0)
-    });
-
-    // Descargar PDF final
-    const pdfFinal = await pdfDoc.save();
-    const blob = new Blob([pdfFinal], { type: "application/pdf" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "informe_actividades.pdf";
-    link.click();
-  } catch (err) {
-    alert("Error al generar PDF: " + err.message);
-    console.error(err);
+function validarSeccionActual() {
+  switch(seccionActual) {
+    case 1: // Configuración del documento
+      // Validar que se haya seleccionado un PDF membretado
+      if (!window.pdfSeleccionado || !window.pdfSeleccionado.archivo) {
+        alert('Debe seleccionar un PDF membretado usando el botón "Usar PDF".');
+        return false;
+      }
+      return true;
+      
+    case 2: // Información del informe
+      const periodoInput = document.getElementById('periodo');
+      if (!periodoInput.value.trim()) {
+        periodoInput.classList.add('invalido');
+        document.getElementById('errorPeriodo').style.display = 'block';
+        periodoInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+      }
+      return true;
+      
+    case 3: // Registro de eventos
+      const filas = document.querySelectorAll('#cuerpoTabla tr');
+      if (filas.length === 0) {
+        alert('Debe agregar al menos un evento antes de continuar.');
+        return false;
+      }
+      return true;
+      
+    default:
+      return true;
   }
 }
-</script>
 
+// -------------------------------------------
+// AGREGAR FILA
+// -------------------------------------------
+function agregarEvento() {
+  const cuerpo = document.getElementById("cuerpoTabla");
+  const nuevoNumero = cuerpo.rows.length + 1;
+
+  const fila = document.createElement("tr");
+  fila.innerHTML = `
+    <td><input type="text" value="${nuevoNumero}" disabled class="tabla-input"></td>
+    <td><input type="text" class="tabla-input" placeholder="Nombre del evento"></td>
+    <td><input type="text" class="tabla-input" placeholder="Institución organizadora"></td>
+    <td><input type="date" class="tabla-input"></td>
+    <td><input type="number" class="tabla-input" placeholder="0" min="0"></td>
+    <td><input type="number" class="tabla-input input-small" placeholder="M" min="0"></td>
+    <td><input type="number" class="tabla-input input-small" placeholder="H" min="0"></td>
+    <td><input type="text" class="tabla-input" placeholder="Resultados"></td>
+  `;
+
+  cuerpo.appendChild(fila);
+  
+  // Añadir efecto visual
+  fila.style.opacity = "0";
+  setTimeout(() => {
+    fila.style.transition = "opacity 0.3s";
+    fila.style.opacity = "1";
+  }, 10);
+  
+  // Agregar animación de pulso
+  fila.classList.add('pulse');
+  setTimeout(() => {
+    fila.classList.remove('pulse');
+  }, 500);
+  
+  // Actualizar resumen si estamos en la última sección
+  if (seccionActual === totalSecciones) {
+    actualizarResumen();
+  }
+}
+
+// -------------------------------------------
+// CONVERTIR PRIMERA PÁGINA DEL PDF A PNG
+// -------------------------------------------
+async function convertirPDFaPNG(file) {
+  const pdfData = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
+  const page = await pdf.getPage(1);
+
+  const viewport = page.getViewport({ scale: 2 });
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+
+  await page.render({
+    canvasContext: context,
+    viewport: viewport
+  }).promise;
+
+  return canvas.toDataURL("image/png");
+}
+
+// -------------------------------------------
+// GENERAR PDF FINAL
+// -------------------------------------------
+async function generarPDF() {
+  // Mostrar loading
+  document.getElementById('loadingGeneracion').style.display = 'block';
+  
+  // Validar todos los campos
+  if (!validarSeccionActual() || !validarSeccionesPrevias()) {
+    document.getElementById('loadingGeneracion').style.display = 'none';
+    return;
+  }
+  
+  try {
+    // Usar el PDF seleccionado desde la lista
+    if (!window.pdfSeleccionado || !window.pdfSeleccionado.archivo) {
+      alert("Selecciona primero el PDF membretado usando el botón 'Usar PDF'.");
+      document.getElementById('loadingGeneracion').style.display = 'none';
+      return;
+    }
+    // Descargar el PDF base y convertirlo a imagen
+    const response = await fetch(window.pdfSeleccionado.archivo);
+    if (!response.ok) {
+      alert('No se pudo descargar el PDF membretado.');
+      document.getElementById('loadingGeneracion').style.display = 'none';
+      return;
+    }
+    const pdfBlob = await response.blob();
+    const imgMembrete = await convertirPDFaPNG(pdfBlob);
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: "pt", format: "letter" });
+
+    let trs = [...document.querySelectorAll("#cuerpoTabla tr")];
+
+    if (trs.length === 0) {
+      alert("No hay eventos. Agregue al menos un evento antes de generar el PDF.");
+      document.getElementById('loadingGeneracion').style.display = 'none';
+      return;
+    }
+
+    // Convertir a texto tabla PDF
+    const filas = trs.map((tr, idx) => {
+      const inputs = [...tr.querySelectorAll("input")];
+      return [
+        String(idx + 1),
+        inputs[1].value || "",
+        inputs[2].value || "",
+        inputs[3].value || "",
+        inputs[4].value || "",
+        inputs[5].value || "",
+        inputs[6].value || "",
+        inputs[7].value || "",
+      ];
+    });
+
+    const BLOQUE = 16;
+    const bloques = [];
+    for (let i = 0; i < filas.length; i += BLOQUE) {
+      bloques.push(filas.slice(i, i + BLOQUE));
+    }
+
+    // 🔥 AHORA DUPLICA EL MEMBRETE EN CADA PÁGINA AUTOMÁTICAMENTE
+    bloques.forEach((bloque, index) => {
+      if (index > 0) doc.addPage();
+
+      doc.addImage(
+        imgMembrete,
+        "PNG",
+        0,
+        0,
+        doc.internal.pageSize.width,
+        doc.internal.pageSize.height
+      );
+
+      // === Encabezado institucional (SOLO EN PDF, NO VISIBLE EN WEB) ===
+      let y = 140;
+      doc.setFontSize(13);
+      doc.setFont(undefined, "bold");
+      doc.text("INSTITUTO TECNOLÓGICO DEL VALLE DE ETLA", doc.internal.pageSize.width/2, y, {align: "center"}); y += 18;
+      doc.setFontSize(11);
+      doc.text("Subdirección de Planeación y Vinculación", doc.internal.pageSize.width/2, y, {align: "center"}); y += 15;
+      doc.text("DEPARTAMENTO DE ACTIVIDADES EXTRAESCOLARES", doc.internal.pageSize.width/2, y, {align: "center"}); y += 15;
+      doc.text("OFICINA DE PROMOCIÓN CULTURAL O DEPORTIVA", doc.internal.pageSize.width/2, y, {align: "center"}); y += 25;
+      doc.setFontSize(10);
+      doc.setFont(undefined, "normal");
+      const periodo = document.getElementById("periodo").value || "";
+      doc.text(`Informe Semestral del Periodo: ${periodo}`, doc.internal.pageSize.width/2, y, {align: "center"}); y += 18;
+      const actividadCultural = document.getElementById("actividadCultural").value || "";
+      const actividadDeportiva = document.getElementById("actividadDeportiva").value || "";
+      doc.text(`ACTIVIDAD CULTURAL: ${actividadCultural}    DEPORTIVA: ${actividadDeportiva}`, doc.internal.pageSize.width/2, y, {align: "center"}); y += 18;
+
+      // Tabla
+      doc.autoTable({
+        startY: y + 10,
+        head: [[
+          "NO.",
+          "NOMBRE DEL EVENTO",
+          "INSTITUCIÓN ORGANIZADORA",
+          "FECHA DE REALIZACIÓN",
+          "NO. DE PARTICIPANTES",
+          "M",
+          "H",
+          "RESULTADOS"
+        ]],
+        body: bloque,
+        theme: "grid",
+        styles: {
+          fontSize: 7,
+          cellPadding: 6,
+          lineWidth: .65,
+          lineColor: [0,0,0],
+          halign: 'center',
+          valign: 'middle',
+          textColor: [20, 20, 20], // Más negro para los datos rellenados
+          fontStyle: 'normal' // No negrita
+        },
+        headStyles: {
+          fillColor: [255, 255, 255],
+          textColor: [0, 0, 0],
+          lineWidth: 0.7,
+          halign: 'center',
+          valign: 'middle',
+          fontStyle: 'bold' // Encabezados en negrita
+        },
+        columnStyles: {
+          0: { cellWidth: 25 },
+          2: { cellWidth: 90 },
+          3: { cellWidth: 70 },
+          4: { cellWidth: 90 }
+        },
+        didDrawPage: function (data) {
+          if (index === bloques.length - 1) {
+            // Solo en la última página
+            const pageWidth = doc.internal.pageSize.width;
+            let yFirmas = data.cursor.y + 40;
+            // Fecha centrada
+            const lugarFecha = document.getElementById('lugarFecha').value || '';
+            doc.setFontSize(9);
+            doc.setFont(undefined, "bold");
+            doc.text(lugarFecha, pageWidth/2, yFirmas - 20, {align: "center"});
+            yFirmas += 45;
+            // Firmas
+            doc.setFontSize(10);
+            doc.setFont(undefined, "normal");
+            // Línea y texto izquierda
+            doc.line(80, yFirmas, 280, yFirmas);
+            doc.text("Jefe(a) de la oficina de promoción", 90, yFirmas + 15);
+            // Línea y texto derecha
+            doc.line(pageWidth - 280, yFirmas, pageWidth - 80, yFirmas);
+            doc.text("Jefe(a) del Departamento", pageWidth - 255, yFirmas + 15);
+          }
+        }
+      });
+    });
+
+    // --- PAGINACIÓN PDF ---
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      const pageWidth = doc.internal.pageSize.width;
+      const paginacionText = `Página ${i} de ${pageCount}`;
+      doc.setFontSize(9);
+      doc.setFont(undefined, "bold");
+      // Arriba, alineado a la derecha
+      doc.text(paginacionText, pageWidth - 203, 102);
+    }
+    
+    // Ocultar loading
+    document.getElementById('loadingGeneracion').style.display = 'none';
+    
+    // Mostrar mensaje de éxito y descargar
+    alert("PDF generado exitosamente. Se descargará automáticamente.");
+    doc.save("informe_actividades_itve.pdf");
+    
+  } catch (error) {
+    console.error("Error al generar PDF:", error);
+    document.getElementById('loadingGeneracion').style.display = 'none';
+    alert("Hubo un error al generar el PDF. Por favor, intente nuevamente.");
+  }
+}
+
+function validarSeccionesPrevias() {
+  // Validar todas las secciones
+  const seccionesValidas = [
+    window.pdfSeleccionado && window.pdfSeleccionado.archivo,
+    document.getElementById('periodo').value.trim() !== '',
+    document.querySelectorAll('#cuerpoTabla tr').length > 0,
+    document.getElementById('lugarFecha').value.trim() !== ''
+  ];
+  return seccionesValidas.every(valido => !!valido);
+}
+</script>
 </body>
 </html>
