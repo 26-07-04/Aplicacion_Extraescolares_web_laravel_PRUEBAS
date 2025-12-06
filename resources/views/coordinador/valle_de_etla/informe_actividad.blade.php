@@ -654,15 +654,20 @@ async function generarPDF() {
             doc.setFont(undefined, "bold");
             doc.text(lugarFecha, pageWidth/2, yFirmas - 20, {align: "center"});
             yFirmas += 45;
-            // Firmas
+            // Firmas centradas
             doc.setFontSize(10);
             doc.setFont(undefined, "normal");
-            // Línea y texto izquierda
-            doc.line(80, yFirmas, 280, yFirmas);
-            doc.text("Jefe(a) de la oficina de promoción", 90, yFirmas + 15);
-            // Línea y texto derecha
-            doc.line(pageWidth - 280, yFirmas, pageWidth - 80, yFirmas);
-            doc.text("Jefe(a) del Departamento", pageWidth - 255, yFirmas + 15);
+            // Coordenadas para centrar las líneas y textos
+            const firmasY = yFirmas;
+            const lineWidth = 200;
+            const lineSpacing = 60;
+            const centerX = pageWidth / 2;
+            // Línea y texto izquierda (centrada a la izquierda)
+            doc.line(centerX - lineSpacing - lineWidth, firmasY, centerX - lineSpacing, firmasY);
+            doc.text("Jefe(a) de la oficina de promoción", centerX - lineSpacing - lineWidth/2, firmasY + 15, {align: "center"});
+            // Línea y texto derecha (centrada a la derecha)
+            doc.line(centerX + lineSpacing, firmasY, centerX + lineSpacing + lineWidth, firmasY);
+            doc.text("Jefe(a) del Departamento", centerX + lineSpacing + lineWidth/2, firmasY + 15, {align: "center"});
           }
         }
       });
