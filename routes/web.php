@@ -1,3 +1,4 @@
+
 <?php
 
 use App\Http\Controllers\ProfileController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\Coordinador\SemestresCursadosDemetrioController as Coor
 use App\Http\Controllers\Coordinador\PanelDemetrioVallejoController;
 use App\Http\Controllers\Coordinador\ImportEstudiantesController;
 use App\Http\Controllers\Coordinador\InformeDemetrioController;
+use App\Http\Controllers\Coordinador\InformeTlahuitoltepecController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UnidadController;
@@ -151,7 +153,11 @@ Route::prefix('coordinador')->group(function () {
 
 
 
-
+// Rutas para el informe de Tlahuitoltepec (unidad)
+Route::get('/coordinador/tlahuitoltepec/informe', [InformeTlahuitoltepecController::class, 'index'])->name('informe_tlahuitoltepec.index');
+Route::post('/coordinador/tlahuitoltepec/informe/guardar', [InformeTlahuitoltepecController::class, 'guardarDatos'])->name('informe_tlahuitoltepec.guardar');
+Route::post('/coordinador/tlahuitoltepec/informe/subir-pdf', [InformeTlahuitoltepecController::class, 'subirPDF'])->name('informe_tlahuitoltepec.subir_pdf');
+Route::post('/coordinador/tlahuitoltepec/informe/generar-pdf', [InformeTlahuitoltepecController::class, 'generarPDFLaravel'])->name('informe_tlahuitoltepec.generar_pdf');
 
 
 
