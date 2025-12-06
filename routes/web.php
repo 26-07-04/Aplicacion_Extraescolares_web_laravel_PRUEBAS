@@ -16,6 +16,7 @@ use App\Http\Controllers\Coordinador\SemestresCursadosTlahuitoltepecController a
 use App\Http\Controllers\Coordinador\SemestresCursadosDemetrioController as CoordinadorSemestresDemetrioController;
 use App\Http\Controllers\Coordinador\PanelDemetrioVallejoController;
 use App\Http\Controllers\Coordinador\ImportEstudiantesController;
+use App\Http\Controllers\Coordinador\InformeDemetrioController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UnidadController;
@@ -143,6 +144,30 @@ Route::prefix('coordinador')->group(function () {
     Route::get('/documento-base/cargar/{id}', [App\Http\Controllers\Coordinador\DocumentoBaseController::class, 'cargar'])
         ->name('documento-base.cargar');
 });
+
+
+
+
+
+
+
+
+
+
+
+
+// ============ RUTAS PARA INFORME FINAL (DEMETRIO VALLEJO) ============
+Route::middleware(['auth'])->prefix('coordinador/demetrio-vallejo')->group(function () {
+    Route::get('informe', [InformeDemetrioController::class, 'index'])
+        ->name('demetrio.informe.index');
+    Route::post('informe/guardar', [InformeDemetrioController::class, 'guardarDatos'])
+        ->name('demetrio.informe.guardar');
+    Route::post('informe/subir-pdf', [InformeDemetrioController::class, 'subirPDF'])
+        ->name('demetrio.informe.subir');
+    Route::post('informe/generar', [InformeDemetrioController::class, 'generarPDFLaravel'])
+        ->name('demetrio.informe.generar');
+});
+
 
 // Panel principal del Coordinador para la Unidad Tlahuitoltepec (vista por semestre)
 Route::get('coordinador/tlahuitoltepec/panel/{id}', [PanelTlahuitoltepecController::class, 'show'])
