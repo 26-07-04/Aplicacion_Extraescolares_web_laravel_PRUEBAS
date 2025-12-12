@@ -198,7 +198,7 @@
     const btnAnterior = document.getElementById('btnAnterior');
     const btnSiguiente = document.getElementById('btnSiguiente');
     
-    const estudiantesPorPagina = 10;
+    const estudiantesPorPagina = 30;
     let paginaActual = 1;
     let totalPaginas = 1;
 

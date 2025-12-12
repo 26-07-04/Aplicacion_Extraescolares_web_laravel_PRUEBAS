@@ -36,8 +36,8 @@
           ->orderBy('estudiantes.nombre', 'asc')
           ->get();
 
-          // Paginar de 10 en 10
-          $estudiantesPorPagina = 10;
+          // Paginar de 50 en 50
+          $estudiantesPorPagina = 50;
           $totalEstudiantes = $allEstudiantes->count();
           $totalPaginas = ceil($totalEstudiantes / $estudiantesPorPagina);
           $paginaActual = 1;
@@ -74,7 +74,7 @@
   <!-- Controles de paginación -->
   @php
     $totalEstudiantes = $allEstudiantes->count();
-    $estudiantesPorPagina = 10;
+    $estudiantesPorPagina = 50;
     $totalPaginas = ceil($totalEstudiantes / $estudiantesPorPagina);
   @endphp
 
@@ -112,7 +112,7 @@
   document.addEventListener('DOMContentLoaded', function() {
     (function(){
       const allEstudiantes = {!! json_encode($allEstudiantes->toArray()) !!};
-      const estudiantesPorPagina = 10;
+      const estudiantesPorPagina = 50;
       const totalPaginas = {{ $totalPaginas }};  // Usar el valor del servidor
       let paginaActual = 1;
 
