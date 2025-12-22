@@ -243,7 +243,7 @@
         <p>Aquí podrás gestionar las actividades extraescolares, administrar usuarios y mucho más.</p>
         <img src="{{ asset('Imagenes/Logo TecNM.png') }}" alt="Logo TecNM">
         <div class="accion-wrapper">
-          <a href="{{ route('coordinator.dashboard') }}" class="btn-coordinador">
+          <a href="{{ route('admin.unidades') }}" class="btn-coordinador">
             <i class="fas fa-user-cog"></i>Panel Coordinador
           </a>
         </div>

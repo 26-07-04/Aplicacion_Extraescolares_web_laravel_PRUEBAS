@@ -14,15 +14,14 @@ class PanelTlahuitoltepecController extends Controller
     public function show($id)
     {
         $user = Auth::user();
-        if (!$user || ($user->rol ?? '') !== 'Coordinador') {
-            abort(403);
+        if ($user && ($user->rol ?? '') === 'Coordinador') {
+            $ua = $user->unidad_academica ?? '';
+            // Aceptar variantes de nombre para Tlahuitoltepec
+            if (stripos($ua, 'Tlahui') === false && stripos($ua, 'TLAHUI') === false) {
+                abort(403);
+            }
         }
-
-        $ua = $user->unidad_academica ?? '';
-        // Aceptar variantes de nombre para Tlahuitoltepec
-        if (stripos($ua, 'Tlahui') === false && stripos($ua, 'TLAHUI') === false) {
-            abort(403);
-        }
+        // Si no hay usuario o no es coordinador, permitir acceso (público o admin)
 
         $semestre = Semestre::find($id);
         if (!$semestre) {
@@ -89,14 +88,13 @@ class PanelTlahuitoltepecController extends Controller
     public function printResultados($id)
     {
         $user = Auth::user();
-        if (!$user || ($user->rol ?? '') !== 'Coordinador') {
-            abort(403);
+        if ($user && ($user->rol ?? '') === 'Coordinador') {
+            $ua = $user->unidad_academica ?? '';
+            if (stripos($ua, 'Tlahui') === false && stripos($ua, 'Tlahuitoltepec') === false) {
+                abort(403);
+            }
         }
-
-        $ua = $user->unidad_academica ?? '';
-        if (stripos($ua, 'Tlahui') === false && stripos($ua, 'Tlahuitoltepec') === false) {
-            abort(403);
-        }
+        // Si no hay usuario o no es coordinador, permitir acceso (público o admin)
 
         $semestre = Semestre::find($id);
         if (!$semestre) {

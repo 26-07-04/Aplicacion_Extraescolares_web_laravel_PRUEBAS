@@ -116,11 +116,9 @@ Route::post('admin/semestres/{id}/activar', [SemestresCursadosController::class,
 
 // Versiones por Unidad Académica (solo lectura) para Coordinador
 Route::get('coordinador/semestres/valle-de-etla', [CoordinadorSemestresValleController::class, 'index'])
-    ->middleware('auth')
     ->name('coordinador.semestres.valle');
 
 Route::get('coordinador/semestres/union-hidalgo', [CoordinadorSemestresUnionController::class, 'index'])
-    ->middleware('auth')
     ->name('coordinador.semestres.union');
 
 // Panel principal del Coordinador para la Unidad Unión Hidalgo (vista por semestre)
@@ -210,11 +208,9 @@ Route::get('coordinador/valle-de-etla/resultados/print/{id}', [PanelValleEtlaCon
     ->name('coordinador.valle.resultados.print');
 
 Route::get('coordinador/semestres/tlahuitoltepec', [CoordinadorSemestresTlahController::class, 'index'])
-    ->middleware('auth')
     ->name('coordinador.semestres.tlahuitoltepec');
 
 Route::get('coordinador/semestres/demetrio-vallejo', [CoordinadorSemestresDemetrioController::class, 'index'])
-    ->middleware('auth')
     ->name('coordinador.semestres.demetrio');
 
 // Rutas placeholder para evitar errores cuando las vistas fueron eliminadas
