@@ -14,14 +14,13 @@ class PanelUnionHidalgoController extends Controller
     public function show($id)
     {
         $user = Auth::user();
-        if (!$user || ($user->rol ?? '') !== 'Coordinador') {
-            abort(403);
+        if ($user && ($user->rol ?? '') === 'Coordinador') {
+            $ua = $user->unidad_academica ?? '';
+            if (stripos($ua, 'Unión') === false && stripos($ua, 'Union') === false && stripos($ua, 'Hidalgo') === false) {
+                abort(403);
+            }
         }
-
-        $ua = $user->unidad_academica ?? '';
-        if (stripos($ua, 'Unión') === false && stripos($ua, 'Union') === false && stripos($ua, 'Hidalgo') === false) {
-            abort(403);
-        }
+        // Si no hay usuario o no es coordinador, permitir acceso (público o admin)
 
         $semestre = Semestre::find($id);
         if (!$semestre) {
@@ -87,14 +86,13 @@ class PanelUnionHidalgoController extends Controller
     public function printResultados($id)
     {
         $user = Auth::user();
-        if (!$user || ($user->rol ?? '') !== 'Coordinador') {
-            abort(403);
+        if ($user && ($user->rol ?? '') === 'Coordinador') {
+            $ua = $user->unidad_academica ?? '';
+            if (stripos($ua, 'Unión') === false && stripos($ua, 'Union') === false && stripos($ua, 'Hidalgo') === false) {
+                abort(403);
+            }
         }
-
-        $ua = $user->unidad_academica ?? '';
-        if (stripos($ua, 'Unión') === false && stripos($ua, 'Union') === false && stripos($ua, 'Hidalgo') === false) {
-            abort(403);
-        }
+        // Si no hay usuario o no es coordinador, permitir acceso (público o admin)
 
         $semestre = Semestre::find($id);
         if (!$semestre) {

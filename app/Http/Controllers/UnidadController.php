@@ -15,7 +15,10 @@ class UnidadController extends Controller
     public function index()
     {
         $unidades = Unidad::all();
-        return view('unidades.admin_index', compact('unidades'));
+        // Devolver la vista administrativa `administrador.Unidades` creada por el equipo
+        // para mantener el diseño personalizado. Se sigue pasando `$unidades` por si
+        // en el futuro la vista la utiliza.
+        return view('administrador.Unidades', compact('unidades'));
     }
 
     // PANEL PARA COORDINADORES (solo su unidad)
