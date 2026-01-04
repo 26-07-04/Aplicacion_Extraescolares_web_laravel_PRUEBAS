@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Coordinador;
 
 use Illuminate\Http\Request;
@@ -8,16 +7,101 @@ use Barryvdh\DomPDF\Facades\PDF;
 use App\Http\Controllers\Controller;
 use Barryvdh\DomPDF\Facade\Pdf as FacadePdf;
 use Barryvdh\DomPDF\PDF as DomPDFPDF;
+use Illuminate\Support\Facades\Auth;
 
-class InformeDemetrioController extends Controller
-{
+class InformeDemetrioController extends Controller {
     /**
-     * Muestra la vista principal donde está tu tabla,
-     * los inputs y los botones de generar PDF.
+     * Elimina un informe generado por su ID.
      */
-    public function index()
+    public function destroy($id)
     {
-        return view('Coordinador.informe_demetrio');
+        $informe = \App\Models\Informe::find($id);
+        if (!$informe) {
+            return back()->with('error', 'Informe no encontrado.');
+        }
+        // Obtener id_semestre del request si viene (preferente), si no del informe
+        $id_semestre = request('id_semestre', $informe->id_semestre);
+        // Eliminar archivo físico si existe
+        if ($informe->archivo && file_exists(public_path($informe->archivo))) {
+            @unlink(public_path($informe->archivo));
+        }
+        $informe->delete();
+        // Redirigir a la misma página después de eliminar
+        return redirect()->back()
+            ->with('success', 'Informe eliminado correctamente.');
+    }
+
+    /**
+     * Recibe el PDF generado como archivo, lo guarda en el servidor y registra el informe en la base de datos.
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'pdf' => 'required|file|mimes:pdf|max:10240', // 10MB
+            'titulo' => 'required|string|max:255',
+            'id_semestre' => 'required|exists:semestres,id_semestre',
+            'descripcion' => 'nullable|string',
+            'fecha_generacion' => 'nullable|date',
+        ]);
+
+        $id_semestre = $request->input('id_semestre');
+
+        $file = $request->file('pdf');
+        $fileName = 'informe_' . time() . '.pdf';
+        $filePath = $file->storeAs('informes', $fileName, 'public');
+
+        $data = [
+            'titulo' => $request->titulo,
+            'archivo' => 'storage/' . $filePath,
+            'id_semestre' => $id_semestre,
+        ];
+        if ($request->filled('descripcion')) {
+            $data['descripcion'] = $request->descripcion;
+        }
+        if ($request->filled('fecha_generacion')) {
+            $data['fecha_generacion'] = $request->fecha_generacion;
+        } else {
+            $data['fecha_generacion'] = now();
+        }
+
+        $informe = \App\Models\Informe::create($data);
+
+        return response()->json([
+            'status' => 'ok',
+            'mensaje' => 'Informe guardado correctamente.',
+            'informe' => $informe,
+        ]);
+    }
+
+    /**
+     * Muestra la vista principal con los informes filtrados por unidad y semestre.
+     */
+    public function index(Request $request)
+    {
+        $id_semestre = $request->input('id_semestre');
+        // Si no se recibe id_semestre, buscar el semestre activo
+        if (!$id_semestre) {
+            $semestreActual = \App\Models\Semestre::where('estatus', 1)->orderByDesc('fecha_inicio')->first();
+            $id_semestre = $semestreActual ? $semestreActual->id_semestre : null;
+        } else {
+            $semestreActual = \App\Models\Semestre::find($id_semestre);
+        }
+
+        $informes = [];
+        if ($id_semestre) {
+            $informes = \App\Models\Informe::where('id_semestre', $id_semestre)
+                ->orderByDesc('fecha_generacion')
+                ->get();
+        }
+
+        return view(
+            'coordinador.demetrio_vallejo.informe_actividad',
+            [
+                'informes' => $informes,
+                'id_semestre' => $id_semestre,
+                'semestreActual' => $semestreActual,
+            ]
+        );
     }
 
     /**
@@ -26,14 +110,38 @@ class InformeDemetrioController extends Controller
      */
     public function guardarDatos(Request $request)
     {
-        // Aquí recibes datos del informe si deseas guardarlos o procesarlos.
-        // Ejemplo:
-        // $periodo = $request->periodo;
-        // $eventos = $request->eventos;
+        // Validar los datos esperados
+        $request->validate([
+            'pdf' => 'required|file|mimes:pdf|max:10240', // 10MB
+            'titulo' => 'required|string|max:255',
+            'id_semestre' => 'required|exists:semestres,id_semestre',
+            'descripcion' => 'nullable|string',
+            'fecha_generacion' => 'nullable|date',
+        ]);
+
+        $id_semestre = $request->input('id_semestre');
+
+        $file = $request->file('pdf');
+        $fileName = 'informe_' . time() . '.pdf';
+        $filePath = $file->storeAs('informes', $fileName, 'public');
+
+        $data = [
+            'titulo' => $request->titulo,
+            'archivo' => 'storage/' . $filePath,
+            'id_semestre' => $id_semestre,
+        ];
+        if ($request->filled('descripcion')) {
+            $data['descripcion'] = $request->descripcion;
+        }
+        // Siempre usar la fecha del servidor para fecha_generacion
+        $data['fecha_generacion'] = now();
+
+        $informe = \App\Models\Informe::create($data);
 
         return response()->json([
             'status' => 'ok',
-            'mensaje' => 'Datos recibidos correctamente.',
+            'mensaje' => 'Informe guardado correctamente.',
+            'informe' => $informe,
         ]);
     }
 

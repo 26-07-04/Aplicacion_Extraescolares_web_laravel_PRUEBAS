@@ -175,6 +175,7 @@ Route::middleware(['auth'])->prefix('coordinador/demetrio-vallejo')->group(funct
         ->name('demetrio.informe.subir');
     Route::post('informe/generar', [InformeDemetrioController::class, 'generarPDFLaravel'])
         ->name('demetrio.informe.generar');
+    Route::delete('/informe-demetrio/{id}', [InformeDemetrioController::class, 'destroy'])->name('coordinador.demetrio.informe.eliminar');
 });
 
 
