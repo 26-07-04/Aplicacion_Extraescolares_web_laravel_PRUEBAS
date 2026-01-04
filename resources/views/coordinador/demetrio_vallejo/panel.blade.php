@@ -311,7 +311,7 @@
       @endif
 
       @if(request()->get('show') === 'informe')
-        @include('coordinador.demetrio_vallejo.informe_actividad')
+        @include('coordinador.demetrio_vallejo.informe_actividad', ['semestreActual' => $semestre, 'id_semestre' => $semestre->id_semestre])
       @endif
 
       @if(request()->get('show') === 'resultados')
