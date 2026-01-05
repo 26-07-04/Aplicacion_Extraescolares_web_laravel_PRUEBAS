@@ -164,6 +164,7 @@ Route::get('/coordinador/tlahuitoltepec/informe', [InformeTlahuitoltepecControll
 Route::post('/coordinador/tlahuitoltepec/informe/guardar', [InformeTlahuitoltepecController::class, 'guardarDatos'])->name('informe_tlahuitoltepec.guardar');
 Route::post('/coordinador/tlahuitoltepec/informe/subir-pdf', [InformeTlahuitoltepecController::class, 'subirPDF'])->name('informe_tlahuitoltepec.subir_pdf');
 Route::post('/coordinador/tlahuitoltepec/informe/generar-pdf', [InformeTlahuitoltepecController::class, 'generarPDFLaravel'])->name('informe_tlahuitoltepec.generar_pdf');
+Route::delete('/coordinador/tlahuitoltepec/informe/{id}', [InformeTlahuitoltepecController::class, 'destroy'])->name('coordinador.tlahuitoltepec.informe.eliminar');
 
 // ============ RUTAS PARA INFORME FINAL (DEMETRIO VALLEJO) ============
 Route::middleware(['auth'])->prefix('coordinador/demetrio-vallejo')->group(function () {
