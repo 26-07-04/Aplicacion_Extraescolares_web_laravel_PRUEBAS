@@ -16,10 +16,12 @@ return new class extends Migration {
             $table->string('descripcion')->nullable();
             $table->string('archivo');
             $table->date('fecha_generacion');
-            $table->unsignedBigInteger('id_semestre');
+            $table->unsignedInteger('id_semestre');
+            $table->unsignedBigInteger('id_unidad')->nullable();
             $table->timestamps();
 
             $table->foreign('id_semestre')->references('id_semestre')->on('semestres')->onDelete('cascade');
+            $table->foreign('id_unidad')->references('id_unidad')->on('unidades')->onDelete('set null');
         });
     }
 

@@ -14,6 +14,7 @@ class Informe extends Model
         'archivo',
         'fecha_generacion',
         'id_semestre',
+        'id_unidad',
     ];
 
     public function semestre()

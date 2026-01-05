@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel Coordinador - Tlahuitoltepec - {{ $semestre->nombre ?? '' }}</title>
   <link rel="stylesheet" href="{{ asset('css/Coordinador/UnionHidalgo-panel.css') }}">
@@ -283,8 +284,29 @@
         @include('coordinador.tlahuitoltepec.constancias_table')
       @endif
 
+
       @if(request()->get('show') === 'informe')
-        @include('coordinador.tlahuitoltepec.informe_actividad')
+        @php
+            $idSemestrePanel = $semestre->id_semestre ?? $semestre->id ?? null;
+            $id_unidad = $id_unidad ?? 3;
+        @endphp
+        @php
+            if (!isset($informes)) {
+                $informes = \App\Models\Informe::where('id_semestre', $idSemestrePanel)
+                    ->where('id_unidad', $id_unidad ?? 3)
+                    ->whereNotNull('archivo')
+                    ->where('archivo', '!=', '')
+                    ->orderByDesc('fecha_generacion')
+                    ->get();
+            }
+        @endphp
+        @include('coordinador.tlahuitoltepec.informe_actividad', [
+          'semestreActual' => $semestre,
+          'id_semestre' => $idSemestrePanel,
+          'informes' => $informes,
+          'documentos' => $documentos ?? collect(),
+          'id_unidad' => $id_unidad ?? 3
+        ])
       @endif
 
       @if(request()->get('show') === 'resultados')
@@ -360,7 +382,8 @@
   <script>
     (function(){
       // Definir variables globales al inicio
-      const __csrf = '{{ csrf_token() }}';
+      // Tomar el token CSRF siempre actualizado desde el meta
+      const __csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
       const __currentSemestreId = '{{ $semestre->id ?? $semestre->id_semestre ?? request()->route('id') ?? 0 }}';
       const __currentUnidadId = '{{ $user->id_unidad ?? 0 }}';
       
