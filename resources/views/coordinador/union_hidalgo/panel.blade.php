@@ -285,7 +285,27 @@
       @endif
 
       @if(request()->get('show') === 'informe')
-        @include('coordinador.union_hidalgo.informe_actividad')
+        @php
+            $idSemestrePanel = $semestre->id_semestre ?? $semestre->id ?? null;
+            $id_unidad = $id_unidad ?? 1;
+        @endphp
+        @php
+            if (!isset($informes)) {
+                $informes = \App\Models\Informe::where('id_semestre', $idSemestrePanel)
+                    ->where('id_unidad', $id_unidad ?? 1)
+                    ->whereNotNull('archivo')
+                    ->where('archivo', '!=', '')
+                    ->orderByDesc('fecha_generacion')
+                    ->get();
+            }
+        @endphp
+        @include('coordinador.union_hidalgo.informe_actividad', [
+          'semestreActual' => $semestre,
+          'id_semestre' => $idSemestrePanel,
+          'informes' => $informes,
+          'documentos' => $documentos ?? collect(),
+          'id_unidad' => $id_unidad ?? 1
+        ])
       @endif
 
       @if(request()->get('show') === 'resultados')
