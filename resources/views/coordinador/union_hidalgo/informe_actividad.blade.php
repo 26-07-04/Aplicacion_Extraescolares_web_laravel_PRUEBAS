@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
 <meta charset="UTF-8">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <link rel="stylesheet" href="{{ asset('css/Coordinador/informe_actividad.css') }}">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Informe de Actividades - ITVE</title>
-
 </head>
 
 <body>
@@ -51,6 +52,10 @@
   <!-- Sección 1: Configuración del documento -->
   <div class="seccion activa" id="seccion1">
     <h2 class="seccion-titulo">Documento Base Membretado</h2>
+    <input type="hidden"
+      id="id_semestre"
+      value="{{ $id_semestre ?? ($semestreActual->id_semestre ?? '') }}">
+    <input type="hidden" id="id_unidad" value="1">
     <div class="documentos-container" id="documentosLista">
       @if(isset($documentos) && $documentos->isEmpty())
         <div class="empty-state" id="emptyState">
@@ -106,6 +111,93 @@
         Continuar <i>→</i>
       </button>
     </div>
+  </div>
+
+  <!-- Contenedor principal de informes generados SOLO visible en el primer paso -->
+  <div id="informesGeneradosContenedor" class="contenedor-informes-generados" style="background: #fff; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); padding: 32px; margin: 40px 0; border-left: 6px solid #1a365d; display: block;">
+    <script>
+    // Mostrar/ocultar informes generados según el paso
+    function toggleInformesGenerados() {
+      var seccion1 = document.getElementById('seccion1');
+      var informesCont = document.getElementById('informesGeneradosContenedor');
+      if (seccion1 && informesCont) {
+        if (seccion1.classList.contains('activa')) {
+          informesCont.style.display = 'block';
+        } else {
+          informesCont.style.display = 'none';
+        }
+      }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      toggleInformesGenerados();
+      // Llama también al cambiar de sección
+      var navBtns = document.querySelectorAll('.boton-continuar, .boton-atras');
+      navBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          setTimeout(toggleInformesGenerados, 300);
+        });
+      });
+    });
+    </script>
+    <h3 style="color:#1a365d; font-size:1.2rem; font-weight:600; margin-bottom:18px;">Informes Generados</h3>
+    @if($informes->count())
+      <div class="tarjetas-documentos">
+        @foreach($informes as $inf)
+          <div class="documento-card tarjeta-documento" style="background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); padding: 16px; min-width: 260px; max-width: 300px; display: flex; flex-direction: column; align-items: flex-start; border: 1px solid #e1e5eb;">
+            <div class="documento-main" style="display: flex; align-items: center; width: 100%;">
+              <div class="documento-icon" style="margin-right: 12px; color: #1a365d; font-size: 32px;"><i class="fas fa-file-alt"></i></div>
+              <div style="flex:1;">
+                <div class="documento-title" style="font-weight: 600; color: #1a365d; font-size: 1rem;">{{ $inf->titulo }}</div>
+                <div class="documento-desc" style="color: #6c757d; font-size: 0.95rem; margin-bottom: 4px;">{{ $inf->descripcion }}</div>
+                <div class="documento-info" style="font-size: 0.85rem; color: #888;">Generado el: {{ \Carbon\Carbon::parse($inf->fecha_generacion)->format('d/m/Y') }}</div>
+              </div>
+            </div>
+            <div class="documento-actions" style="margin-top: 10px; display: flex; gap: 8px;">
+              <a href="{{ asset($inf->archivo) }}" target="_blank" class="btn-ver-informe" style="background: #1a365d; border-radius: 5px; padding: 6px 10px; color: #fff; font-size: 1rem; border: none; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; height: 34px; min-width: 34px;">
+                <i class="fas fa-eye"></i>
+              </a>
+              <form method="POST" action="{{ route('coordinador.union_hidalgo.informe.eliminar', $inf->id) }}" onsubmit="return confirmarEliminacionInforme(event)">
+                @csrf
+                @method('DELETE')
+                <button class="btn-eliminar-informe" style="background: #e53e3e; border-radius: 5px; padding: 6px 10px; color: #fff; font-size: 1rem; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; height: 34px; min-width: 34px; transition: background 0.2s;">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+            </div>
+          </div>
+        @endforeach
+      </div>
+      <style>
+        .tarjetas-documentos {
+          display: flex;
+          flex-wrap: nowrap;
+          gap: 16px;
+          overflow-x: auto;
+          padding-bottom: 8px;
+        }
+        .tarjeta-documento {
+          flex: 0 0 auto;
+        }
+        .btn-ver-informe:hover {
+          background: #16305a;
+        }
+        .btn-eliminar-informe:hover {
+          background: #c53030;
+        }
+      </style>
+    @else
+      <div style="color:#888;">No hay informes generados para esta unidad y semestre.</div>
+    @endif
+
+    <script>
+    function confirmarEliminacionInforme(e) {
+      if (!confirm('¿Estás seguro de que deseas eliminar este informe? Esta acción no se puede deshacer.')) {
+        e.preventDefault();
+        return false;
+      }
+      return true;
+    }
+    </script>
   </div>
   
   <!-- Sección 2: Información del informe -->
@@ -206,6 +298,21 @@
       </div>
     </div>
     
+
+    <!-- Apartado para Título del informe -->
+    <div class="grupo-formulario">
+      <label for="tituloInforme" class="requerido">Título del informe (nombre del PDF):</label>
+      <input type="text" id="tituloInforme" class="input-estilo" placeholder="Ej: Informe Actividades Enero-Junio 2025">
+      <div class="nota">Este será el nombre del PDF y el título guardado en la base de datos.</div>
+    </div>
+
+    <!-- Apartado para Descripción del informe -->
+    <div class="grupo-formulario">
+      <label for="descripcionInforme" class="requerido">Descripción del informe:</label>
+      <textarea id="descripcionInforme" class="input-estilo" rows="2" placeholder="Descripción detallada del informe"></textarea>
+      <div class="nota">Este será el campo de descripción guardado en la base de datos.</div>
+    </div>
+
     <div class="grupo-formulario">
       <label for="lugarFecha" class="requerido">Lugar y Fecha:</label>
       <input type="text" id="lugarFecha" class="input-estilo" placeholder="Oaxaca, 06 de agosto de 2025">
@@ -518,21 +625,19 @@ async function convertirPDFaPNG(file) {
 async function generarPDF() {
   // Mostrar loading
   document.getElementById('loadingGeneracion').style.display = 'block';
-  
+
   // Validar todos los campos
   if (!validarSeccionActual() || !validarSeccionesPrevias()) {
     document.getElementById('loadingGeneracion').style.display = 'none';
     return;
   }
-  
+
   try {
-    // Usar el PDF seleccionado desde la lista
     if (!window.pdfSeleccionado || !window.pdfSeleccionado.archivo) {
       alert("Selecciona primero el PDF membretado usando el botón 'Usar PDF'.");
       document.getElementById('loadingGeneracion').style.display = 'none';
       return;
     }
-    // Descargar el PDF base y convertirlo a imagen
     const response = await fetch(window.pdfSeleccionado.archivo);
     if (!response.ok) {
       alert('No se pudo descargar el PDF membretado.');
@@ -574,10 +679,8 @@ async function generarPDF() {
       bloques.push(filas.slice(i, i + BLOQUE));
     }
 
-    // 🔥 AHORA DUPLICA EL MEMBRETE EN CADA PÁGINA AUTOMÁTICAMENTE
     bloques.forEach((bloque, index) => {
       if (index > 0) doc.addPage();
-
       doc.addImage(
         imgMembrete,
         "PNG",
@@ -586,8 +689,6 @@ async function generarPDF() {
         doc.internal.pageSize.width,
         doc.internal.pageSize.height
       );
-
-      // === Encabezado institucional (SOLO EN PDF, NO VISIBLE EN WEB) ===
       let y = 140;
       doc.setFontSize(13);
       doc.setFont(undefined, "bold");
@@ -603,8 +704,6 @@ async function generarPDF() {
       const actividadCultural = document.getElementById("actividadCultural").value || "";
       const actividadDeportiva = document.getElementById("actividadDeportiva").value || "";
       doc.text(`ACTIVIDAD CULTURAL: ${actividadCultural}    DEPORTIVA: ${actividadDeportiva}`, doc.internal.pageSize.width/2, y, {align: "center"}); y += 18;
-
-      // Tabla
       doc.autoTable({
         startY: y + 10,
         head: [[
@@ -626,8 +725,8 @@ async function generarPDF() {
           lineColor: [0,0,0],
           halign: 'center',
           valign: 'middle',
-          textColor: [20, 20, 20], // Más negro para los datos rellenados
-          fontStyle: 'normal' // No negrita
+          textColor: [20, 20, 20],
+          fontStyle: 'normal'
         },
         headStyles: {
           fillColor: [255, 255, 255],
@@ -635,7 +734,7 @@ async function generarPDF() {
           lineWidth: 0.7,
           halign: 'center',
           valign: 'middle',
-          fontStyle: 'bold' // Encabezados en negrita
+          fontStyle: 'bold'
         },
         columnStyles: {
           0: { cellWidth: 25 },
@@ -645,27 +744,21 @@ async function generarPDF() {
         },
         didDrawPage: function (data) {
           if (index === bloques.length - 1) {
-            // Solo en la última página
             const pageWidth = doc.internal.pageSize.width;
             let yFirmas = data.cursor.y + 40;
-            // Fecha centrada
             const lugarFecha = document.getElementById('lugarFecha').value || '';
             doc.setFontSize(9);
             doc.setFont(undefined, "bold");
             doc.text(lugarFecha, pageWidth/2, yFirmas - 20, {align: "center"});
             yFirmas += 45;
-            // Firmas centradas
             doc.setFontSize(10);
             doc.setFont(undefined, "normal");
-            // Coordenadas para centrar las líneas y textos
             const firmasY = yFirmas;
             const lineWidth = 200;
             const lineSpacing = 60;
             const centerX = pageWidth / 2;
-            // Línea y texto izquierda (centrada a la izquierda)
             doc.line(centerX - lineSpacing - lineWidth, firmasY, centerX - lineSpacing, firmasY);
             doc.text("Jefe(a) de la oficina de promoción", centerX - lineSpacing - lineWidth/2, firmasY + 15, {align: "center"});
-            // Línea y texto derecha (centrada a la derecha)
             doc.line(centerX + lineSpacing, firmasY, centerX + lineSpacing + lineWidth, firmasY);
             doc.text("Jefe(a) del Departamento", centerX + lineSpacing + lineWidth/2, firmasY + 15, {align: "center"});
           }
@@ -673,7 +766,6 @@ async function generarPDF() {
       });
     });
 
-    // --- PAGINACIÓN PDF ---
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
@@ -681,17 +773,63 @@ async function generarPDF() {
       const paginacionText = `Página ${i} de ${pageCount}`;
       doc.setFontSize(9);
       doc.setFont(undefined, "bold");
-      // Arriba, alineado a la derecha
       doc.text(paginacionText, pageWidth - 203, 102);
     }
-    
-    // Ocultar loading
-    document.getElementById('loadingGeneracion').style.display = 'none';
-    
-    // Mostrar mensaje de éxito y descargar
-    alert("PDF generado exitosamente. Se descargará automáticamente.");
-    doc.save("informe_actividades_itve.pdf");
-    
+
+    // Obtener el id_semestre de forma limpia y segura
+    const idSemestreInput = document.getElementById('id_semestre');
+    if (!idSemestreInput || !idSemestreInput.value) {
+      alert('Error: no se pudo determinar el semestre actual.');
+      document.getElementById('loadingGeneracion').style.display = 'none';
+      return;
+    }
+
+    // Solo usar los campos de la sección de resumen para guardar
+    const tituloInforme = document.getElementById('tituloInforme').value.trim();
+    const descripcionInforme = document.getElementById('descripcionInforme').value.trim();
+    const formData = new FormData();
+    formData.append('titulo', tituloInforme ? tituloInforme : 'Informe Semestral');
+    formData.append('descripcion', descripcionInforme ? descripcionInforme : '-');
+    formData.append('fecha_generacion', new Date().toISOString().slice(0, 10));
+    formData.append('id_semestre', idSemestreInput.value);
+    let nombrePDF = tituloInforme ? tituloInforme : 'informe_actividades_itve';
+    nombrePDF = nombrePDF.replace(/[^a-zA-Z0-9_\- ]/g, '').replace(/\s+/g, '_') + '.pdf';
+    const pdfBlobFinal = doc.output('blob');
+    formData.append('pdf', pdfBlobFinal, nombrePDF);
+
+    let csrf = document.querySelector('meta[name="csrf-token"]');
+    let headers = {};
+    // Siempre incluir el token CSRF
+    const csrfToken = document.querySelector('meta[name="csrf-token"]');
+    if (csrfToken) headers['X-CSRF-TOKEN'] = csrfToken.getAttribute('content');
+
+    fetch('/coordinador/union-hidalgo/informe/guardar', {
+      method: 'POST',
+      headers,
+      body: formData
+    })
+    .then(async res => {
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await res.text();
+        throw new Error('Respuesta no JSON del servidor:\n' + text);
+      }
+      const data = await res.json();
+      if (data.status === 'ok') {
+        alert("Informe guardado correctamente");
+      } else {
+        alert("Error al guardar el informe");
+      }
+    })
+    .catch(async (err) => {
+      let msg = 'Error de red al guardar el informe.';
+      if (err && err.message) msg += '\n' + err.message;
+      document.getElementById('loadingGeneracion').style.display = 'none';
+      alert(msg);
+    });
+
+    doc.save("informe_actividades_union_hidalgo.pdf");
+
   } catch (error) {
     console.error("Error al generar PDF:", error);
     document.getElementById('loadingGeneracion').style.display = 'none';

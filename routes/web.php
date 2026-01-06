@@ -151,6 +151,7 @@ Route::get('/coordinador/union-hidalgo/informe', [InformeUnionHidalgoController:
 Route::post('/coordinador/union-hidalgo/informe/guardar', [InformeUnionHidalgoController::class, 'guardarDatos'])->name('informe_union_hidalgo.guardar');
 Route::post('/coordinador/union-hidalgo/informe/subir-pdf', [InformeUnionHidalgoController::class, 'subirPDF'])->name('informe_union_hidalgo.subir_pdf');
 Route::post('/coordinador/union-hidalgo/informe/generar-pdf', [InformeUnionHidalgoController::class, 'generarPDFLaravel'])->name('informe_union_hidalgo.generar_pdf');
+Route::delete('/coordinador/union-hidalgo/informe/{id}', [App\Http\Controllers\Coordinador\InformeUnionHidalgoController::class, 'destroy'])->name('coordinador.union_hidalgo.informe.eliminar');
 
 // Rutas para el informe de Valle de Etla (unidad)
 Route::get('/coordinador/valle-de-etla/informe', [App\Http\Controllers\Coordinador\informeValleDeEtlaController::class, 'index'])->name('informe_valle_de_etla.index');
