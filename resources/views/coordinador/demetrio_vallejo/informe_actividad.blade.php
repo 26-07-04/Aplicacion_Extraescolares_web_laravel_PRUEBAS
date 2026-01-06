@@ -1,16 +1,12 @@
-  <input type="hidden"
-    id="id_semestre"
-    value="{{ $id_semestre ?? ($semestreActual->id_semestre ?? '') }}">
 <!DOCTYPE html>
 <html lang="es">
-<head>
 
+<head>
 <meta charset="UTF-8">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <link rel="stylesheet" href="{{ asset('css/Coordinador/informe_actividad.css') }}">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Informe de Actividades - ITVE</title>
-
 </head>
 
 <body>
@@ -56,6 +52,10 @@
   <!-- Sección 1: Configuración del documento -->
   <div class="seccion activa" id="seccion1">
     <h2 class="seccion-titulo">Documento Base Membretado</h2>
+    <input type="hidden"
+      id="id_semestre"
+      value="{{ $id_semestre ?? ($semestreActual->id_semestre ?? '') }}">
+    <input type="hidden" id="id_unidad" value="2">
     <div class="documentos-container" id="documentosLista">
       @if(isset($documentos) && $documentos->isEmpty())
         <div class="empty-state" id="emptyState">
@@ -112,6 +112,93 @@
       </button>
     </div>
   </div>
+
+  <!-- Contenedor principal de informes generados SOLO visible en el primer paso -->
+  <div id="informesGeneradosContenedor" class="contenedor-informes-generados" style="background: #fff; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); padding: 32px; margin: 40px 0; border-left: 6px solid #1a365d; display: block;">
+    <script>
+    // Mostrar/ocultar informes generados según el paso
+    function toggleInformesGenerados() {
+      var seccion1 = document.getElementById('seccion1');
+      var informesCont = document.getElementById('informesGeneradosContenedor');
+      if (seccion1 && informesCont) {
+        if (seccion1.classList.contains('activa')) {
+          informesCont.style.display = 'block';
+        } else {
+          informesCont.style.display = 'none';
+        }
+      }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      toggleInformesGenerados();
+      // Llama también al cambiar de sección
+      var navBtns = document.querySelectorAll('.boton-continuar, .boton-atras');
+      navBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          setTimeout(toggleInformesGenerados, 300);
+        });
+      });
+    });
+    </script>
+    <h3 style="color:#1a365d; font-size:1.2rem; font-weight:600; margin-bottom:18px;">Informes Generados</h3>
+    @if($informes->count())
+      <div class="tarjetas-documentos">
+        @foreach($informes as $inf)
+          <div class="documento-card tarjeta-documento" style="background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); padding: 16px; min-width: 260px; max-width: 300px; display: flex; flex-direction: column; align-items: flex-start; border: 1px solid #e1e5eb;">
+            <div class="documento-main" style="display: flex; align-items: center; width: 100%;">
+              <div class="documento-icon" style="margin-right: 12px; color: #1a365d; font-size: 32px;"><i class="fas fa-file-alt"></i></div>
+              <div style="flex:1;">
+                <div class="documento-title" style="font-weight: 600; color: #1a365d; font-size: 1rem;">{{ $inf->titulo }}</div>
+                <div class="documento-desc" style="color: #6c757d; font-size: 0.95rem; margin-bottom: 4px;">{{ $inf->descripcion }}</div>
+                <div class="documento-info" style="font-size: 0.85rem; color: #888;">Generado el: {{ \Carbon\Carbon::parse($inf->fecha_generacion)->format('d/m/Y') }}</div>
+              </div>
+            </div>
+            <div class="documento-actions" style="margin-top: 10px; display: flex; gap: 8px;">
+              <a href="{{ asset($inf->archivo) }}" target="_blank" class="btn-ver-informe" style="background: #1a365d; border-radius: 5px; padding: 6px 10px; color: #fff; font-size: 1rem; border: none; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; height: 34px; min-width: 34px;">
+                <i class="fas fa-eye"></i>
+              </a>
+              <form method="POST" action="{{ route('coordinador.demetrio.informe.eliminar', $inf->id) }}" onsubmit="return confirmarEliminacionInforme(event)">
+                @csrf
+                @method('DELETE')
+                <button class="btn-eliminar-informe" style="background: #e53e3e; border-radius: 5px; padding: 6px 10px; color: #fff; font-size: 1rem; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; height: 34px; min-width: 34px; transition: background 0.2s;">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+            </div>
+          </div>
+        @endforeach
+      </div>
+      <style>
+        .tarjetas-documentos {
+          display: flex;
+          flex-wrap: nowrap;
+          gap: 16px;
+          overflow-x: auto;
+          padding-bottom: 8px;
+        }
+        .tarjeta-documento {
+          flex: 0 0 auto;
+        }
+        .btn-ver-informe:hover {
+          background: #16305a;
+        }
+        .btn-eliminar-informe:hover {
+          background: #c53030;
+        }
+      </style>
+    @else
+      <div style="color:#888;">No hay informes generados para esta unidad y semestre.</div>
+    @endif
+
+    <script>
+    function confirmarEliminacionInforme(e) {
+      if (!confirm('¿Estás seguro de que deseas eliminar este informe? Esta acción no se puede deshacer.')) {
+        e.preventDefault();
+        return false;
+      }
+      return true;
+    }
+    </script>
+  </div>
   
   <!-- Sección 2: Información del informe -->
   <div class="seccion" id="seccion2">
@@ -122,8 +209,6 @@
       <input type="text" id="periodo" class="input-estilo" placeholder="Ej: Enero - Junio 2025">
       <div class="mensaje-error" id="errorPeriodo">Este campo es requerido</div>
     </div>
-
-
     
     <div class="grupo-formulario">
       <label>Actividades:</label>
@@ -185,29 +270,34 @@
   <!-- Sección 4: Resumen y validación -->
   <div class="seccion" id="seccion4">
     <div class="seccion-titulo">Resumen y Validación</div>
-
+    
     <div class="resumen-contenedor">
       <div class="resumen-item">
         <span class="resumen-etiqueta">Periodo:</span>
         <span class="resumen-valor" id="resumenPeriodo">No especificado</span>
       </div>
+      
       <div class="resumen-item">
         <span class="resumen-etiqueta">Actividad Cultural:</span>
         <span class="resumen-valor" id="resumenCultural">No especificada</span>
       </div>
+      
       <div class="resumen-item">
         <span class="resumen-etiqueta">Actividad Deportiva:</span>
         <span class="resumen-valor" id="resumenDeportiva">No especificada</span>
       </div>
+      
       <div class="resumen-item">
         <span class="resumen-etiqueta">Total de Eventos:</span>
         <span class="resumen-valor" id="resumenEventos">0</span>
       </div>
+      
       <div class="resumen-item">
         <span class="resumen-etiqueta">Lugar y Fecha:</span>
         <span class="resumen-valor" id="resumenFecha">No especificada</span>
       </div>
     </div>
+    
 
     <!-- Apartado para Título del informe -->
     <div class="grupo-formulario">
@@ -228,122 +318,22 @@
       <input type="text" id="lugarFecha" class="input-estilo" placeholder="Oaxaca, 06 de agosto de 2025">
       <div class="nota fecha-actual" id="notaFecha">Se establecerá automáticamente la fecha actual si no se especifica</div>
     </div>
-
+    
     <div class="loading" id="loadingGeneracion">
       <div class="spinner"></div>
       <p>Generando PDF, por favor espere...</p>
     </div>
-
+    
     <div class="controles-navegacion">
       <button class="boton boton-atras" onclick="anteriorSeccion()">
         <i>←</i> Atrás
       </button>
+      
       <button class="boton boton-finalizar" onclick="generarPDF()">
         <i>📄</i> Generar PDF
       </button>
     </div>
   </div>
-</div>
-
-
-
-<!-- Contenedor principal de informes generados SOLO visible en el primer paso -->
-
-<div id="informesGeneradosContenedor" class="contenedor-informes-generados" style="background: #fff; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); padding: 32px; margin: 40px 0; border-left: 6px solid #1a365d; display: block;">
-  <h3 style="color:#1a365d; font-size:1.2rem; font-weight:600; margin-bottom:18px;">Informes Generados</h3>
-  <!-- Filtro por semestre eliminado -->
-  @php
-    // Mostrar solo los informes del semestre actual seleccionado
-    $idSemestre = isset($semestreActual) ? ($semestreActual->id_semestre ?? $semestreActual->id ?? null) : null;
-    $informesFiltrados = collect();
-    if ($idSemestre) {
-      $informesFiltrados = \App\Models\Informe::where('id_semestre', $idSemestre)
-        ->orderByDesc('fecha_generacion')->get();
-    }
-  @endphp
-  @if(count($informesFiltrados))
-    <div class="tarjetas-documentos">
-      @foreach($informesFiltrados as $inf)
-        <div class="documento-card tarjeta-documento" style="background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); padding: 16px; min-width: 260px; max-width: 300px; display: flex; flex-direction: column; align-items: flex-start; border: 1px solid #e1e5eb;">
-          <div class="documento-main" style="display: flex; align-items: center; width: 100%;">
-            <div class="documento-icon" style="margin-right: 12px; color: #1a365d; font-size: 32px;"><i class="fas fa-file-alt"></i></div>
-            <div style="flex:1;">
-              <div class="documento-title" style="font-weight: 600; color: #1a365d; font-size: 1rem;">{{ $inf->titulo ?? 'Sin título' }}</div>
-              <div class="documento-desc" style="color: #6c757d; font-size: 0.95rem; margin-bottom: 4px;">{{ $inf->descripcion }}</div>
-              <div class="documento-info" style="font-size: 0.85rem; color: #888;">Generado el: {{ \Carbon\Carbon::parse($inf->fecha_generacion)->format('d/m/Y') }}</div>
-            </div>
-          </div>
-          <div class="documento-actions" style="margin-top: 10px; display: flex; gap: 8px;">
-            <a href="{{ asset($inf->archivo) }}" target="_blank" title="Visualizar" class="btn-ver-informe"><i class="fas fa-eye"></i></a>
-            <form method="POST" action="{{ route('coordinador.demetrio.informe.eliminar', $inf->id_informe ?? $inf->id) }}" style="display:inline;" onsubmit="return confirmarEliminacionInforme(event)">
-              @csrf
-              @method('DELETE')
-              <input type="hidden" name="id_semestre" value="{{ $id_semestre }}">
-              <button type="submit" title="Eliminar" class="btn-eliminar-informe"><i class="fas fa-trash"></i></button>
-            </form>
-          </div>
-        </div>
-      @endforeach
-    </div>
-    <style>
-      .tarjetas-documentos {
-        display: flex;
-        flex-wrap: nowrap;
-        gap: 16px;
-        overflow-x: auto;
-        padding-bottom: 8px;
-      }
-      .tarjeta-documento {
-        flex: 0 0 auto;
-      }
-      .btn-ver-informe {
-        background: #1a365d;
-        border-radius: 5px;
-        padding: 6px 10px;
-        color: #fff;
-        font-size: 1rem;
-        border: none;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
-        height: 34px;
-        min-width: 34px;
-      }
-      .btn-eliminar-informe {
-        background: #e53e3e;
-        border-radius: 5px;
-        padding: 6px 10px;
-        color: #fff;
-        font-size: 1rem;
-        border: none;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        height: 34px;
-        min-width: 34px;
-        transition: background 0.2s;
-      }
-      .btn-eliminar-informe:hover {
-        background: #c53030;
-      }
-    </style>
-
-    @else
-    <div style="color:#888;">No hay informes generados.</div>
-
-  @endif
-
-  <script>
-  function confirmarEliminacionInforme(e) {
-    if (!confirm('¿Estás seguro de que deseas eliminar este informe? Esta acción no se puede deshacer.')) {
-      e.preventDefault();
-      return false;
-    }
-    return true;
-  }
-  </script>
 </div>
 
 <!-- Elementos solo para PDF (siempre ocultos) -->
@@ -395,27 +385,6 @@ document.addEventListener('DOMContentLoaded', function() {
   actualizarResumen();
   // Inicializar selección de PDF membretado
   inicializarSeleccionPDF();
-
-  // Mostrar/ocultar informes generados según el paso
-  function toggleInformesGenerados() {
-    var seccion1 = document.getElementById('seccion1');
-    var informesCont = document.getElementById('informesGeneradosContenedor');
-    if (seccion1 && informesCont) {
-      if (seccion1.classList.contains('activa')) {
-        informesCont.style.display = 'block';
-      } else {
-        informesCont.style.display = 'none';
-      }
-    }
-  }
-  // Ejecutar al inicio
-  toggleInformesGenerados();
-  // Ejecutar en cada cambio de sección
-  document.querySelectorAll('.boton-continuar, .boton-atras').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      setTimeout(toggleInformesGenerados, 300);
-    });
-  });
 });
 
 // -------------------------------------------
@@ -656,21 +625,19 @@ async function convertirPDFaPNG(file) {
 async function generarPDF() {
   // Mostrar loading
   document.getElementById('loadingGeneracion').style.display = 'block';
-  
+
   // Validar todos los campos
   if (!validarSeccionActual() || !validarSeccionesPrevias()) {
     document.getElementById('loadingGeneracion').style.display = 'none';
     return;
   }
-  
+
   try {
-    // Usar el PDF seleccionado desde la lista
     if (!window.pdfSeleccionado || !window.pdfSeleccionado.archivo) {
       alert("Selecciona primero el PDF membretado usando el botón 'Usar PDF'.");
       document.getElementById('loadingGeneracion').style.display = 'none';
       return;
     }
-    // Descargar el PDF base y convertirlo a imagen
     const response = await fetch(window.pdfSeleccionado.archivo);
     if (!response.ok) {
       alert('No se pudo descargar el PDF membretado.');
@@ -712,10 +679,8 @@ async function generarPDF() {
       bloques.push(filas.slice(i, i + BLOQUE));
     }
 
-    // 🔥 AHORA DUPLICA EL MEMBRETE EN CADA PÁGINA AUTOMÁTICAMENTE
     bloques.forEach((bloque, index) => {
       if (index > 0) doc.addPage();
-
       doc.addImage(
         imgMembrete,
         "PNG",
@@ -724,8 +689,6 @@ async function generarPDF() {
         doc.internal.pageSize.width,
         doc.internal.pageSize.height
       );
-
-      // === Encabezado institucional (SOLO EN PDF, NO VISIBLE EN WEB) ===
       let y = 140;
       doc.setFontSize(13);
       doc.setFont(undefined, "bold");
@@ -741,8 +704,6 @@ async function generarPDF() {
       const actividadCultural = document.getElementById("actividadCultural").value || "";
       const actividadDeportiva = document.getElementById("actividadDeportiva").value || "";
       doc.text(`ACTIVIDAD CULTURAL: ${actividadCultural}    DEPORTIVA: ${actividadDeportiva}`, doc.internal.pageSize.width/2, y, {align: "center"}); y += 18;
-
-      // Tabla
       doc.autoTable({
         startY: y + 10,
         head: [[
@@ -764,8 +725,8 @@ async function generarPDF() {
           lineColor: [0,0,0],
           halign: 'center',
           valign: 'middle',
-          textColor: [20, 20, 20], // Más negro para los datos rellenados
-          fontStyle: 'normal' // No negrita
+          textColor: [20, 20, 20],
+          fontStyle: 'normal'
         },
         headStyles: {
           fillColor: [255, 255, 255],
@@ -773,7 +734,7 @@ async function generarPDF() {
           lineWidth: 0.7,
           halign: 'center',
           valign: 'middle',
-          fontStyle: 'bold' // Encabezados en negrita
+          fontStyle: 'bold'
         },
         columnStyles: {
           0: { cellWidth: 25 },
@@ -783,27 +744,21 @@ async function generarPDF() {
         },
         didDrawPage: function (data) {
           if (index === bloques.length - 1) {
-            // Solo en la última página
             const pageWidth = doc.internal.pageSize.width;
             let yFirmas = data.cursor.y + 40;
-            // Fecha centrada
             const lugarFecha = document.getElementById('lugarFecha').value || '';
             doc.setFontSize(9);
             doc.setFont(undefined, "bold");
             doc.text(lugarFecha, pageWidth/2, yFirmas - 20, {align: "center"});
             yFirmas += 45;
-            // Firmas centradas
             doc.setFontSize(10);
             doc.setFont(undefined, "normal");
-            // Coordenadas para centrar las líneas y textos
             const firmasY = yFirmas;
             const lineWidth = 200;
             const lineSpacing = 60;
             const centerX = pageWidth / 2;
-            // Línea y texto izquierda (centrada a la izquierda)
             doc.line(centerX - lineSpacing - lineWidth, firmasY, centerX - lineSpacing, firmasY);
             doc.text("Jefe(a) de la oficina de promoción", centerX - lineSpacing - lineWidth/2, firmasY + 15, {align: "center"});
-            // Línea y texto derecha (centrada a la derecha)
             doc.line(centerX + lineSpacing, firmasY, centerX + lineSpacing + lineWidth, firmasY);
             doc.text("Jefe(a) del Departamento", centerX + lineSpacing + lineWidth/2, firmasY + 15, {align: "center"});
           }
@@ -811,7 +766,6 @@ async function generarPDF() {
       });
     });
 
-    // --- PAGINACIÓN PDF ---
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
@@ -819,11 +773,8 @@ async function generarPDF() {
       const paginacionText = `Página ${i} de ${pageCount}`;
       doc.setFontSize(9);
       doc.setFont(undefined, "bold");
-      // Arriba, alineado a la derecha
       doc.text(paginacionText, pageWidth - 203, 102);
     }
-    
-
 
     // Obtener el id_semestre de forma limpia y segura
     const idSemestreInput = document.getElementById('id_semestre');
@@ -833,45 +784,37 @@ async function generarPDF() {
       return;
     }
 
-    // Convertir PDF a Blob
-    const pdfBlobFinal = doc.output('blob');
-
-    // Crear FormData para enviar como archivo (usando los nombres que espera el backend)
-    const formData = new FormData();
     // Solo usar los campos de la sección de resumen para guardar
     const tituloInforme = document.getElementById('tituloInforme').value.trim();
     const descripcionInforme = document.getElementById('descripcionInforme').value.trim();
+    const formData = new FormData();
     formData.append('titulo', tituloInforme ? tituloInforme : 'Informe Semestral');
     formData.append('descripcion', descripcionInforme ? descripcionInforme : '-');
     formData.append('fecha_generacion', new Date().toISOString().slice(0, 10));
     formData.append('id_semestre', idSemestreInput.value);
-    // Usar el título como nombre del PDF (limpiando caracteres no válidos)
     let nombrePDF = tituloInforme ? tituloInforme : 'informe_actividades_itve';
     nombrePDF = nombrePDF.replace(/[^a-zA-Z0-9_\- ]/g, '').replace(/\s+/g, '_') + '.pdf';
-    // Adjuntar el PDF correctamente
+    const pdfBlobFinal = doc.output('blob');
     formData.append('pdf', pdfBlobFinal, nombrePDF);
 
-    // CSRF token para Laravel
     let csrf = document.querySelector('meta[name="csrf-token"]');
     let headers = {};
-    if (csrf) headers['X-CSRF-TOKEN'] = csrf.getAttribute('content');
+    // Siempre incluir el token CSRF
+    const csrfToken = document.querySelector('meta[name="csrf-token"]');
+    if (csrfToken) headers['X-CSRF-TOKEN'] = csrfToken.getAttribute('content');
 
     fetch('/coordinador/demetrio-vallejo/informe/guardar', {
       method: 'POST',
-      // NO poner Content-Type aquí, el navegador lo genera automáticamente para FormData
       headers,
       body: formData
     })
     .then(async res => {
       const contentType = res.headers.get('content-type');
-
       if (!contentType || !contentType.includes('application/json')) {
         const text = await res.text();
         throw new Error('Respuesta no JSON del servidor:\n' + text);
       }
-
       const data = await res.json();
-
       if (data.status === 'ok') {
         alert("Informe guardado correctamente");
       } else {
@@ -885,48 +828,12 @@ async function generarPDF() {
       alert(msg);
     });
 
-    // Descargar el PDF SIEMPRE
     doc.save("informe_actividades_itve.pdf");
 
   } catch (error) {
     console.error("Error al generar PDF:", error);
     document.getElementById('loadingGeneracion').style.display = 'none';
     alert("Hubo un error al generar el PDF. Por favor, intente nuevamente.");
-  }
-}
-
-async function guardarInformeEnServidor(doc, datos) {
-  // doc: instancia de jsPDF ya generada
-  // datos: { nombre, descripcion, fecha_generacion, semestre_id, unidad_id }
-
-  // Convertir PDF a base64
-  const pdfBase64 = doc.output('datauristring').split(',')[1];
-
-  // CSRF token para Laravel
-  let csrf = document.querySelector('meta[name=\"csrf-token\"]');
-  let headers = { 'Content-Type': 'application/json' };
-  if (csrf) headers['X-CSRF-TOKEN'] = csrf.getAttribute('content');
-
-  const payload = {
-    nombre: datos.nombre,
-    descripcion: datos.descripcion,
-    pdf_base64: pdfBase64,
-    fecha_generacion: datos.fecha_generacion,
-    semestre_id: datos.semestre_id,
-    unidad_id: datos.unidad_id
-  };
-
-  const res = await fetch('/coordinador/demetrio-vallejo/informe/store', {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(payload)
-  });
-
-  const result = await res.json();
-  if (result.status === 'ok') {
-    alert('Informe guardado correctamente.');
-  } else {
-    alert('Error al guardar el informe.');
   }
 }
 

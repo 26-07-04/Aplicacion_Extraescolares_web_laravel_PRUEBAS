@@ -311,7 +311,27 @@
       @endif
 
       @if(request()->get('show') === 'informe')
-        @include('coordinador.demetrio_vallejo.informe_actividad', ['semestreActual' => $semestre, 'id_semestre' => $semestre->id_semestre])
+        @php
+            $idSemestrePanel = $semestre->id_semestre ?? $semestre->id ?? null;
+            $id_unidad = $id_unidad ?? 2;
+        @endphp
+        @php
+            if (!isset($informes)) {
+                $informes = \App\Models\Informe::where('id_semestre', $idSemestrePanel)
+                    ->where('id_unidad', $id_unidad ?? 2)
+                    ->whereNotNull('archivo')
+                    ->where('archivo', '!=', '')
+                    ->orderByDesc('fecha_generacion')
+                    ->get();
+            }
+        @endphp
+        @include('coordinador.demetrio_vallejo.informe_actividad', [
+          'semestreActual' => $semestre,
+          'id_semestre' => $idSemestrePanel,
+          'informes' => $informes,
+          'documentos' => $documentos ?? collect(),
+          'id_unidad' => $id_unidad ?? 2
+        ])
       @endif
 
       @if(request()->get('show') === 'resultados')
