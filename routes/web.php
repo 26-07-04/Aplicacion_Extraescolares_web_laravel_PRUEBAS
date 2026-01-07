@@ -158,6 +158,7 @@ Route::get('/coordinador/valle-de-etla/informe', [App\Http\Controllers\Coordinad
 Route::post('/coordinador/valle-de-etla/informe/guardar', [App\Http\Controllers\Coordinador\informeValleDeEtlaController::class, 'guardarDatos'])->name('informe_valle_de_etla.guardar');
 Route::post('/coordinador/valle-de-etla/informe/subir-pdf', [App\Http\Controllers\Coordinador\informeValleDeEtlaController::class, 'subirPDF'])->name('informe_valle_de_etla.subir_pdf');
 Route::post('/coordinador/valle-de-etla/informe/generar-pdf', [App\Http\Controllers\Coordinador\informeValleDeEtlaController::class, 'generarPDFLaravel'])->name('informe_valle_de_etla.generar_pdf');
+Route::delete('/coordinador/valle-de-etla/informe/{id}', [App\Http\Controllers\Coordinador\informeValleDeEtlaController::class, 'destroy'])->name('coordinador.valle_etla.informe.eliminar');
 
 
 // Rutas para el informe de Tlahuitoltepec (unidad)
@@ -349,7 +350,7 @@ Route::prefix('administrador')->group(function () {
         ]);
     })->name('administrador.actividades.detalle');
 
-    // Ruta de detalle que carga la vista D_actividades_VE con query params
+    // Ruta de detalle que carga la vista D_actividades_VE with query params
     Route::get('D_actividades_VE', function (Request $request) {
         return view('administrador.vista_previa_U.D_actividades_VE', [
             'id_actividad' => $request->query('id_actividad'),
