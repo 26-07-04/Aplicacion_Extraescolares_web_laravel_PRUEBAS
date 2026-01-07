@@ -285,7 +285,27 @@
       @endif
 
       @if(request()->get('show') === 'informe')
-        @include('coordinador.valle_de_etla.informe_actividad')
+        @php
+            $idSemestrePanel = $semestre->id_semestre ?? $semestre->id ?? null;
+            $id_unidad = $id_unidad ?? 4; // Valle de Etla = 4
+        @endphp
+        @php
+            if (!isset($informes)) {
+                $informes = \App\Models\Informe::where('id_semestre', $idSemestrePanel)
+                    ->where('id_unidad', $id_unidad)
+                    ->whereNotNull('archivo')
+                    ->where('archivo', '!=', '')
+                    ->orderByDesc('fecha_generacion')
+                    ->get();
+            }
+        @endphp
+        @include('coordinador.valle_de_etla.informe_actividad', [
+          'semestreActual' => $semestre,
+          'id_semestre' => $idSemestrePanel,
+          'informes' => $informes,
+          'documentos' => $documentos ?? collect(),
+          'id_unidad' => $id_unidad
+        ])
       @endif
 
       @if(request()->get('show') === 'resultados')
