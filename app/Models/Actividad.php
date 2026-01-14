@@ -20,6 +20,7 @@ class Actividad extends Model
         'id_unidad',
         'id_semestre',
         'imagen_url',
+        'categorias',
     ];
 
     public function unidad()

@@ -152,6 +152,15 @@ class GestorActividades {
             const p = modulo.querySelector('p');
             if (h3) document.getElementById('nombre-actividad').value = h3.textContent;
             if (p) document.getElementById('descripcion-actividad').value = p.textContent;
+            
+            // Cargar categoría si existe - mejorada
+            const categoriaElement = document.getElementById('categoria-actividad');
+            if (categoriaElement) {
+                const catValue = modulo.dataset.categoria || '';
+                categoriaElement.value = catValue;
+                console.log('DEBUG: Cargando categoría en modal:', catValue);
+            }
+            
             if (vistaPrevia) {
                 const img = modulo.querySelector('img');
                 if (img) {
@@ -167,6 +176,14 @@ class GestorActividades {
             btnAccion.textContent = "Agregar Actividad";
             const form = document.getElementById('formulario-actividad');
             if (form) form.reset();
+            
+            // Resetear categoría
+            const categoriaElement = document.getElementById('categoria-actividad');
+            if (categoriaElement) {
+                categoriaElement.value = '';
+                console.log('DEBUG: Categoría reseteada para nueva actividad');
+            }
+            
             if (vistaPrevia) vistaPrevia.style.display = 'none';
             if (dropArea) dropArea.style.display = 'block';
         }
@@ -303,6 +320,7 @@ class GestorActividades {
         const idGuardado = saved.id_actividad ?? saved.id ?? saved.idActividad;
         const nombreGuardado = saved.nombre_actividad ?? saved.nombre ?? nombre;
         const descripcionGuardada = saved.descripcion ?? saved.desc ?? descripcion;
+        const categoriaGuardada = saved.categorias ?? saved.categoria ?? document.getElementById('categoria-actividad').value;
         const imagenGuardada = saved.imagen_url ?? saved.imagen ?? saved.imagenUrl ?? null;
 
         if (!idGuardado) {
@@ -316,6 +334,10 @@ class GestorActividades {
             const p = mod.querySelector('p');
             if (h3) h3.textContent = nombreGuardado;
             if (p) p.textContent = descripcionGuardada;
+            
+            // Guardar categoría en dataset - IMPORTANTE
+            mod.dataset.categoria = categoriaGuardada;
+            console.log('DEBUG: Categoría guardada en dataset después de editar:', categoriaGuardada);
             
             // Actualizar imagen
             const img = mod.querySelector('img');
@@ -331,10 +353,13 @@ class GestorActividades {
                 this.resolveImageSrc(imagenGuardada) : 
                 (document.getElementById('vista-previa')?.src || '/Imagenes/placeholder-actividad.jpg');
             
+            console.log('DEBUG: Creando nuevo módulo con categoría:', categoriaGuardada);
+            
             const nueva = this.crearModuloActividad({
                 id: idGuardado,
                 nombre: nombreGuardado,
                 descripcion: descripcionGuardada,
+                categoria: categoriaGuardada,
                 imagen: imagenPath,
                 id_semestre: semestreId
             });
@@ -355,10 +380,11 @@ class GestorActividades {
 
     async guardarActividad() {
         const nombre = (document.getElementById('nombre-actividad') || {}).value;
+        const categoria = (document.getElementById('categoria-actividad') || {}).value;
         const descripcion = (document.getElementById('descripcion-actividad') || {}).value;
 
-        if (!nombre || !descripcion) {
-            this.mostrarAlerta('Error', 'Por favor completa todos los campos obligatorios', 'error');
+        if (!nombre || !categoria || !descripcion) {
+            this.mostrarAlerta('Error', 'Por favor completa todos los campos obligatorios (nombre, categoría y descripción)', 'error');
             return;
         }
 
@@ -368,6 +394,7 @@ class GestorActividades {
 
         console.log('=== DATOS PARA CREAR ACTIVIDAD ===');
         console.log('Nombre:', nombre);
+        console.log('Categoría:', categoria);
         console.log('Descripción:', descripcion);
         console.log('Unidad ID:', unidadId);
         console.log('Semestre ID:', semestreId);
@@ -388,6 +415,7 @@ class GestorActividades {
             // preparar FormData para enviar al servidor
             const fd = new FormData();
             fd.append('nombre_actividad', nombre.trim());
+            fd.append('categorias', categoria.trim());
             fd.append('descripcion', descripcion.trim());
             fd.append('id_unidad', unidadId);
             fd.append('id_semestre', semestreId);
@@ -395,6 +423,7 @@ class GestorActividades {
             // Log para debug
             console.log('Enviando id_unidad:', unidadId);
             console.log('Enviando id_semestre:', semestreId);
+            console.log('Enviando categorias:', categoria);
 
             // Manejar imagen
             const inputFile = document.getElementById('imagen-actividad');
@@ -567,9 +596,11 @@ class GestorActividades {
                         id: item.id_actividad ?? item.id ?? item.idActividad,
                         nombre: item.nombre_actividad ?? item.nombre,
                         descripcion: item.descripcion ?? item.desc,
+                        categoria: item.categorias ?? item.categoria ?? '', // IMPORTANTE: Agregar categoría desde servidor
                         imagen: this.resolveImageSrc(imagenUrl),
                         id_semestre: item.id_semestre ?? item.idSemestre ?? null
                     });
+                    console.log('DEBUG cargarActividadesDesdeServidor: Creando módulo con categoría:', item.categorias ?? item.categoria ?? '');
                     cont.appendChild(mdl);
                 });
             }
@@ -670,7 +701,10 @@ class GestorActividades {
         modulo.dataset.idActividad = actividad.id;
         modulo.dataset.nombre = actividad.nombre;
         modulo.dataset.descripcion = actividad.descripcion;
+        modulo.dataset.categoria = actividad.categoria || '';
         if (actividad.id_semestre) modulo.dataset.idSemestre = actividad.id_semestre;
+        
+        console.log('DEBUG crearModuloActividad: dataset.categoria establecida a:', modulo.dataset.categoria);
         
         // Obtener unidadId de la configuración activa
         const config = this.getActConfig();
@@ -678,10 +712,13 @@ class GestorActividades {
             modulo.dataset.unidadId = config.unidadId;
         }
 
-        // Estructura HTML del módulo
+        // Estructura HTML del módulo con línea decorativa naranja
         modulo.innerHTML = `
             <img src="${actividad.imagen}" alt="${actividad.nombre}" onerror="this.src='/Imagenes/placeholder-actividad.jpg'">
-            <h3>${actividad.nombre}</h3>
+            <div class="actividad-header">
+                <div class="linea-decorativa"></div>
+                <h3>${actividad.nombre}</h3>
+            </div>
             <p>${actividad.descripcion}</p>
             <div class="acciones-modulo">
                 <button class="btn-accion btn-editar" aria-label="Editar actividad">
@@ -742,6 +779,7 @@ class GestorActividades {
         return modulo;
     }
 
+    // Función para obtener color según categoría
     mostrarAlerta(titulo, texto, icono) {
         Swal.fire({
             title: titulo,

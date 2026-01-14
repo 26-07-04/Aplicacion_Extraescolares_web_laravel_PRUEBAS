@@ -16,6 +16,21 @@
   <!-- CSRF token -->
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
+  <!-- Estilos personalizados para select de categorías -->
+  <style>
+    /* Mejorar diseño del select de categorías */
+    #categoria-actividad {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 18px;
+      padding-right: 12px !important;
+    }
+  </style>
+
   <!-- Configuración única (como en las otras) -->
   <script>
     (function(){
@@ -136,6 +151,15 @@
           
           <form id="formulario-actividad">
             <input type="text" id="nombre-actividad" placeholder="Nombre de la actividad" required>
+            
+            <!-- NUEVO: Campo de categoría mejorado -->
+            <select id="categoria-actividad" required style="width:100%; padding:12px 12px; border:1px solid #ddd; border-radius:6px; font-size:14px; margin-bottom:15px; color:#6f6f6f; cursor:pointer;">
+              <option value="" disabled selected hidden>Seleccionar categoría</option>
+              <option value="Deportivo">Deportivo</option>
+              <option value="Cultural">Cultural</option>
+              <option value="Academico">Académico</option>
+            </select>
+            
             <textarea id="descripcion-actividad" placeholder="Descripción de la actividad" rows="4" required></textarea>
             
             <label for="imagen-actividad" class="drop-area" id="drop-area">

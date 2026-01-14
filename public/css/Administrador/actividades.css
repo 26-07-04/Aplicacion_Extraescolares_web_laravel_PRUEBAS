@@ -183,19 +183,41 @@ header h1 {
   box-shadow: 0 5px 15px rgba(0,0,0,0.15);
 }
 
+/* Estilos para la línea decorativa y categoría en hover */
+.actividad-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 2px 0;
+}
+
+.linea-decorativa {
+  width: 2px;
+  height: 0;
+  background: linear-gradient(180deg, #ff7f00);
+  border-radius: 2px;
+  opacity: 0;
+  transition: height 0.3s ease;
+}
+
+.modulo:hover .linea-decorativa {
+  height: 20px;
+  opacity: 1;
+}
+
+.actividad-header h3 {
+  color: #002147;
+  margin: 0;
+  font-size: 16px;
+  font-weight: bold;
+}
+
 .modulo img {
   width: 100%;
   height: 100px;
   object-fit: cover;
   border-radius: 5px;
   margin-bottom: 10px;
-}
-
-.modulo h3 {
-  color: #002147;
-  margin: 8px 0;
-  font-size: 16px;
-  font-weight: bold;
 }
 
 .modulo p {
