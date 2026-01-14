@@ -49,6 +49,7 @@ class ActividadController extends Controller
             $item = $a->toArray();
             $item['id_actividad'] = $a->getKey();
             $item['imagen_url'] = $a->imagen_url ?? ($a->imagen ?? null);
+            $item['categorias'] = $a->categorias ?? ''; // Asegurar que categorias siempre esté presente
             return $item;
         });
 
@@ -101,7 +102,8 @@ class ActividadController extends Controller
             'descripcion' => 'nullable|string',
             'id_unidad' => 'required|integer',
             'id_semestre' => 'required|integer',
-            'imagen' => 'nullable|image|max:5120'
+            'imagen' => 'nullable|image|max:5120',
+            'categorias' => 'nullable|string'
         ]);
 
         if ($v->fails()) {
@@ -119,7 +121,7 @@ class ActividadController extends Controller
         }
 
         try {
-            $data = $request->only(['nombre_actividad','descripcion','id_unidad','id_semestre']);
+            $data = $request->only(['nombre_actividad','descripcion','id_unidad','id_semestre','categorias']);
             
             // CAMBIO 7: Asegurar que el id_semestre se guarda correctamente
             $data['id_semestre'] = $id_semestre;
@@ -143,7 +145,8 @@ class ActividadController extends Controller
                 'descripcion' => $actividad->descripcion,
                 'id_unidad' => $actividad->id_unidad,
                 'id_semestre' => $actividad->id_semestre,
-                'imagen_url' => $actividad->imagen_url ?? null
+                'imagen_url' => $actividad->imagen_url ?? null,
+                'categorias' => $actividad->categorias ?? null
             ], 201);
         } catch (\Throwable $e) {
             Log::error('Actividad store error: '.$e->getMessage(), ['trace' => $e->getTraceAsString(), 'input' => $request->all()]);
@@ -168,7 +171,8 @@ class ActividadController extends Controller
             'descripcion' => 'nullable|string',
             'id_unidad' => 'nullable|integer',
             'id_semestre' => 'nullable|integer',
-            'imagen' => 'nullable|image|max:5120'
+            'imagen' => 'nullable|image|max:5120',
+            'categorias' => 'nullable|string'
         ]);
 
         if ($v->fails()) return response()->json(['errors' => $v->errors()], 422);
@@ -188,6 +192,10 @@ class ActividadController extends Controller
                 return response()->json(['errors' => ['id_semestre' => ['El semestre no existe']]], 422);
             }
             $actividad->id_semestre = $request->input('id_semestre');
+        }
+
+        if ($request->filled('categorias')) {
+            $actividad->categorias = $request->input('categorias');
         }
 
         if ($request->hasFile('imagen')) {
