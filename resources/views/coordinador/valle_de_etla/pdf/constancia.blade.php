@@ -227,10 +227,6 @@
         <div class="titulo-principal">
             CONSTANCIA DE CUMPLIMIENTO DE ACTIVIDADES COMPLEMENTARIAS
         </div>
-        <!-- Lugar y fecha (alineado a la derecha, bajo el título) -->
-        <div class="lugar-fecha-top">
-            Santiago Suchilquitongo, Oax, <strong>{{ $fecha->locale('es')->translatedFormat('d/F/Y') }}</strong>
-        </div>
 
         <!-- Destinatario -->
         <div class="destinatario">
