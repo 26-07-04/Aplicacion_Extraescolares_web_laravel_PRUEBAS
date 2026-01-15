@@ -47,7 +47,7 @@
     @endif
     <div class="content">
         <div class="titulo-principal">CONSTANCIA DE CUMPLIMIENTO DE ACTIVIDADES COMPLEMENTARIAS</div>
-        <div class="lugar-fecha-top">Santiago Suchilquitongo, Oax, <strong>{{ $fecha->locale('es')->translatedFormat('d') }}/{{ strtolower($fecha->locale('es')->translatedFormat('F')) }}/{{ $fecha->year }}</strong></div>
+
         <div class="destinatario">
             <p><strong>{{ $evaluacion->jefe_servicios_escolares ?? '_____________________________________' }}</strong></p>
             <p><strong>JEFE DEL DEPARTAMENTO DE SERVICIOS ESCOLARES</strong></p>
