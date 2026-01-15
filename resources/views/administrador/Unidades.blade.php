@@ -253,7 +253,7 @@
           letter-spacing: 0.5px;
         }
 
-        .tarjeta-unidad .linea-decorativa {
+        .tarjeta-unidad .linea-decorativa1 {
           width: 50px;
           height: 3px;
           background: linear-gradient(90deg, #ff7f00, #ffaa00);
@@ -262,7 +262,7 @@
           transition: width 0.3s ease;
         }
 
-        .tarjeta-unidad:hover .linea-decorativa {
+        .tarjeta-unidad:hover .linea-decorativa1 {
           width: 70px;
         }
 
@@ -411,7 +411,7 @@
           <div class="tarjeta-unidad" onclick="animarTarjeta(this)">
             <img src="/Imagenes/2.png" alt="Logo ITVE" class="logo">
             <div class="nombre">Unión Hidalgo</div>
-            <div class="linea-decorativa"></div>
+            <div class="linea-decorativa1"></div>
             <div class="subtitulo">Campus educativo</div>
           </div>
         </a>
@@ -421,7 +421,7 @@
           <div class="tarjeta-unidad" onclick="animarTarjeta(this)">
             <img src="/Imagenes/2.png" alt="Logo ITVE" class="logo">
             <div class="nombre">Demetrio Vallejo</div>
-            <div class="linea-decorativa"></div>
+            <div class="linea-decorativa1"></div>
             <div class="subtitulo">Campus educativo</div>
           </div>
         </a>
@@ -431,7 +431,7 @@
           <div class="tarjeta-unidad" onclick="animarTarjeta(this)">
             <img src="/Imagenes/2.png" alt="Logo ITVE" class="logo">
             <div class="nombre">Tlahuitoltepec</div>
-            <div class="linea-decorativa"></div>
+            <div class="linea-decorativa1"></div>
             <div class="subtitulo">Campus educativo</div>
           </div>
         </a>
@@ -441,7 +441,7 @@
           <div class="tarjeta-unidad" onclick="animarTarjeta(this)">
             <img src="/Imagenes/2.png" alt="Logo ITVE" class="logo">
             <div class="nombre">Valle de Etla</div>
-            <div class="linea-decorativa"></div>
+            <div class="linea-decorativa1"></div>
             <div class="subtitulo">Campus principal</div>
           </div>
         </a>

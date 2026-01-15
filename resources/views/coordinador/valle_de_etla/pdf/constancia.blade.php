@@ -242,63 +242,11 @@
         <!-- Cuerpo del documento -->
         <div class="cuerpo">
             @php
-                // Normalizar entradas potenciales
-                $tipoRaw = strtolower(trim($evaluacion->tipo_actividad ?? ''));
-                $categoriaRaw = strtolower(trim($evaluacion->categoria ?? ''));
-                // Obtener nombre de la actividad desde la relación pasada a la vista
-                $actividadNombreRaw = strtolower(trim($actividad->nombre_actividad ?? ($evaluacion->actividad->nombre_actividad ?? '')));
-                $unidadTipoRaw = strtolower(trim($evaluacion->unidad_tipo ?? ''));
-
-                // Palabras clave para inferencia (ampliadas)
-                $keywordsCultural = [
-                    'cultural','arte','artística','artistica','danzas','danza','folklor','folklórica','folklorica','baile',
-                    'música','musica','teatro','pintura','coro','orquesta',
-                    'ajedrez','lectura','fotografía','fotografia','rondalla','escolta','banda de guerra'
-                ];
-
-                $keywordsDeportiva = [
-                    'deportiva','deporte','fútbol','futbol','basquetbol','basket','voleibol','atletismo','natación','natacion',
-                    'tenis','gimnasia','acondicionamiento','acondicionamiento fisico','acondicionamiento físico','preparacion fisica'
-                ];
-
-                // Función de verificación por palabras clave
-                $containsAny = function(string $haystack, array $needles) {
-                    foreach ($needles as $n) { if ($n && str_contains($haystack, $n)) return true; }
-                    return false;
-                };
-
-                // Decisión por prioridad: tipo_actividad -> categoria -> unidad_tipo -> por nombre
-                $isCultural = false;
-                if ($tipoRaw) {
-                    $isCultural = in_array($tipoRaw, ['cultural', 'arte', 'artistica', 'artística']);
-                    if (!$isCultural && in_array($tipoRaw, ['deportiva', 'deporte'])) {
-                        $isCultural = false;
-                    } elseif (!$isCultural) {
-                        // si el valor es otro, tratar por keywords
-                        $isCultural = $containsAny($tipoRaw, $keywordsCultural);
-                    }
-                } elseif ($categoriaRaw) {
-                    $isCultural = in_array($categoriaRaw, ['cultural', 'arte', 'artistica', 'artística']) || $containsAny($categoriaRaw, $keywordsCultural);
-                } elseif ($unidadTipoRaw) {
-                    $isCultural = in_array($unidadTipoRaw, ['cultural', 'arte']) || $containsAny($unidadTipoRaw, $keywordsCultural);
-                } else {
-                    $isCultural = $containsAny($actividadNombreRaw, $keywordsCultural);
-                }
-
-                // Fallback a deportiva si es claramente deporte o no se detectó cultural
-                $isDeportiva = false;
-                if (!$isCultural) {
-                    $isDeportiva = ($tipoRaw && (in_array($tipoRaw, ['deportiva', 'deporte']) || $containsAny($tipoRaw, $keywordsDeportiva)))
-                        || ($categoriaRaw && (in_array($categoriaRaw, ['deportiva', 'deporte']) || $containsAny($categoriaRaw, $keywordsDeportiva)))
-                        || ($unidadTipoRaw && (in_array($unidadTipoRaw, ['deportiva', 'deporte']) || $containsAny($unidadTipoRaw, $keywordsDeportiva)))
-                        || $containsAny($actividadNombreRaw, $keywordsDeportiva);
-                }
-
-                $tipoTexto = $isCultural ? 'CULTURAL' : 'DEPORTIVA';
-                $creditoTexto = (($evaluacion->creditos ?? 0) == 1) ? 'UN crédito' : (($evaluacion->creditos ?? 0) . ' créditos');
+                // Obtener la categoría directamente desde la actividad guardada en BD
+                $categoria = strtoupper(trim($actividad->categorias ?? 'COMPLEMENTARIA'));
             @endphp
             <p>
-                El que suscribe: <strong>{{ $evaluacion->nombre_profesor ?? '______________________________' }}</strong>, por este medio se permite hacer de su conocimiento que el (la) estudiante: <strong>{{ $estudiante->nombre }}</strong> con número de control: <strong>{{ $estudiante->numero_control }}</strong> de la carrera de <strong>{{ $estudiante->carrera }}</strong>, ha cumplido su actividad complementaria <strong>{{ $tipoTexto }}</strong> “{{ $actividad->nombre_actividad ?? ($evaluacion->actividad->nombre_actividad ?? '________________') }}” con el nivel de desempeño <strong>{{ strtoupper($evaluacion->nivel_desempeno ?? '') }}</strong> y un valor numérico de <strong>{{ number_format($evaluacion->calificacion_numerica ?? 0, 1) }}</strong> durante el ciclo escolar <strong>{{ $semestre->nombre ?? 'N/A' }}</strong>, con un valor curricular de UN crédito.
+                El que suscribe: <strong>{{ $evaluacion->nombre_profesor ?? '______________________________' }}</strong>, por este medio se permite hacer de su conocimiento que el (la) estudiante: <strong>{{ $estudiante->nombre }}</strong> con número de control: <strong>{{ $estudiante->numero_control }}</strong> de la carrera de <strong>{{ $estudiante->carrera }}</strong>, ha cumplido su actividad complementaria <strong>{{ $categoria }}</strong> "{{ $actividad->nombre_actividad ?? ($evaluacion->actividad->nombre_actividad ?? '________________') }}" con el nivel de desempeño <strong>{{ strtoupper($evaluacion->nivel_desempeno ?? '') }}</strong> y un valor numérico de <strong>{{ number_format($evaluacion->calificacion_numerica ?? 0, 1) }}</strong> durante el ciclo escolar <strong>{{ $semestre->nombre ?? 'N/A' }}</strong>, con un valor curricular de UN crédito.
             </p>
         </div>
 
