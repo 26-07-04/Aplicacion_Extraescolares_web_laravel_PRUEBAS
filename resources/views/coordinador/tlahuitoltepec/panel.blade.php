@@ -101,11 +101,6 @@
           </a>
         </li>
         <li>
-          <a href="{{ url()->current() }}?show=informe" class="{{ $show === 'informe' ? 'active' : '' }}">
-            <i class="fas fa-file-pdf"></i> Informe de Actividad
-          </a>
-        </li>
-        <li>
           <a href="{{ url()->current() }}?show=resultados" class="{{ $show === 'resultados' ? 'active' : '' }}">
             <i class="fas fa-chart-line"></i> Resultados
           </a>
