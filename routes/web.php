@@ -1,3 +1,4 @@
+
 <?php
 
 use App\Http\Controllers\ProfileController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\Coordinador\SemestresCursadosTlahuitoltepecController a
 use App\Http\Controllers\Coordinador\SemestresCursadosDemetrioController as CoordinadorSemestresDemetrioController;
 use App\Http\Controllers\Coordinador\PanelDemetrioVallejoController;
 use App\Http\Controllers\Coordinador\ImportEstudiantesController;
+use App\Http\Controllers\Administrador\InformeController;
 use App\Http\Controllers\Coordinador\InformeDemetrioController;
 use App\Http\Controllers\Coordinador\InformeTlahuitoltepecController;
 use App\Http\Controllers\Coordinador\InformeUnionHidalgoController;
@@ -146,6 +148,17 @@ Route::prefix('coordinador')->group(function () {
 });
 
 
+// Panel de informes para el administrador
+Route::get('admin/informes/{id?}', [InformeController::class, 'index'])
+    ->middleware('auth')
+    ->name('admin.informes');
+
+
+    // Eliminar informe generado por el administrador
+Route::delete('admin/informes/{id}', [InformeController::class, 'destroy'])
+    ->middleware('auth')
+    ->name('administrador.informe.eliminar');
+    
 // Rutas para el informe de Unión Hidalgo (unidad)
 Route::get('/coordinador/union-hidalgo/informe', [InformeUnionHidalgoController::class, 'index'])->name('informe_union_hidalgo.index');
 Route::post('/coordinador/union-hidalgo/informe/guardar', [InformeUnionHidalgoController::class, 'guardarDatos'])->name('informe_union_hidalgo.guardar');
