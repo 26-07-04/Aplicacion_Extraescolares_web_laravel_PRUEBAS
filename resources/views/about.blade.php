@@ -11,6 +11,6 @@
     <p>Brindar herramientas digitales que simplifiquen y mejoren la experiencia administrativa y académica de las unidades.</p>
 
     <h2>Contacto</h2>
-    <p>Si necesitas soporte o quieres solicitar mejoras, escribe a <a href="mailto:soporte@itv.edu.mx">soporte@itv.edu.mx</a>.</p>
+    <p>Si necesitas soporte o quieres solicitar mejoras, escribe a <a href="mailto:soporte.plataforma.itve@gmail.com">soporte.plataforma.itve@gmail.com</a>.</p>
   </div>
 @endsection
