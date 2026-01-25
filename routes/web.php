@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UnidadController;
 use App\Http\Controllers\Administrador\ActividadController;
 use App\Http\Controllers\Administrador\EstudianteController;
+use App\Http\Controllers\ContactController;
 use Illuminate\Http\Request;
 /*
 Route::get('/', function () {
@@ -45,6 +46,8 @@ Route::get('/about', function () {
 Route::get('/contact', function () {
     return view('contact');
 })->name('contact');
+
+Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
 
 Route::get('/dashboard', [UserController::class, 'home'])
 ->middleware(['auth', 'verified'])
