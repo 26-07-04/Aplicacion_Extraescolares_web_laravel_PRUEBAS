@@ -181,6 +181,7 @@ class PanelTlahuitoltepecController extends Controller
                 'nombre' => 'required|string|max:255',
                 'numero_control' => 'required|string|max:100',
                 'carrera' => 'required|string|max:255',
+                'sexo' => 'nullable|string|max:20',
                 'semestre' => 'required|string|max:50'
             ]);
 

@@ -14,12 +14,13 @@
   </div>
 
   <div style="overflow:auto; background:#fff; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.06);">
-    <table id="dataTable" class="display nowrap" style="width:100%; border-collapse:collapse; min-width:700px;">
+    <table id="dataTable" class="display nowrap" style="width:100%; border-collapse:collapse; min-width:780px;">
       <thead style="background:#f6f8fb;">
         <tr>
           <th style="text-align:left; padding:12px 16px; border-bottom:1px solid #eee;">No. Control</th>
           <th style="text-align:left; padding:12px 16px; border-bottom:1px solid #eee;">Nombre</th>
           <th style="text-align:left; padding:12px 16px; border-bottom:1px solid #eee;">Carrera</th>
+          <th style="text-align:left; padding:12px 16px; border-bottom:1px solid #eee;">Sexo</th>
           <th style="text-align:left; padding:12px 16px; border-bottom:1px solid #eee;">Extraescolar</th>
           <th style="text-align:left; padding:12px 16px; border-bottom:1px solid #eee;">Semestre</th>
           <th style="text-align:center; padding:12px 16px; border-bottom:1px solid #eee;">Acciones</th>
@@ -52,17 +53,18 @@
               <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">{{ $estudiante->numero_control ?? '—' }}</td>
               <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">{{ $estudiante->nombre ?? '—' }}</td>
               <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">{{ $estudiante->carrera ?? '—' }}</td>
+              <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">{{ $estudiante->sexo ?? '—' }}</td>
               <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">{{ $estudiante->nombre_actividad ?? '—' }}</td>
               <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">{{ $estudiante->semestre ?? '—' }}</td>
               <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2; text-align:center; white-space:nowrap;">
-                <button class="btn-editar" data-id="{{ $estudiante->id_alumno }}" data-nombre="{{ $estudiante->nombre }}" data-numero="{{ $estudiante->numero_control }}" data-carrera="{{ $estudiante->carrera }}" data-semestre="{{ $estudiante->semestre }}" style="display:inline-block; margin-right:12px; background:none; border:none; color:#ff7f00; cursor:pointer; font-size:16px; vertical-align:middle;" title="Editar"><i class="fas fa-edit"></i></button>
+                <button class="btn-editar" data-id="{{ $estudiante->id_alumno }}" data-nombre="{{ $estudiante->nombre }}" data-numero="{{ $estudiante->numero_control }}" data-carrera="{{ $estudiante->carrera }}" data-sexo="{{ $estudiante->sexo }}" data-semestre="{{ $estudiante->semestre }}" style="display:inline-block; margin-right:12px; background:none; border:none; color:#ff7f00; cursor:pointer; font-size:16px; vertical-align:middle;" title="Editar"><i class="fas fa-edit"></i></button>
                 <button class="btn-eliminar" data-id="{{ $estudiante->id_alumno }}" data-nombre="{{ $estudiante->nombre }}" style="display:inline-block; background:none; border:none; color:#dc3545; cursor:pointer; font-size:16px; vertical-align:middle;" title="Eliminar"><i class="fas fa-trash"></i></button>
               </td>
             </tr>
           @endforeach
         @else
           <tr>
-            <td colspan="6" style="padding:20px 16px; text-align:center; color:#999; border-bottom:1px solid #f2f2f2;">
+            <td colspan="7" style="padding:20px 16px; text-align:center; color:#999; border-bottom:1px solid #f2f2f2;">
               No hay estudiantes registrados para este semestre y unidad académica.
             </td>
           </tr>
@@ -204,12 +206,14 @@
       const nombre = btn.dataset.nombre;
       const numero = btn.dataset.numero;
       const carrera = btn.dataset.carrera;
+      const sexo = btn.dataset.sexo || '';
       const semestre = btn.dataset.semestre;
 
       document.getElementById('editId').value = id;
       document.getElementById('editNombre').value = nombre;
       document.getElementById('editNumero').value = numero;
       document.getElementById('editCarrera').value = carrera;
+      document.getElementById('editSexo').value = sexo;
       document.getElementById('editSemestre').value = semestre;
       document.getElementById('modalEditar').style.display = 'flex';
     }
@@ -233,10 +237,11 @@
           <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">${est.numero_control || '—'}</td>
           <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">${est.nombre || '—'}</td>
           <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">${est.carrera || '—'}</td>
+          <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">${est.sexo || '—'}</td>
           <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">${est.nombre_actividad || '—'}</td>
           <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">${est.semestre || '—'}</td>
           <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2; text-align:center; white-space:nowrap;">
-            <button class="btn-editar" data-id="${est.id_alumno}" data-nombre="${est.nombre}" data-numero="${est.numero_control}" data-carrera="${est.carrera}" data-semestre="${est.semestre}" style="display:inline-block; margin-right:12px; background:none; border:none; color:#ff7f00; cursor:pointer; font-size:16px; vertical-align:middle;" title="Editar"><i class="fas fa-edit"></i></button>
+            <button class="btn-editar" data-id="${est.id_alumno}" data-nombre="${est.nombre}" data-numero="${est.numero_control}" data-carrera="${est.carrera}" data-sexo="${est.sexo || ''}" data-semestre="${est.semestre}" style="display:inline-block; margin-right:12px; background:none; border:none; color:#ff7f00; cursor:pointer; font-size:16px; vertical-align:middle;" title="Editar"><i class="fas fa-edit"></i></button>
             <button class="btn-eliminar" data-id="${est.id_alumno}" data-nombre="${est.nombre}" style="display:inline-block; background:none; border:none; color:#dc3545; cursor:pointer; font-size:16px; vertical-align:middle;" title="Eliminar"><i class="fas fa-trash"></i></button>
           </td>
         `;
@@ -368,7 +373,7 @@
 
       if (estudiantesEnPagina.length === 0) {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td colspan="6" style="padding:20px 16px; text-align:center; color:#999;">No se encontraron resultados</td>`;
+        tr.innerHTML = `<td colspan="7" style="padding:20px 16px; text-align:center; color:#999;">No se encontraron resultados</td>`;
         tableBody.appendChild(tr);
       } else {
         // Renderizar estudiantes
@@ -379,10 +384,11 @@
             <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">${est.numero_control || '—'}</td>
             <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">${est.nombre || '—'}</td>
             <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">${est.carrera || '—'}</td>
+            <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">${est.sexo || '—'}</td>
             <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">${est.nombre_actividad || '—'}</td>
             <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">${est.semestre || '—'}</td>
             <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2; text-align:center; white-space:nowrap;">
-              <button class="btn-editar" data-id="${est.id_alumno}" data-nombre="${est.nombre}" data-numero="${est.numero_control}" data-carrera="${est.carrera}" data-semestre="${est.semestre}" style="display:inline-block; margin-right:12px; background:none; border:none; color:#ff7f00; cursor:pointer; font-size:16px; vertical-align:middle;" title="Editar"><i class="fas fa-edit"></i></button>
+              <button class="btn-editar" data-id="${est.id_alumno}" data-nombre="${est.nombre}" data-numero="${est.numero_control}" data-carrera="${est.carrera}" data-sexo="${est.sexo || ''}" data-semestre="${est.semestre}" style="display:inline-block; margin-right:12px; background:none; border:none; color:#ff7f00; cursor:pointer; font-size:16px; vertical-align:middle;" title="Editar"><i class="fas fa-edit"></i></button>
               <button class="btn-eliminar" data-id="${est.id_alumno}" data-nombre="${est.nombre}" style="display:inline-block; background:none; border:none; color:#dc3545; cursor:pointer; font-size:16px; vertical-align:middle;" title="Eliminar"><i class="fas fa-trash"></i></button>
             </td>
           `;
@@ -472,6 +478,10 @@
         <label style="display:block; font-weight:700; margin-bottom:4px; color:#333;">Carrera:</label>
         <input type="text" id="editCarrera" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px; box-sizing:border-box;">
       </div>
+      <div style="margin-bottom:16px;">
+        <label style="display:block; font-weight:700; margin-bottom:4px; color:#333;">Sexo:</label>
+        <input type="text" id="editSexo" placeholder="Opcional" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px; box-sizing:border-box;">
+      </div>
       <div style="margin-bottom:20px;">
         <label style="display:block; font-weight:700; margin-bottom:4px; color:#333;">Semestre:</label>
         <input type="text" id="editSemestre" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px; box-sizing:border-box;">
@@ -522,6 +532,7 @@
     const nombre = document.getElementById('editNombre').value;
     const numero = document.getElementById('editNumero').value;
     const carrera = document.getElementById('editCarrera').value;
+    const sexo = document.getElementById('editSexo').value.trim();
     const semestre = document.getElementById('editSemestre').value;
 
     if (!nombre || !numero || !carrera || !semestre) {
@@ -542,6 +553,7 @@
         nombre: nombre,
         numero_control: numero,
         carrera: carrera,
+        sexo: sexo || null,
         semestre: semestre
       })
     }).then(r => r.json()).then(json => {

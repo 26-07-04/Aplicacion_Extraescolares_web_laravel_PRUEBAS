@@ -113,6 +113,7 @@ class ImportEstudiantesController extends Controller
                 $no = is_null($no) ? '' : trim((string)$no);
                 $nombre = $st['Nombre'] ?? $st['nombre'] ?? '';
                 $carrera = $st['Carrera'] ?? $st['carrera'] ?? '';
+                $sexo = $st['Sexo'] ?? $st['sexo'] ?? '';
                 $sem = $st['Semestre'] ?? $st['semestre'] ?? null;
 
                 if (!$no) {
@@ -153,6 +154,7 @@ class ImportEstudiantesController extends Controller
                         'nombre' => $nombre,
                         'numero_control' => $no,
                         'carrera' => $carrera,
+                        'sexo' => isset($sexo) && $sexo !== '' ? trim((string) $sexo) : null,
                         'semestre' => $sem,
                         'id_actividad' => $actividadId,
                         'id_unidad' => $id_unidad,

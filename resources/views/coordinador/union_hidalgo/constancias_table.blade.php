@@ -135,6 +135,7 @@
                     <th class="sortable" data-column="numero_control">No. Control</th>
                     <th class="sortable" data-column="nombre">Nombre</th>
                     <th class="sortable" data-column="carrera">Carrera</th>
+                    <th class="sortable" data-column="sexo">Sexo</th>
                     <th class="sortable" data-column="semestre">Semestre</th>
                     <th class="sortable" data-column="status">Estado</th>
                     <th>Acciones</th>
@@ -142,7 +143,7 @@
             </thead>
             <tbody id="tabla-alumnos">
             </tbody>
-            <tbody id="empty-state-tbody" style="display: none;"><tr class="empty-row"><td colspan="6">No hay estudiantes</td></tr></tbody>
+            <tbody id="empty-state-tbody" style="display: none;"><tr class="empty-row"><td colspan="7">No hay estudiantes</td></tr></tbody>
         </table>
     </div>
     
@@ -176,6 +177,7 @@
                 'numero_control' => $est->numero_control ?? '',
                 'nombre' => $est->nombre ?? '',
                 'carrera' => $est->carrera ?? '',
+                'sexo' => $est->sexo ?? '',
                 'semestre' => $est->semestre ?? '',
                 'status' => $est->id_evaluacion ? 'completed' : 'pending',
                 'id_alumno' => $est->id_alumno ?? null,
@@ -249,6 +251,7 @@
                     <td style="padding:12px 8px; border-bottom:1px solid #f2f2f2; max-width:120px;">${s.numero_control}</td>
                     <td style="padding:12px 8px; border-bottom:1px solid #f2f2f2; max-width:180px; overflow:hidden; text-overflow:ellipsis;">${s.nombre}</td>
                     <td style="padding:12px 8px; border-bottom:1px solid #f2f2f2; max-width:140px; overflow:hidden; text-overflow:ellipsis;">${s.carrera}</td>
+                    <td style="padding:12px 8px; border-bottom:1px solid #f2f2f2; max-width:90px;">${s.sexo ?? ''}</td>
                     <td style="padding:12px 8px; border-bottom:1px solid #f2f2f2; max-width:120px;">${s.semestre}</td>
                     <td style="padding:12px 8px; border-bottom:1px solid #f2f2f2;"><span class="status-badge ${s.status === 'completed' ? 'status-completed' : 'status-pending'}">${s.status === 'completed' ? 'CUMPLE' : 'PENDIENTE'}</span></td>
                     <td style="padding:12px 8px; border-bottom:1px solid #f2f2f2; text-align:center;">${actionHtml}</td>
@@ -312,7 +315,8 @@
             estudiantesFiltrados = todosEstudiantes.filter(est =>
                 est.numero_control.toLowerCase().includes(termino) ||
                 est.nombre.toLowerCase().includes(termino) ||
-                est.carrera.toLowerCase().includes(termino)
+                est.carrera.toLowerCase().includes(termino) ||
+                String(est.sexo || '').toLowerCase().includes(termino)
             );
         }
         
@@ -324,9 +328,9 @@
 
     function exportToCSV() {
         const rows = [
-            ['No. Control','Nombre','Carrera','Semestre','Estado']
+            ['No. Control','Nombre','Carrera','Sexo','Semestre','Estado']
         ];
-        estudiantesFiltrados.forEach(s => rows.push([s.numero_control, s.nombre, s.carrera, s.semestre, s.status]));
+        estudiantesFiltrados.forEach(s => rows.push([s.numero_control, s.nombre, s.carrera, s.sexo ?? '', s.semestre, s.status]));
         const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(',')).join('\n');
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);

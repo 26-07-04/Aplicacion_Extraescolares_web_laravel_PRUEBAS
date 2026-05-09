@@ -224,6 +224,7 @@
                   <th style="position:sticky; top:0; text-align:left; padding:10px 12px; border-bottom:2px solid rgba(0,0,0,0.08); background:#1B396A; color:#fff; font-weight:700; z-index:5;">No. Control</th>
                   <th style="position:sticky; top:0; text-align:left; padding:10px 12px; border-bottom:2px solid rgba(0,0,0,0.08); background:#1B396A; color:#fff; font-weight:700; z-index:5;">Nombre</th>
                   <th style="position:sticky; top:0; text-align:left; padding:10px 12px; border-bottom:2px solid rgba(0,0,0,0.08); background:#1B396A; color:#fff; font-weight:700; z-index:5;">Carrera</th>
+                  <th style="position:sticky; top:0; text-align:left; padding:10px 12px; border-bottom:2px solid rgba(0,0,0,0.08); background:#1B396A; color:#fff; font-weight:700; z-index:5;">Sexo</th>
                   <th style="position:sticky; top:0; text-align:left; padding:10px 12px; border-bottom:2px solid rgba(0,0,0,0.08); background:#1B396A; color:#fff; font-weight:700; z-index:5;">Semestre</th>
                   <th style="position:sticky; top:0; text-align:center; padding:10px 12px; border-bottom:2px solid rgba(0,0,0,0.08); background:#1B396A; color:#fff; font-weight:700; z-index:5; width:80px;">Estado</th>
                 </tr>
@@ -410,7 +411,7 @@
             modalActividadName.textContent = actividadSeleccionada.nombre || '';
             modalActividadNameSmall.textContent = actividadSeleccionada.nombre || '';
             modalInfo.textContent = '';
-            modalTableBody.innerHTML = '<tr><td colspan="5" style="padding:12px; text-align:center; color:#666;">Seleccione un archivo para previsualizar</td></tr>';
+            modalTableBody.innerHTML = '<tr><td colspan="6" style="padding:12px; text-align:center; color:#666;">Seleccione un archivo para previsualizar</td></tr>';
             if (modalUpload) modalUpload.style.display = 'none';
           }
         });
@@ -458,6 +459,7 @@
                 if (h.includes('nombre')) headerMap[i] = 'Nombre';
                 else if (h.includes('control') || h.includes('nocontrol') || h.includes('numcontrol')) headerMap[i] = 'No_control';
                 else if (h.includes('carrera')) headerMap[i] = 'Carrera';
+                else if (h.includes('sexo')) headerMap[i] = 'Sexo';
                 else if (h.includes('semestre')) headerMap[i] = 'Semestre';
                 else headerMap[i] = h || ('col' + i);
               });
@@ -465,7 +467,8 @@
               headerMap[0] = 'No_control';
               headerMap[1] = 'Nombre';
               headerMap[2] = 'Carrera';
-              headerMap[3] = 'Semestre';
+              headerMap[3] = 'Sexo';
+              headerMap[4] = 'Semestre';
               headerRowPresent = false;
             }
 
@@ -485,7 +488,7 @@
             }
 
             if (modalInfo) {
-              modalInfo.textContent = headerRowPresent ? '' : 'Se usó mapeo automático por columnas (orden: No_control, Nombre, Carrera, Semestre).';
+              modalInfo.textContent = headerRowPresent ? '' : 'Se usó mapeo automático por columnas (orden: No_control, Nombre, Carrera, Sexo, Semestre).';
             }
 
             // Guardar mapeo en memoria para poder enviarlo al servidor
@@ -496,7 +499,7 @@
             if (modalActividadNameSmall) modalActividadNameSmall.textContent = actividadSeleccionada.nombre || sheetName || '';
             modalTableBody.innerHTML = '';
             if (!mapped.length) {
-              modalTableBody.innerHTML = '<tr><td colspan="5" style="padding:12px; text-align:center; color:#666;">No hay registros.</td></tr>';
+              modalTableBody.innerHTML = '<tr><td colspan="6" style="padding:12px; text-align:center; color:#666;">No hay registros.</td></tr>';
             } else {
               // Validar duplicados antes de renderizar
               const numeroControles = mapped.map(r => r.No_control || r.no_control || r.Control || '');
@@ -527,6 +530,7 @@
                       <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2; color:${textColor};">${no}</td>
                       <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2; color:${textColor};">${r.Nombre || r.nombre || ''}</td>
                       <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2; color:${textColor};">${r.Carrera || r.carrera || ''}</td>
+                      <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2; color:${textColor};">${r.Sexo || r.sexo || ''}</td>
                       <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2; color:${textColor};">${r.Semestre || r.semestre || '{{ $semestre->nombre ?? "" }}'}</td>
                       <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2; text-align:center; color:${esDuplicado ? '#dc3545' : '#28a745'}; font-weight:700; width:60px;">
                         ${esDuplicado ? '✗ Existe' : '✓ Nuevo'}
@@ -568,6 +572,7 @@
                     <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">${r.No_control || r.no_control || r.Control || ''}</td>
                     <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">${r.Nombre || r.nombre || ''}</td>
                     <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">${r.Carrera || r.carrera || ''}</td>
+                    <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">${r.Sexo || r.sexo || ''}</td>
                     <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2;">${r.Semestre || r.semestre || '{{ $semestre->nombre ?? "" }}'}</td>
                     <td style="padding:12px 16px; border-bottom:1px solid #f2f2f2; text-align:center;">—</td>
                   </tr>`).join('');
