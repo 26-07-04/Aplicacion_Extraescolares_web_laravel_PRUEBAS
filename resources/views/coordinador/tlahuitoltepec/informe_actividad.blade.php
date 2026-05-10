@@ -510,13 +510,23 @@ function armarTextoLugarFechaActividad(lugar, fecha) {
   return lugar + ', ' + cuerpoFecha;
 }
 
-function esUnidadDemetrioVallejoInforme() {
+/**
+ * id_unidad (BD): 1 Unión Hidalgo, 2 Demetrio Vallejo Martínez, 3 Santa María Tlahuitoltepec, 4 Valle de Etla.
+ * Ids donde promotor y jefe de oficina ya vienen definidos en la vista (no exigir captura al generar PDF).
+ */
+const IDS_UNIDAD_SIN_VALIDACION_PROMOTOR_JEFE_FIRMA = [4];
+
+function idUnidadInformeActual() {
   const el = document.getElementById('id_unidad');
-  return el && parseInt(el.value, 10) === 2;
+  return el ? parseInt(el.value, 10) : 0;
+}
+
+function firmasPromotorJefeOmitenValidacionRequerida() {
+  return IDS_UNIDAD_SIN_VALIDACION_PROMOTOR_JEFE_FIRMA.indexOf(idUnidadInformeActual()) !== -1;
 }
 
 function firmasNombresCoordinadorRequeridosOk() {
-  if (esUnidadDemetrioVallejoInforme()) return true;
+  if (firmasPromotorJefeOmitenValidacionRequerida()) return true;
   const p = document.getElementById('firmaNombrePromotor');
   const j = document.getElementById('firmaNombreJefeOficina');
   return !!(p && j && p.value.trim() !== '' && j.value.trim() !== '');

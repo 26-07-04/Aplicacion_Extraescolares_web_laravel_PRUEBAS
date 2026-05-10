@@ -333,7 +333,7 @@
           <label style="display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 0.92em;">
             <i class="fas fa-user" style="color: #17a2b8;"></i> Nombre completo: <span style="color: #dc3545;">*</span>
           </label>
-          <input type="text" id="firmaNombrePromotor" class="input-estilo informe-firma-nombre" value="" autocomplete="name" placeholder="Nombre completo" style="width: 100%; box-sizing: border-box;">
+          <input type="text" id="firmaNombrePromotor" class="input-estilo informe-firma-nombre" data-default="D.C. Fernando Adrihel Sarubbi Baltazar" value="D.C. Fernando Adrihel Sarubbi Baltazar" autocomplete="name" style="width: 100%; box-sizing: border-box;">
           <p id="firmaCargoPromotor" class="informe-firma-cargo" data-default="Promotor Cultural o Deportivo" contenteditable="false" title="Doble clic para editar el cargo">Promotor Cultural o Deportivo</p>
         </div>
         <div style="background: #fff; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6; box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
@@ -341,7 +341,7 @@
           <label style="display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 0.92em;">
             <i class="fas fa-user-tie" style="color: #17a2b8;"></i> Nombre completo: <span style="color: #dc3545;">*</span>
           </label>
-          <input type="text" id="firmaNombreJefeOficina" class="input-estilo informe-firma-nombre" value="" autocomplete="name" placeholder="Nombre completo" style="width: 100%; box-sizing: border-box;">
+          <input type="text" id="firmaNombreJefeOficina" class="input-estilo informe-firma-nombre" data-default="D.C. Fernando Adrihel Sarubbi Baltazar" value="D.C. Fernando Adrihel Sarubbi Baltazar" autocomplete="name" style="width: 100%; box-sizing: border-box;">
           <p id="firmaCargoJefeOficina" class="informe-firma-cargo" data-default="Jefe de Oficina de Promoción Cultural o Deportivo" contenteditable="false" title="Doble clic para editar el cargo">Jefe de Oficina de Promoción Cultural o Deportivo</p>
         </div>
         <div style="background: #fff; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6; box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
@@ -510,13 +510,13 @@ function armarTextoLugarFechaActividad(lugar, fecha) {
   return lugar + ', ' + cuerpoFecha;
 }
 
-function esUnidadDemetrioVallejoInforme() {
+function esUnidadValleDeEtlaFirmasPorDefecto() {
   const el = document.getElementById('id_unidad');
-  return el && parseInt(el.value, 10) === 2;
+  return el && parseInt(el.value, 10) === 4;
 }
 
 function firmasNombresCoordinadorRequeridosOk() {
-  if (esUnidadDemetrioVallejoInforme()) return true;
+  if (esUnidadValleDeEtlaFirmasPorDefecto()) return true;
   const p = document.getElementById('firmaNombrePromotor');
   const j = document.getElementById('firmaNombreJefeOficina');
   return !!(p && j && p.value.trim() !== '' && j.value.trim() !== '');
