@@ -32,4 +32,33 @@ class Actividad extends Model
     {
         return $this->belongsTo(Semestre::class, 'id_semestre', 'id_semestre');
     }
+
+    /**
+     * Mapea el texto de categorías (p. ej. "Cultural", "Deportivo") a la clave usada en el informe.
+     */
+    public function categoriaParaInforme(): ?string
+    {
+        return self::resolverCategoriaInforme($this->categorias ?? null);
+    }
+
+    /**
+     * @return 'cultural'|'deportiva'|null
+     */
+    public static function resolverCategoriaInforme(?string $categorias): ?string
+    {
+        $c = mb_strtolower(trim((string) $categorias), 'UTF-8');
+        if ($c === '') {
+            return null;
+        }
+        if (str_contains($c, 'cultural')) {
+            return 'cultural';
+        }
+        if (str_contains($c, 'deportiva')
+            || str_contains($c, 'deportivo')
+            || str_contains($c, 'deporte')) {
+            return 'deportiva';
+        }
+
+        return null;
+    }
 }

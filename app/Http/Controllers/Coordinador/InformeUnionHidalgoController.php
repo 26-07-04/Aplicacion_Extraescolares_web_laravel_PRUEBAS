@@ -29,16 +29,8 @@ class InformeUnionHidalgoController extends Controller
 			->where('tipo_documento', 'membrete')
 			->get();
 
-		$informes = [];
-		$id_unidad = 1; // Forzar id_unidad=1 para Unión Hidalgo
-		if ($id_semestre && $id_unidad) {
-			$informes = \App\Models\Informe::where('id_semestre', $id_semestre)
-				->where('id_unidad', 1)
-				->whereNotNull('archivo')
-				->where('archivo', '!=', '')
-				->orderByDesc('fecha_generacion')
-				->get();
-		}
+		$id_unidad = 1;
+		$informes = \App\Models\Informe::listadoGeneradosPorUnidad((int) $id_semestre, $id_unidad);
 
 		return view('coordinador.union_hidalgo.informe_actividad', [
 			'documentos' => $documentos,
@@ -105,8 +97,8 @@ class InformeUnionHidalgoController extends Controller
 	public function destroy($id)
 	{
 		$informe = \App\Models\Informe::find($id);
-		if (!$informe) {
-			return back()->with('error', 'Informe no encontrado.');
+		if (!$informe || (int) $informe->id_unidad !== 1) {
+			return back()->with('error', 'Informe no encontrado o no pertenece a esta unidad.');
 		}
 		$id_semestre = request('id_semestre', $informe->id_semestre);
 		if ($informe->archivo && file_exists(public_path($informe->archivo))) {

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Semestre;
 use App\Models\Actividad;
 use App\Models\Unidad;
+use App\Models\Informe;
 
 class PanelTlahuitoltepecController extends Controller
 {
@@ -29,6 +30,8 @@ class PanelTlahuitoltepecController extends Controller
         }
 
         $documentos = \App\Models\Documento::where('id_semestre', $id)->orderBy('created_at', 'desc')->get();
+
+        $informes = Informe::listadoGeneradosPorUnidad((int) $semestre->id_semestre, 3);
 
         // Filtrar actividades por semestre y por la unidad académica del usuario
         $uaName = $user->unidad_academica ?? '';
@@ -80,6 +83,7 @@ class PanelTlahuitoltepecController extends Controller
             'semestre' => $semestre,
             'unidad' => 'Unidad Académica Santa María Tlahuitoltepec',
             'documentos' => $documentos,
+            'informes' => $informes,
             'actividades' => $actividades,
             'evaluaciones' => $evaluaciones,
         ]);

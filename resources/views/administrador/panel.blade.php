@@ -313,24 +313,15 @@
       @if(request()->get('show') === 'informe')
         @php
             $idSemestrePanel = $semestre->id_semestre ?? $semestre->id ?? null;
-            $id_unidad = $id_unidad ?? 2;
-        @endphp
-        @php
-            if (!isset($informes)) {
-                $informes = \App\Models\Informe::where('id_semestre', $idSemestrePanel)
-                    ->where('id_unidad', $id_unidad ?? 2)
-                    ->whereNotNull('archivo')
-                    ->where('archivo', '!=', '')
-                    ->orderByDesc('fecha_generacion')
-                    ->get();
-            }
+            $id_unidad_informe = 2;
+            $informes = \App\Models\Informe::listadoGeneradosPorUnidad((int) $idSemestrePanel, $id_unidad_informe);
         @endphp
         @include('coordinador.demetrio_vallejo.informe_actividad', [
           'semestreActual' => $semestre,
           'id_semestre' => $idSemestrePanel,
           'informes' => $informes,
           'documentos' => $documentos ?? collect(),
-          'id_unidad' => $id_unidad ?? 2
+          'id_unidad' => $id_unidad_informe
         ])
       @endif
 

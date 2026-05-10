@@ -7,6 +7,27 @@
 <link rel="stylesheet" href="{{ asset('css/Coordinador/informe_actividad.css') }}">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Informe de Actividades - ITVE</title>
+<style>
+.boton-actividad {
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: background 0.2s, color 0.2s;
+}
+.boton-actividad.seleccionado {
+  background: #007bff;
+  color: #fff;
+  border-color: #007bff;
+}
+.informe-lugar-fecha-grupo {
+  max-width: 40rem;
+  margin-left: 0;
+  margin-right: auto;
+}
+</style>
 </head>
 
 <body>
@@ -55,7 +76,7 @@
     <input type="hidden"
       id="id_semestre"
       value="{{ $id_semestre ?? ($semestreActual->id_semestre ?? '') }}">
-    <input type="hidden" id="id_unidad" value="1">
+    <input type="hidden" id="id_unidad" value="{{ $id_unidad ?? 1 }}">
     <div class="documentos-container" id="documentosLista">
       @if(isset($documentos) && $documentos->isEmpty())
         <div class="empty-state" id="emptyState">
@@ -206,17 +227,19 @@
     
     <div class="grupo-formulario">
       <label for="periodo" class="requerido">Periodo Semestral:</label>
-      <input type="text" id="periodo" class="input-estilo" placeholder="Ej: Enero - Junio 2025">
+      <input type="text" id="periodo" class="input-estilo" value="{{ $semestreActual->nombre ?? '' }}" placeholder="Ej: Enero - Junio 2025">
       <div class="mensaje-error" id="errorPeriodo">Este campo es requerido</div>
     </div>
     
     <div class="grupo-formulario">
       <label>Actividades:</label>
       <div style="display: flex; gap: 16px; align-items: center;">
-        <input type="text" id="actividadCultural" class="input-estilo input-medio" placeholder="Actividad Cultural">
-        <input type="text" id="actividadDeportiva" class="input-estilo input-medio" placeholder="Actividad Deportiva">
+        <button type="button" id="btnCultural" class="boton-actividad">Cultural</button>
+        <button type="button" id="btnDeportiva" class="boton-actividad">Deportiva</button>
       </div>
-      <div class="nota">Complete al menos una de las dos actividades</div>
+      <input type="hidden" id="actividadCultural" value="">
+      <input type="hidden" id="actividadDeportiva" value="">
+      <div class="nota">Seleccione el tipo de actividad</div>
     </div>
     
     <div class="controles-navegacion">
@@ -297,12 +320,62 @@
         <span class="resumen-valor" id="resumenFecha">No especificada</span>
       </div>
     </div>
-    
+
+    <!-- Firmas del informe (estilo similar a constancias; tres columnas) -->
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 24px 0 20px 0; border-left: 4px solid #17a2b8;">
+      <h3 style="margin: 0 0 18px 0; color: #17a2b8; font-size: 1.15em; display: flex; align-items: center; gap: 8px;">
+        <i class="fas fa-signature"></i>
+        Firmas del informe
+      </h3>
+      <div class="informe-firmas-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+        <div style="background: #fff; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6; box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
+          <div style="min-height: 76px; margin-bottom: 12px; border-bottom: 1px solid #333;" aria-hidden="true" title="Espacio para firma"></div>
+          <label style="display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 0.92em;">
+            <i class="fas fa-user" style="color: #17a2b8;"></i> Nombre completo: <span style="color: #dc3545;">*</span>
+          </label>
+          <input type="text" id="firmaNombrePromotor" class="input-estilo informe-firma-nombre" value="" autocomplete="name" placeholder="Nombre completo" style="width: 100%; box-sizing: border-box;">
+          <p id="firmaCargoPromotor" class="informe-firma-cargo" data-default="Promotor Cultural o Deportivo" contenteditable="false" title="Doble clic para editar el cargo">Promotor Cultural o Deportivo</p>
+        </div>
+        <div style="background: #fff; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6; box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
+          <div style="min-height: 76px; margin-bottom: 12px; border-bottom: 1px solid #333;" aria-hidden="true" title="Espacio para firma"></div>
+          <label style="display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 0.92em;">
+            <i class="fas fa-user-tie" style="color: #17a2b8;"></i> Nombre completo: <span style="color: #dc3545;">*</span>
+          </label>
+          <input type="text" id="firmaNombreJefeOficina" class="input-estilo informe-firma-nombre" value="" autocomplete="name" placeholder="Nombre completo" style="width: 100%; box-sizing: border-box;">
+          <p id="firmaCargoJefeOficina" class="informe-firma-cargo" data-default="Jefe de Oficina de Promoción Cultural o Deportivo" contenteditable="false" title="Doble clic para editar el cargo">Jefe de Oficina de Promoción Cultural o Deportivo</p>
+        </div>
+        <div style="background: #fff; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6; box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
+          <div style="min-height: 76px; margin-bottom: 12px; border-bottom: 1px solid #333;" aria-hidden="true" title="Espacio para firma"></div>
+          <label style="display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 0.92em;">
+            <i class="fas fa-user-shield" style="color: #17a2b8;"></i> Nombre completo: <span style="color: #dc3545;">*</span>
+          </label>
+          <input type="text" id="firmaNombreJefeDepartamento" class="input-estilo informe-firma-nombre" data-default="M.C. Alejandro Loma Bolaños" value="M.C. Alejandro Loma Bolaños" autocomplete="name" style="width: 100%; box-sizing: border-box;">
+          <p id="firmaCargoJefeDepartamento" class="informe-firma-cargo" data-default="Jefe de Departamento Actividades Extraescolares" contenteditable="false" title="Doble clic para editar el cargo">Jefe de Departamento Actividades Extraescolares</p>
+        </div>
+      </div>
+    </div>
+    <style>
+      @media (max-width: 960px) {
+        .informe-firmas-grid { grid-template-columns: 1fr !important; }
+      }
+      .informe-firma-nombre { font-size: 0.82rem !important; font-weight: 700; }
+      .informe-firma-cargo {
+        font-size: 0.82rem;
+        color: #495057;
+        line-height: 1.35;
+        text-align: center;
+        margin-top: 8px;
+        min-height: 2.4em;
+        cursor: default;
+        user-select: none;
+      }
+      .informe-firma-cargo[contenteditable="true"] { user-select: text; cursor: text; background: #fffef5; }
+    </style>
 
     <!-- Apartado para Título del informe -->
     <div class="grupo-formulario">
       <label for="tituloInforme" class="requerido">Título del informe (nombre del PDF):</label>
-      <input type="text" id="tituloInforme" class="input-estilo" placeholder="Ej: Informe Actividades Enero-Junio 2025">
+      <input type="text" id="tituloInforme" class="input-estilo" placeholder="Se rellena con el periodo; puede editarlo">
       <div class="nota">Este será el nombre del PDF y el título guardado en la base de datos.</div>
     </div>
 
@@ -313,10 +386,10 @@
       <div class="nota">Este será el campo de descripción guardado en la base de datos.</div>
     </div>
 
-    <div class="grupo-formulario">
+    <div class="grupo-formulario informe-lugar-fecha-grupo">
       <label for="lugarFecha" class="requerido">Lugar y Fecha:</label>
-      <input type="text" id="lugarFecha" class="input-estilo" placeholder="Oaxaca, 06 de agosto de 2025">
-      <div class="nota fecha-actual" id="notaFecha">Se establecerá automáticamente la fecha actual si no se especifica</div>
+      <input type="text" id="lugarFecha" class="input-estilo" placeholder="Ej: Unión Hidalgo, a los 27 días del mes de mayo de 2025">
+      <div class="nota fecha-actual" id="notaFecha">Se rellena con el lugar de la unidad y la fecha de hoy; puede editarlo.</div>
     </div>
     
     <div class="loading" id="loadingGeneracion">
@@ -341,22 +414,47 @@
   Página 1 de 1
 </div>
 
-<div class="documento-firmas solo-pdf" style="display: none !important;">
-    <div class="documento-firma">
-        <div class="linea-firma"></div>
-        <span>Jefe(a) de la oficina de promoción</span>
-    </div>
-    <div class="documento-firma">
-        <div class="linea-firma"></div>
-        <span>Jefe(a) del Departamento</span>
-    </div>
-</div>
-
 <!-- JS LIBRARIES -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
 
+@php
+  $actividadesReporte = \App\Models\Actividad::where('id_semestre', $id_semestre ?? ($semestreActual->id_semestre ?? null))
+      ->where('id_unidad', $id_unidad ?? 1)
+      ->get();
+
+  $actividadIds = $actividadesReporte->pluck('id_actividad')->toArray();
+  $cuentasActividades = \App\Models\Estudiante::selectRaw(
+          'id_actividad, count(*) as total, '
+          . 'sum(case when lower(sexo) in (?, ?, ?) then 1 else 0 end) as hombres, '
+          . 'sum(case when lower(sexo) in (?, ?, ?, ?) then 1 else 0 end) as mujeres',
+          ['h', 'masculino', 'hombre', 'f', 'femenino', 'mujer', 'm']
+      )
+      ->whereIn('id_actividad', $actividadIds)
+      ->groupBy('id_actividad')
+      ->get()
+      ->keyBy('id_actividad');
+
+  $actividadesPorCategoria = [
+      'cultural' => [],
+      'deportiva' => [],
+  ];
+
+  foreach ($actividadesReporte as $actividad) {
+      $categoria = \App\Models\Actividad::resolverCategoriaInforme($actividad->categorias ?? null);
+
+      if ($categoria) {
+          $cuenta = $cuentasActividades[$actividad->id_actividad] ?? null;
+          $actividadesPorCategoria[$categoria][] = [
+              'nombre' => $actividad->nombre_actividad,
+              'participantes' => $cuenta->total ?? 0,
+              'hombres' => $cuenta->hombres ?? 0,
+              'mujeres' => $cuenta->mujeres ?? 0,
+          ];
+      }
+  }
+@endphp
 <script>
 // -------------------------------------------
 // VARIABLES GLOBALES
@@ -373,23 +471,191 @@ document.addEventListener('DOMContentLoaded', function() {
   // Configurar fecha automática
   const lugarFechaInput = document.getElementById('lugarFecha');
   if (lugarFechaInput && !lugarFechaInput.value) {
-    const hoy = new Date();
-    const fechaFormateada = hoy.toLocaleDateString('es-MX', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
-    });
-    lugarFechaInput.value = `Oaxaca, ${fechaFormateada}`;
+    lugarFechaInput.value = armarTextoLugarFechaActividad(lugarLiteralInformePorUnidad(), new Date());
   }
   // Actualizar resumen
   actualizarResumen();
   // Inicializar selección de PDF membretado
   inicializarSeleccionPDF();
+  // Inicializar selección de actividad
+  inicializarSeleccionActividad();
+  inicializarTituloInformeAuto();
+  inicializarFirmasEncargados();
 });
 
+const eventosPorCategoria = @json($actividadesPorCategoria ?? ['cultural' => [], 'deportiva' => []]);
+
+let categoriaSeleccionada = null;
+
+function lugarLiteralInformePorUnidad() {
+  const el = document.getElementById('id_unidad');
+  const idU = el ? parseInt(el.value, 10) : 0;
+  const map = {
+    1: 'Unión Hidalgo',
+    2: 'Demetrio Vallejo',
+    3: 'Santa María Tlahuitoltepec',
+    4: 'Santiago Suchilquitongo'
+  };
+  return map[idU] || 'Oaxaca de Juárez';
+}
+
+function armarTextoLugarFechaActividad(lugar, fecha) {
+  const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  const d = fecha.getDate();
+  const m = meses[fecha.getMonth()];
+  const y = fecha.getFullYear();
+  const cuerpoFecha = d === 1
+    ? 'al primer día del mes de ' + m + ' de ' + y
+    : 'a los ' + d + ' días del mes de ' + m + ' de ' + y;
+  return lugar + ', ' + cuerpoFecha;
+}
+
+function esUnidadDemetrioVallejoInforme() {
+  const el = document.getElementById('id_unidad');
+  return el && parseInt(el.value, 10) === 2;
+}
+
+function firmasNombresCoordinadorRequeridosOk() {
+  if (esUnidadDemetrioVallejoInforme()) return true;
+  const p = document.getElementById('firmaNombrePromotor');
+  const j = document.getElementById('firmaNombreJefeOficina');
+  return !!(p && j && p.value.trim() !== '' && j.value.trim() !== '');
+}
+
+function textoCargoFirmaPdf(cargoId, cargoDefault) {
+  const el = document.getElementById(cargoId);
+  if (!el) return cargoDefault;
+  const t = String(el.innerText || el.textContent || '').trim();
+  return t || cargoDefault;
+}
+
+function inicializarFirmasEncargados() {
+  ['firmaCargoPromotor', 'firmaCargoJefeOficina', 'firmaCargoJefeDepartamento'].forEach(function (id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('dblclick', function (e) {
+      e.preventDefault();
+      this.contentEditable = 'true';
+      this.style.outline = '1px dashed #17a2b8';
+      this.focus();
+      try {
+        const range = document.createRange();
+        range.selectNodeContents(this);
+        range.collapse(false);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      } catch (ignore) {}
+    });
+    el.addEventListener('blur', function () {
+      this.contentEditable = 'false';
+      this.style.outline = '';
+      const d = this.getAttribute('data-default') || '';
+      if (!(this.textContent || '').trim()) this.textContent = d;
+    });
+    el.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        this.blur();
+      }
+    });
+  });
+}
+
+function inicializarTituloInformeAuto() {
+  const titulo = document.getElementById('tituloInforme');
+  const periodo = document.getElementById('periodo');
+  if (!titulo || !periodo) return;
+  const semNombreDefault = @json($semestreActual->nombre ?? '');
+  function autoTitulo() {
+    const p = periodo.value.trim() || semNombreDefault;
+    return 'Informe de Actividades (' + p + ')';
+  }
+  function sync() {
+    if (titulo.dataset.userEdited === '1') return;
+    titulo.value = autoTitulo();
+  }
+  titulo.addEventListener('input', function () {
+    titulo.dataset.userEdited = '1';
+  });
+  periodo.addEventListener('input', sync);
+  sync();
+}
+
 // -------------------------------------------
-// SELECCIÓN DE PDF MEMBRETADO
+// SELECCIÓN DE ACTIVIDAD
 // -------------------------------------------
+function inicializarSeleccionActividad() {
+  const btnCultural = document.getElementById('btnCultural');
+  const btnDeportiva = document.getElementById('btnDeportiva');
+  const actividadCultural = document.getElementById('actividadCultural');
+  const actividadDeportiva = document.getElementById('actividadDeportiva');
+
+  function seleccionarCultural() {
+    actividadCultural.value = 'X';
+    actividadDeportiva.value = '';
+    categoriaSeleccionada = 'cultural';
+    btnCultural.classList.add('seleccionado');
+    btnDeportiva.classList.remove('seleccionado');
+    llenarEventosPorCategoria();
+    actualizarResumen();
+  }
+
+  function seleccionarDeportiva() {
+    actividadCultural.value = '';
+    actividadDeportiva.value = 'X';
+    categoriaSeleccionada = 'deportiva';
+    btnCultural.classList.remove('seleccionado');
+    btnDeportiva.classList.add('seleccionado');
+    llenarEventosPorCategoria();
+    actualizarResumen();
+  }
+
+  btnCultural.addEventListener('click', seleccionarCultural);
+  btnDeportiva.addEventListener('click', seleccionarDeportiva);
+}
+
+function llenarEventosPorCategoria() {
+  const cuerpo = document.getElementById('cuerpoTabla');
+  cuerpo.innerHTML = '';
+  const actividades = eventosPorCategoria[categoriaSeleccionada] || [];
+  const institucion = 'ITVE';
+  const periodoTexto = document.getElementById('periodo')?.value.trim() || "{{ $semestreActual->nombre ?? '' }}";
+
+  if (actividades.length === 0) {
+    const fila = document.createElement('tr');
+    fila.innerHTML = `
+      <td><input type="text" value="1" disabled class="tabla-input"></td>
+      <td><input type="text" class="tabla-input" placeholder="No se encontraron actividades" readonly></td>
+      <td><input type="text" class="tabla-input" value="${institucion}" readonly></td>
+      <td><input type="text" class="tabla-input" value="${periodoTexto}" readonly></td>
+      <td><input type="number" class="tabla-input" value="0" readonly></td>
+      <td><input type="number" class="tabla-input input-small" value="0" readonly></td>
+      <td><input type="number" class="tabla-input input-small" value="0" readonly></td>
+      <td><input type="text" class="tabla-input" value="Actividad concluida satisfactoriamente" readonly></td>
+    `;
+    cuerpo.appendChild(fila);
+    return;
+  }
+
+  actividades.forEach((actividad, index) => {
+    const categoriaLabel = categoriaSeleccionada.charAt(0).toUpperCase() + categoriaSeleccionada.slice(1);
+    const valorEvento = `${categoriaLabel} (${actividad.nombre})`;
+    const fila = document.createElement('tr');
+    fila.innerHTML = `
+      <td><input type="text" value="${index + 1}" disabled class="tabla-input"></td>
+      <td><input type="text" class="tabla-input" value="${valorEvento}" readonly></td>
+      <td><input type="text" class="tabla-input" value="${institucion}" readonly></td>
+      <td><input type="text" class="tabla-input" value="${periodoTexto}" readonly></td>
+      <td><input type="number" class="tabla-input" value="${actividad.participantes}" readonly></td>
+      <td><input type="number" class="tabla-input input-small" value="${actividad.mujeres}" readonly></td>
+      <td><input type="number" class="tabla-input input-small" value="${actividad.hombres}" readonly></td>
+      <td><input type="text" class="tabla-input" value="Actividad concluida satisfactoriamente" readonly></td>
+    `;
+    cuerpo.appendChild(fila);
+  });
+}
+
 function inicializarSeleccionPDF() {
   window.pdfSeleccionado = null;
   const cargarBtns = document.querySelectorAll('.btn-cargar-pdf');
@@ -492,10 +758,10 @@ function actualizarResumen() {
     document.getElementById('periodo').value || 'No especificado';
   
   document.getElementById('resumenCultural').textContent = 
-    document.getElementById('actividadCultural').value || 'No especificada';
+    document.getElementById('actividadCultural').value === 'X' ? 'Seleccionada' : 'No seleccionada';
   
   document.getElementById('resumenDeportiva').textContent = 
-    document.getElementById('actividadDeportiva').value || 'No especificada';
+    document.getElementById('actividadDeportiva').value === 'X' ? 'Seleccionada' : 'No seleccionada';
   
   document.getElementById('resumenEventos').textContent = 
     document.querySelectorAll('#cuerpoTabla tr').length;
@@ -539,6 +805,12 @@ function validarSeccionActual() {
         periodoInput.classList.add('invalido');
         document.getElementById('errorPeriodo').style.display = 'block';
         periodoInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+      }
+      const actividadCultural = document.getElementById('actividadCultural').value;
+      const actividadDeportiva = document.getElementById('actividadDeportiva').value;
+      if (actividadCultural !== 'X' && actividadDeportiva !== 'X') {
+        alert('Debe seleccionar al menos una actividad (Cultural o Deportiva).');
         return false;
       }
       return true;
@@ -627,7 +899,16 @@ async function generarPDF() {
   document.getElementById('loadingGeneracion').style.display = 'block';
 
   // Validar todos los campos
-  if (!validarSeccionActual() || !validarSeccionesPrevias()) {
+  if (!validarSeccionActual()) {
+    document.getElementById('loadingGeneracion').style.display = 'none';
+    return;
+  }
+  if (!firmasNombresCoordinadorRequeridosOk()) {
+    document.getElementById('loadingGeneracion').style.display = 'none';
+    alert('Debe escribir el nombre completo del promotor cultural y del jefe de oficina en las firmas del informe.');
+    return;
+  }
+  if (!validarSeccionesPrevias()) {
     document.getElementById('loadingGeneracion').style.display = 'none';
     return;
   }
@@ -660,16 +941,16 @@ async function generarPDF() {
 
     // Convertir a texto tabla PDF
     const filas = trs.map((tr, idx) => {
-      const inputs = [...tr.querySelectorAll("input")];
+      const nombreEventoElement = tr.cells[1].querySelector('input, select');
       return [
         String(idx + 1),
-        inputs[1].value || "",
-        inputs[2].value || "",
-        inputs[3].value || "",
-        inputs[4].value || "",
-        inputs[5].value || "",
-        inputs[6].value || "",
-        inputs[7].value || "",
+        nombreEventoElement ? nombreEventoElement.value || "" : "",
+        tr.cells[2].querySelector('input')?.value || "",
+        tr.cells[3].querySelector('input')?.value || "",
+        tr.cells[4].querySelector('input')?.value || "",
+        tr.cells[5].querySelector('input')?.value || "",
+        tr.cells[6].querySelector('input')?.value || "",
+        tr.cells[7].querySelector('input')?.value || "",
       ];
     });
 
@@ -745,22 +1026,61 @@ async function generarPDF() {
         didDrawPage: function (data) {
           if (index === bloques.length - 1) {
             const pageWidth = doc.internal.pageSize.width;
-            let yFirmas = data.cursor.y + 40;
+            let yFirmas = data.cursor.y + 28;
             const lugarFecha = document.getElementById('lugarFecha').value || '';
+            const xFecha = 52;
+            const margenDerFecha = 56;
+            const maxWFecha = pageWidth - xFecha - margenDerFecha;
             doc.setFontSize(9);
-            doc.setFont(undefined, "bold");
-            doc.text(lugarFecha, pageWidth/2, yFirmas - 20, {align: "center"});
-            yFirmas += 45;
-            doc.setFontSize(10);
             doc.setFont(undefined, "normal");
-            const firmasY = yFirmas;
-            const lineWidth = 200;
-            const lineSpacing = 60;
-            const centerX = pageWidth / 2;
-            doc.line(centerX - lineSpacing - lineWidth, firmasY, centerX - lineSpacing, firmasY);
-            doc.text("Jefe(a) de la oficina de promoción", centerX - lineSpacing - lineWidth/2, firmasY + 15, {align: "center"});
-            doc.line(centerX + lineSpacing, firmasY, centerX + lineSpacing + lineWidth, firmasY);
-            doc.text("Jefe(a) del Departamento", centerX + lineSpacing + lineWidth/2, firmasY + 15, {align: "center"});
+            const lineasFecha = doc.splitTextToSize(lugarFecha || ' ', maxWFecha);
+            let yFecha = yFirmas;
+            lineasFecha.forEach(function (ln) {
+              doc.text(ln, xFecha, yFecha, { align: 'left' });
+              yFecha += 12;
+            });
+            yFirmas = yFecha + 10;
+            function valorFirmaInforme(id) {
+              const el = document.getElementById(id);
+              if (!el) return '';
+              const v = String(el.value || '').trim();
+              if (v) return v;
+              return String(el.getAttribute('data-default') || '').trim();
+            }
+            const margin = 32;
+            const gap = 10;
+            const colW = (pageWidth - 2 * margin - 2 * gap) / 3;
+            const bloquesFirma = [
+              { id: 'firmaNombrePromotor', cargoId: 'firmaCargoPromotor', cargoDefault: 'Promotor Cultural o Deportivo' },
+              { id: 'firmaNombreJefeOficina', cargoId: 'firmaCargoJefeOficina', cargoDefault: 'Jefe de Oficina de Promoción Cultural o Deportivo' },
+              { id: 'firmaNombreJefeDepartamento', cargoId: 'firmaCargoJefeDepartamento', cargoDefault: 'Jefe de Departamento Actividades Extraescolares' }
+            ];
+            bloquesFirma.forEach(function (bf, colIdx) {
+              const xCenter = margin + colW / 2 + colIdx * (colW + gap);
+              let yCol = yFirmas;
+              const espacioFirma = 38;
+              yCol += espacioFirma;
+              doc.setDrawColor(0, 0, 0);
+              doc.setLineWidth(0.45);
+              doc.line(xCenter - colW / 2 + 6, yCol, xCenter + colW / 2 - 6, yCol);
+              yCol += 14;
+              doc.setFontSize(8.5);
+              doc.setFont(undefined, 'bold');
+              const nombreTxt = valorFirmaInforme(bf.id) || ' ';
+              const nameLines = doc.splitTextToSize(nombreTxt, colW - 8);
+              nameLines.forEach(function (ln) {
+                doc.text(ln, xCenter, yCol, { align: 'center' });
+                yCol += 10.5;
+              });
+              doc.setFont(undefined, 'normal');
+              doc.setFontSize(8.5);
+              const cargoTxt = textoCargoFirmaPdf(bf.cargoId, bf.cargoDefault);
+              const cargoLines = doc.splitTextToSize(cargoTxt, colW - 8);
+              cargoLines.forEach(function (ln) {
+                doc.text(ln, xCenter, yCol, { align: 'center' });
+                yCol += 10.5;
+              });
+            });
           }
         }
       });
@@ -828,7 +1148,7 @@ async function generarPDF() {
       alert(msg);
     });
 
-    doc.save("informe_actividades_union_hidalgo.pdf");
+    doc.save("informe_actividades_itve.pdf");
 
   } catch (error) {
     console.error("Error al generar PDF:", error);
@@ -842,6 +1162,7 @@ function validarSeccionesPrevias() {
   const seccionesValidas = [
     window.pdfSeleccionado && window.pdfSeleccionado.archivo,
     document.getElementById('periodo').value.trim() !== '',
+    (document.getElementById('actividadCultural').value === 'X' || document.getElementById('actividadDeportiva').value === 'X'),
     document.querySelectorAll('#cuerpoTabla tr').length > 0,
     document.getElementById('lugarFecha').value.trim() !== ''
   ];

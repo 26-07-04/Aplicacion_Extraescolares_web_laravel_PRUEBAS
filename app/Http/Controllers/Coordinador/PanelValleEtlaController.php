@@ -9,6 +9,7 @@ use App\Models\Semestre;
 use App\Models\Actividad;
 use App\Models\Unidad;
 use App\Models\Evaluacion;
+use App\Models\Informe;
 use App\Models\Estudiante;
 use Illuminate\Support\Str;
 
@@ -31,6 +32,8 @@ class PanelValleEtlaController extends Controller
         }
 
         $documentos = \App\Models\Documento::where('id_semestre', $id)->orderBy('created_at', 'desc')->get();
+
+        $informes = Informe::listadoGeneradosPorUnidad((int) $semestre->id_semestre, 4);
 
         // Filtrar actividades por semestre y por la unidad académica del usuario
         $uaName = $user->unidad_academica ?? '';
@@ -116,6 +119,7 @@ class PanelValleEtlaController extends Controller
             'semestre' => $semestre,
             'unidad' => 'Unidad Académica Valle de Etla',
             'documentos' => $documentos,
+            'informes' => $informes,
             'actividades' => $actividades,
             'evaluaciones' => $evaluaciones,
         ]);
