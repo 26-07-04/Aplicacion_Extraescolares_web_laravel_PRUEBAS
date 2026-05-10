@@ -207,6 +207,10 @@ Route::get('coordinador/tlahuitoltepec/panel/{id}', [PanelTlahuitoltepecControll
 Route::get('coordinador/demetrio-vallejo/panel/{id}', [PanelDemetrioVallejoController::class, 'show'])
     ->middleware('auth')
     ->name('coordinador.demetrio.panel');
+// Sirve el PDF membretado por ID (evita 404 por rutas relativas / subcarpeta / storage)
+Route::get('coordinador/demetrio-vallejo/documento-membrete/{id}', [PanelDemetrioVallejoController::class, 'documentoMembreteArchivo'])
+    ->middleware('auth')
+    ->name('coordinador.demetrio.documento.membrete.archivo');
 // Ruta de impresión de resultados (Demetrio Vallejo)
 Route::get('coordinador/demetrio-vallejo/resultados/print/{id}', [PanelDemetrioVallejoController::class, 'printResultados'])
     ->middleware('auth')

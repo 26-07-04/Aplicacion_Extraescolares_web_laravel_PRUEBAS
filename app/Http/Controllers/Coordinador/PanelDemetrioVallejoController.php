@@ -10,6 +10,7 @@ use App\Models\Actividad;
 use App\Models\Unidad;
 use App\Models\Estudiante;
 use App\Models\Evaluacion;
+use App\Models\Informe;
 
 class PanelDemetrioVallejoController extends Controller
 {
@@ -30,7 +31,8 @@ class PanelDemetrioVallejoController extends Controller
         }
 
         $documentos = \App\Models\Documento::where('id_semestre', $id)->orderBy('created_at', 'desc')->get();
-    
+
+        $informes = Informe::listadoGeneradosPorUnidad((int) $semestre->id_semestre, 2);
 
         // Filtrar actividades por semestre y por la unidad académica del usuario
         // Nota: la tabla `unidades` no tiene columna `id_semestre`, por eso usamos whereHas para filtrar
@@ -112,6 +114,7 @@ class PanelDemetrioVallejoController extends Controller
             'semestre' => $semestre,
             'unidad' => 'Unidad Académica Demetrio Vallejo Martínez - El Espinal',
             'documentos' => $documentos,
+            'informes' => $informes,
             'actividades' => $actividades,
             'actividades_semestre' => $actividades_semestre,
             'actividades_semestre_data' => $actividades_semestre_data,
