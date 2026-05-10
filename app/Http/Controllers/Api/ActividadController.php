@@ -40,10 +40,16 @@ class ActividadController extends Controller
             return response()->json(['message' => 'No hay semestre activo'], 404);
         }
 
+        $tipo = $request->query('tipo_programa', Actividad::TIPO_EXTRAESCOLAR);
+        if (! in_array($tipo, [Actividad::TIPO_EXTRAESCOLAR, Actividad::TIPO_COMPLEMENTARIA], true)) {
+            $tipo = Actividad::TIPO_EXTRAESCOLAR;
+        }
+
         // Obtener actividades que coincidan con la unidad y el semestre activo
         $actividades = Actividad::with(['unidad','semestre'])
             ->where('id_unidad', $unidadModel->id_unidad)
             ->where('id_semestre', $semestreActivo->id_semestre)
+            ->where('tipo_programa', $tipo)
             ->get();
 
         return response()->json([

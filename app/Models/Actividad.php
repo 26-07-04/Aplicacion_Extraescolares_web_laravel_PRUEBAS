@@ -9,6 +9,10 @@ class Actividad extends Model
 {
     use HasFactory;
 
+    public const TIPO_EXTRAESCOLAR = 'extraescolar';
+
+    public const TIPO_COMPLEMENTARIA = 'complementaria';
+
     protected $table = 'actividades';
     protected $primaryKey = 'id_actividad';
     public $timestamps = true;
@@ -21,6 +25,7 @@ class Actividad extends Model
         'id_semestre',
         'imagen_url',
         'categorias',
+        'tipo_programa',
     ];
 
     public function unidad()

@@ -77,6 +77,7 @@
       id="id_semestre"
       value="{{ $id_semestre ?? ($semestreActual->id_semestre ?? '') }}">
     <input type="hidden" id="id_unidad" value="{{ $id_unidad ?? 1 }}">
+    <input type="hidden" id="tipo_programa_informe" value="{{ $tipo_programa_informes_panel ?? \App\Models\Actividad::TIPO_EXTRAESCOLAR }}">
     <div class="documentos-container" id="documentosLista">
       @if(isset($documentos) && $documentos->isEmpty())
         <div class="empty-state" id="emptyState">
@@ -180,6 +181,7 @@
               <form method="POST" action="{{ route('coordinador.union_hidalgo.informe.eliminar', $inf->id) }}" onsubmit="return confirmarEliminacionInforme(event)">
                 @csrf
                 @method('DELETE')
+                <input type="hidden" name="tipo_programa" value="{{ $tipo_programa_informes_panel ?? \App\Models\Actividad::TIPO_EXTRAESCOLAR }}">
                 <button class="btn-eliminar-informe" style="background: #e53e3e; border-radius: 5px; padding: 6px 10px; color: #fff; font-size: 1rem; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; height: 34px; min-width: 34px; transition: background 0.2s;">
                   <i class="fas fa-trash"></i>
                 </button>
@@ -420,8 +422,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
 
 @php
+  $tipoProgramaInforme = $tipo_programa_informe ?? \App\Models\Actividad::TIPO_EXTRAESCOLAR;
   $actividadesReporte = \App\Models\Actividad::where('id_semestre', $id_semestre ?? ($semestreActual->id_semestre ?? null))
       ->where('id_unidad', $id_unidad ?? 1)
+      ->where('tipo_programa', $tipoProgramaInforme)
       ->get();
 
   $actividadIds = $actividadesReporte->pluck('id_actividad')->toArray();
@@ -1122,6 +1126,10 @@ async function generarPDF() {
     formData.append('descripcion', descripcionInforme ? descripcionInforme : '-');
     formData.append('fecha_generacion', new Date().toISOString().slice(0, 10));
     formData.append('id_semestre', idSemestreInput.value);
+    const tipoProgInf = document.getElementById('tipo_programa_informe');
+    if (tipoProgInf && tipoProgInf.value) {
+      formData.append('tipo_programa', tipoProgInf.value);
+    }
     let nombrePDF = tituloInforme ? tituloInforme : 'informe_actividades_itve';
     nombrePDF = nombrePDF.replace(/[^a-zA-Z0-9_\- ]/g, '').replace(/\s+/g, '_') + '.pdf';
     const pdfBlobFinal = doc.output('blob');

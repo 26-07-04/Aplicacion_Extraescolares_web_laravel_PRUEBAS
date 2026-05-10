@@ -15,6 +15,30 @@ use Illuminate\Support\Str;
 
 class PanelValleEtlaController extends Controller
 {
+    /**
+     * Vista Blade del panel (Extraescolares). Las subclases en Complementarias\ devuelven panel_complementarias.
+     */
+    protected function coordinadorPanelView(): string
+    {
+        return 'coordinador.valle_de_etla.panel';
+    }
+
+    /**
+     * Vista PDF de resultados (extraescolares). El panel complementarias sobreescribe.
+     */
+    protected function resultadosPdfView(): string
+    {
+        return 'coordinador.valle_de_etla.pdf.resultados';
+    }
+
+    /**
+     * Actividades y evaluaciones del panel extraescolar vs complementarias.
+     */
+    protected function panelTipoPrograma(): string
+    {
+        return Actividad::TIPO_EXTRAESCOLAR;
+    }
+
     public function show($id)
     {
         $user = Auth::user();
@@ -33,7 +57,7 @@ class PanelValleEtlaController extends Controller
 
         $documentos = \App\Models\Documento::where('id_semestre', $id)->orderBy('created_at', 'desc')->get();
 
-        $informes = Informe::listadoGeneradosPorUnidad((int) $semestre->id_semestre, 4);
+        $informes = Informe::listadoGeneradosPorUnidad((int) $semestre->id_semestre, 4, $this->panelTipoPrograma());
 
         // Filtrar actividades por semestre y por la unidad académica del usuario
         $uaName = $user->unidad_academica ?? '';
@@ -48,7 +72,9 @@ class PanelValleEtlaController extends Controller
             }
         }
 
-        $actividadesQuery = Actividad::with('unidad')->where('id_semestre', $semestre->id_semestre);
+        $actividadesQuery = Actividad::with('unidad')
+            ->where('id_semestre', $semestre->id_semestre)
+            ->where('tipo_programa', $this->panelTipoPrograma());
         if (!empty($user_unidad_id)) {
             $actividadesQuery->where('id_unidad', $user_unidad_id);
         } else {
@@ -75,7 +101,10 @@ class PanelValleEtlaController extends Controller
 
         // Obtener evaluaciones del semestre y unidad actual (si aplica)
         $evaluacionesQuery = Evaluacion::with(['estudiante', 'actividad'])
-            ->where('id_semestre', $semestre->id_semestre);
+            ->where('id_semestre', $semestre->id_semestre)
+            ->whereHas('actividad', function ($q) {
+                $q->where('tipo_programa', $this->panelTipoPrograma());
+            });
 
         // Restringir a actividades que están en el panel (evita traer evaluaciones de actividades/otras unidades no listadas)
         $actividadIds = $actividades->pluck('id_actividad')->toArray();
@@ -114,12 +143,13 @@ class PanelValleEtlaController extends Controller
             return $evaluacion->estudiante->nombre ?? '';
         })->values();
 
-        return view('coordinador.valle_de_etla.panel', [
+        return view($this->coordinadorPanelView(), [
             'user' => $user,
             'semestre' => $semestre,
             'unidad' => 'Unidad Académica Valle de Etla',
             'documentos' => $documentos,
             'informes' => $informes,
+            'tipo_programa_informes_panel' => $this->panelTipoPrograma(),
             'actividades' => $actividades,
             'evaluaciones' => $evaluaciones,
         ]);
@@ -153,10 +183,15 @@ class PanelValleEtlaController extends Controller
         }
 
         $evaluacionesQuery = Evaluacion::with(['estudiante', 'actividad'])
-            ->where('id_semestre', $id);
+            ->where('id_semestre', $id)
+            ->whereHas('actividad', function ($q) {
+                $q->where('tipo_programa', $this->panelTipoPrograma());
+            });
 
         // Construir lista de actividades válidas para este semestre/unidad (usar la misma lógica que en show)
-        $actividadesQuery = Actividad::with('unidad')->where('id_semestre', $semestre->id_semestre);
+        $actividadesQuery = Actividad::with('unidad')
+            ->where('id_semestre', $semestre->id_semestre)
+            ->where('tipo_programa', $this->panelTipoPrograma());
         if (!empty($user_unidad_id)) {
             $actividadesQuery->where('id_unidad', $user_unidad_id);
         } else {
@@ -188,7 +223,8 @@ class PanelValleEtlaController extends Controller
             if (!empty($user_unidad_id)) {
                 $evaluacionesQuery->whereHas('actividad', function ($q) use ($user_unidad_id, $semestre) {
                     $q->where('id_unidad', $user_unidad_id)
-                      ->where('id_semestre', $semestre->id_semestre);
+                      ->where('id_semestre', $semestre->id_semestre)
+                      ->where('tipo_programa', $this->panelTipoPrograma());
                 });
             } elseif (!empty($uaKeyword)) {
                 $evaluacionesQuery->whereHas('actividad.unidad', function ($q) use ($uaKeyword, $semestre) {
@@ -198,11 +234,13 @@ class PanelValleEtlaController extends Controller
                       });
                 });
                 $evaluacionesQuery->whereHas('actividad', function ($q) use ($semestre) {
-                    $q->where('id_semestre', $semestre->id_semestre);
+                    $q->where('id_semestre', $semestre->id_semestre)
+                      ->where('tipo_programa', $this->panelTipoPrograma());
                 });
             } else {
                 $evaluacionesQuery->whereHas('actividad', function ($q) use ($semestre) {
-                    $q->where('id_semestre', $semestre->id_semestre);
+                    $q->where('id_semestre', $semestre->id_semestre)
+                      ->where('tipo_programa', $this->panelTipoPrograma());
                 })->whereHas('actividad.unidad', function ($q) {
                     $q->where('nombre_unidad', 'like', '%Valle%')->orWhere('nombre_unidad','like','%Etla%');
                 });
@@ -212,6 +250,7 @@ class PanelValleEtlaController extends Controller
         $tipo = strtolower(request()->get('tipo', 'cultural'));
         if (in_array($tipo, ['cultural', 'deportiva'])) {
             $evaluacionesQuery->whereHas('actividad', function ($q) use ($tipo) {
+                $q->where('tipo_programa', $this->panelTipoPrograma());
                 if ($tipo === 'cultural') {
                     $q->where(function($qw){
                         $keywords = [
@@ -236,7 +275,7 @@ class PanelValleEtlaController extends Controller
             return $evaluacion->estudiante->nombre ?? '';
         })->values();
 
-        return view('coordinador.valle_de_etla.pdf.resultados', [
+        return view($this->resultadosPdfView(), [
             'user' => $user,
             'semestre' => $semestre,
             'unidad' => 'Unidad Académica Valle de Etla',
@@ -259,6 +298,9 @@ class PanelValleEtlaController extends Controller
 
             $user_unidad_id = $user->unidad_id ?? $user->unidad ?? null;
             if ($user_unidad_id && $actividad->id_unidad != $user_unidad_id) {
+                return response()->json(['success' => false, 'message' => 'No tienes permiso para editar este estudiante'], 403);
+            }
+            if (($actividad->tipo_programa ?? Actividad::TIPO_EXTRAESCOLAR) !== $this->panelTipoPrograma()) {
                 return response()->json(['success' => false, 'message' => 'No tienes permiso para editar este estudiante'], 403);
             }
 
@@ -291,6 +333,9 @@ class PanelValleEtlaController extends Controller
 
             $user_unidad_id = $user->unidad_id ?? $user->unidad ?? null;
             if ($user_unidad_id && $actividad->id_unidad != $user_unidad_id) {
+                return response()->json(['success' => false, 'message' => 'No tienes permiso para eliminar este estudiante'], 403);
+            }
+            if (($actividad->tipo_programa ?? Actividad::TIPO_EXTRAESCOLAR) !== $this->panelTipoPrograma()) {
                 return response()->json(['success' => false, 'message' => 'No tienes permiso para eliminar este estudiante'], 403);
             }
 

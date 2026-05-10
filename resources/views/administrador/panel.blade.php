@@ -314,14 +314,15 @@
         @php
             $idSemestrePanel = $semestre->id_semestre ?? $semestre->id ?? null;
             $id_unidad_informe = 2;
-            $informes = \App\Models\Informe::listadoGeneradosPorUnidad((int) $idSemestrePanel, $id_unidad_informe);
+            $informes = \App\Models\Informe::listadoGeneradosPorUnidad((int) $idSemestrePanel, $id_unidad_informe, \App\Models\Actividad::TIPO_EXTRAESCOLAR);
         @endphp
         @include('coordinador.demetrio_vallejo.informe_actividad', [
           'semestreActual' => $semestre,
           'id_semestre' => $idSemestrePanel,
           'informes' => $informes,
           'documentos' => $documentos ?? collect(),
-          'id_unidad' => $id_unidad_informe
+          'id_unidad' => $id_unidad_informe,
+          'tipo_programa_informes_panel' => \App\Models\Actividad::TIPO_EXTRAESCOLAR,
         ])
       @endif
 

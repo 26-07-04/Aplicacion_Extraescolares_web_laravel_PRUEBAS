@@ -12,6 +12,27 @@ use App\Models\Informe;
 
 class PanelTlahuitoltepecController extends Controller
 {
+    /**
+     * Vista Blade del panel (Extraescolares). Las subclases en Complementarias\ devuelven panel_complementarias.
+     */
+    protected function coordinadorPanelView(): string
+    {
+        return 'coordinador.tlahuitoltepec.panel';
+    }
+
+    /**
+     * Vista PDF de resultados (extraescolares). El panel complementarias sobreescribe.
+     */
+    protected function resultadosPdfView(): string
+    {
+        return 'coordinador.tlahuitoltepec.pdf.resultados';
+    }
+
+    protected function panelTipoPrograma(): string
+    {
+        return Actividad::TIPO_EXTRAESCOLAR;
+    }
+
     public function show($id)
     {
         $user = Auth::user();
@@ -31,7 +52,7 @@ class PanelTlahuitoltepecController extends Controller
 
         $documentos = \App\Models\Documento::where('id_semestre', $id)->orderBy('created_at', 'desc')->get();
 
-        $informes = Informe::listadoGeneradosPorUnidad((int) $semestre->id_semestre, 3);
+        $informes = Informe::listadoGeneradosPorUnidad((int) $semestre->id_semestre, 3, $this->panelTipoPrograma());
 
         // Filtrar actividades por semestre y por la unidad académica del usuario
         $uaName = $user->unidad_academica ?? '';
@@ -46,7 +67,9 @@ class PanelTlahuitoltepecController extends Controller
             }
         }
 
-        $actividadesQuery = Actividad::with('unidad')->where('id_semestre', $semestre->id_semestre);
+        $actividadesQuery = Actividad::with('unidad')
+            ->where('id_semestre', $semestre->id_semestre)
+            ->where('tipo_programa', $this->panelTipoPrograma());
         if (!empty($user_unidad_id)) {
             $actividadesQuery->where('id_unidad', $user_unidad_id);
         } elseif (!empty($uaKeyword)) {
@@ -63,7 +86,10 @@ class PanelTlahuitoltepecController extends Controller
 
         // Obtener evaluaciones del semestre y unidad actual
         $evaluacionesQuery = \App\Models\Evaluacion::with(['estudiante', 'actividad'])
-            ->where('id_semestre', $id);
+            ->where('id_semestre', $id)
+            ->whereHas('actividad', function ($q) {
+                $q->where('tipo_programa', $this->panelTipoPrograma());
+            });
 
         // Filtrar por unidad (si tenemos id_unidad) o por palabra clave en nombre de unidad
         if (!empty($user_unidad_id)) {
@@ -78,12 +104,13 @@ class PanelTlahuitoltepecController extends Controller
             return $evaluacion->estudiante->nombre ?? '';
         })->values();
 
-        return view('coordinador.tlahuitoltepec.panel', [
+        return view($this->coordinadorPanelView(), [
             'user' => $user,
             'semestre' => $semestre,
             'unidad' => 'Unidad Académica Santa María Tlahuitoltepec',
             'documentos' => $documentos,
             'informes' => $informes,
+            'tipo_programa_informes_panel' => $this->panelTipoPrograma(),
             'actividades' => $actividades,
             'evaluaciones' => $evaluaciones,
         ]);
@@ -117,7 +144,10 @@ class PanelTlahuitoltepecController extends Controller
         }
 
         $evaluacionesQuery = \App\Models\Evaluacion::with(['estudiante', 'actividad'])
-            ->where('id_semestre', $id);
+            ->where('id_semestre', $id)
+            ->whereHas('actividad', function ($q) {
+                $q->where('tipo_programa', $this->panelTipoPrograma());
+            });
 
         if (!empty($user_unidad_id)) {
             $evaluacionesQuery->where('id_unidad', $user_unidad_id);
@@ -131,6 +161,7 @@ class PanelTlahuitoltepecController extends Controller
         $tipo = strtolower(request()->get('tipo', 'cultural'));
         if (in_array($tipo, ['cultural', 'deportiva'])) {
             $evaluacionesQuery->whereHas('actividad', function ($q) use ($tipo) {
+                $q->where('tipo_programa', $this->panelTipoPrograma());
                 if ($tipo === 'cultural') {
                     $q->where(function($qw){
                         $keywords = [
@@ -155,7 +186,7 @@ class PanelTlahuitoltepecController extends Controller
             return $evaluacion->estudiante->nombre ?? '';
         })->values();
 
-        return view('coordinador.tlahuitoltepec.pdf.resultados', [
+        return view($this->resultadosPdfView(), [
             'user' => $user,
             'semestre' => $semestre,
             'unidad' => 'Unidad Académica Santa María Tlahuitoltepec',
@@ -178,6 +209,9 @@ class PanelTlahuitoltepecController extends Controller
 
             $user_unidad_id = $user->unidad_id ?? $user->unidad ?? null;
             if ($user_unidad_id && $actividad->id_unidad != $user_unidad_id) {
+                return response()->json(['success' => false, 'message' => 'No tienes permiso para editar este estudiante'], 403);
+            }
+            if (($actividad->tipo_programa ?? Actividad::TIPO_EXTRAESCOLAR) !== $this->panelTipoPrograma()) {
                 return response()->json(['success' => false, 'message' => 'No tienes permiso para editar este estudiante'], 403);
             }
 
@@ -210,6 +244,9 @@ class PanelTlahuitoltepecController extends Controller
 
             $user_unidad_id = $user->unidad_id ?? $user->unidad ?? null;
             if ($user_unidad_id && $actividad->id_unidad != $user_unidad_id) {
+                return response()->json(['success' => false, 'message' => 'No tienes permiso para eliminar este estudiante'], 403);
+            }
+            if (($actividad->tipo_programa ?? Actividad::TIPO_EXTRAESCOLAR) !== $this->panelTipoPrograma()) {
                 return response()->json(['success' => false, 'message' => 'No tienes permiso para eliminar este estudiante'], 403);
             }
 

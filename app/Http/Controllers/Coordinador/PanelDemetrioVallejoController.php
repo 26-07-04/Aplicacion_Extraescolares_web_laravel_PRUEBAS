@@ -14,6 +14,27 @@ use App\Models\Informe;
 
 class PanelDemetrioVallejoController extends Controller
 {
+    /**
+     * Vista Blade del panel (Extraescolares). Las subclases en Complementarias\ devuelven panel_complementarias.
+     */
+    protected function coordinadorPanelView(): string
+    {
+        return 'coordinador.demetrio_vallejo.panel';
+    }
+
+    /**
+     * Vista PDF de resultados (extraescolares). El panel complementarias sobreescribe.
+     */
+    protected function resultadosPdfView(): string
+    {
+        return 'coordinador.demetrio_vallejo.pdf.resultados';
+    }
+
+    protected function panelTipoPrograma(): string
+    {
+        return Actividad::TIPO_EXTRAESCOLAR;
+    }
+
     public function show($id)
     {
         $user = Auth::user();
@@ -32,7 +53,7 @@ class PanelDemetrioVallejoController extends Controller
 
         $documentos = \App\Models\Documento::where('id_semestre', $id)->orderBy('created_at', 'desc')->get();
 
-        $informes = Informe::listadoGeneradosPorUnidad((int) $semestre->id_semestre, 2);
+        $informes = Informe::listadoGeneradosPorUnidad((int) $semestre->id_semestre, 2, $this->panelTipoPrograma());
 
         // Filtrar actividades por semestre y por la unidad académica del usuario
         // Nota: la tabla `unidades` no tiene columna `id_semestre`, por eso usamos whereHas para filtrar
@@ -54,12 +75,14 @@ class PanelDemetrioVallejoController extends Controller
         // Todas las actividades del semestre (sin filtrar por unidad) — útil para depuración
         $actividades_semestre = Actividad::with('unidad')
             ->where('id_semestre', $semestre->id_semestre)
+            ->where('tipo_programa', $this->panelTipoPrograma())
             ->orderBy('created_at', 'desc')
             ->get();
 
         // Actividades filtradas por la unidad académica del usuario
         $actividadesQuery = Actividad::with('unidad')
-            ->where('id_semestre', $semestre->id_semestre);
+            ->where('id_semestre', $semestre->id_semestre)
+            ->where('tipo_programa', $this->panelTipoPrograma());
 
         if (!empty($user_unidad_id)) {
             $actividadesQuery->where('id_unidad', $user_unidad_id);
@@ -93,7 +116,10 @@ class PanelDemetrioVallejoController extends Controller
 
         // Obtener evaluaciones del semestre y unidad actual
         $evaluacionesQuery = Evaluacion::with(['estudiante', 'actividad'])
-            ->where('id_semestre', $id);
+            ->where('id_semestre', $id)
+            ->whereHas('actividad', function ($q) {
+                $q->where('tipo_programa', $this->panelTipoPrograma());
+            });
         
         // Filtrar por unidad solo si tenemos id_unidad
         if (!empty($user_unidad_id)) {
@@ -109,12 +135,13 @@ class PanelDemetrioVallejoController extends Controller
             return $evaluacion->estudiante->nombre ?? '';
         })->values();
 
-        return view('coordinador.demetrio_vallejo.panel', [
+        return view($this->coordinadorPanelView(), [
             'user' => $user,
             'semestre' => $semestre,
             'unidad' => 'Unidad Académica Demetrio Vallejo Martínez - El Espinal',
             'documentos' => $documentos,
             'informes' => $informes,
+            'tipo_programa_informes_panel' => $this->panelTipoPrograma(),
             'actividades' => $actividades,
             'actividades_semestre' => $actividades_semestre,
             'actividades_semestre_data' => $actividades_semestre_data,
@@ -155,7 +182,10 @@ class PanelDemetrioVallejoController extends Controller
         }
 
         $evaluacionesQuery = Evaluacion::with(['estudiante', 'actividad'])
-            ->where('id_semestre', $id);
+            ->where('id_semestre', $id)
+            ->whereHas('actividad', function ($q) {
+                $q->where('tipo_programa', $this->panelTipoPrograma());
+            });
 
         if (!empty($user_unidad_id)) {
             $evaluacionesQuery->where('id_unidad', $user_unidad_id);
@@ -169,6 +199,7 @@ class PanelDemetrioVallejoController extends Controller
         $tipo = strtolower(request()->get('tipo', 'cultural'));
         if (in_array($tipo, ['cultural', 'deportiva'])) {
             $evaluacionesQuery->whereHas('actividad', function ($q) use ($tipo) {
+                $q->where('tipo_programa', $this->panelTipoPrograma());
                 // Filtrar únicamente por palabras clave en nombre_actividad para evitar columnas inexistentes
                 if ($tipo === 'cultural') {
                     $q->where(function($qw){
@@ -194,7 +225,7 @@ class PanelDemetrioVallejoController extends Controller
             return $evaluacion->estudiante->nombre ?? '';
         })->values();
 
-        return view('coordinador.demetrio_vallejo.pdf.resultados', [
+        return view($this->resultadosPdfView(), [
             'user' => $user,
             'semestre' => $semestre,
             'unidad' => 'Unidad Académica Demetrio Vallejo Martínez - El Espinal',
@@ -218,6 +249,9 @@ class PanelDemetrioVallejoController extends Controller
             
             $user_unidad_id = $user->unidad_id ?? $user->unidad ?? null;
             if ($user_unidad_id && $actividad->id_unidad != $user_unidad_id) {
+                return response()->json(['success' => false, 'message' => 'No tienes permiso para editar este estudiante'], 403);
+            }
+            if (($actividad->tipo_programa ?? Actividad::TIPO_EXTRAESCOLAR) !== $this->panelTipoPrograma()) {
                 return response()->json(['success' => false, 'message' => 'No tienes permiso para editar este estudiante'], 403);
             }
 
@@ -252,6 +286,9 @@ class PanelDemetrioVallejoController extends Controller
             
             $user_unidad_id = $user->unidad_id ?? $user->unidad ?? null;
             if ($user_unidad_id && $actividad->id_unidad != $user_unidad_id) {
+                return response()->json(['success' => false, 'message' => 'No tienes permiso para eliminar este estudiante'], 403);
+            }
+            if (($actividad->tipo_programa ?? Actividad::TIPO_EXTRAESCOLAR) !== $this->panelTipoPrograma()) {
                 return response()->json(['success' => false, 'message' => 'No tienes permiso para eliminar este estudiante'], 403);
             }
 

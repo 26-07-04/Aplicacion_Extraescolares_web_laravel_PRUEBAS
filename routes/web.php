@@ -16,6 +16,10 @@ use App\Http\Controllers\Coordinador\PanelTlahuitoltepecController;
 use App\Http\Controllers\Coordinador\SemestresCursadosTlahuitoltepecController as CoordinadorSemestresTlahController;
 use App\Http\Controllers\Coordinador\SemestresCursadosDemetrioController as CoordinadorSemestresDemetrioController;
 use App\Http\Controllers\Coordinador\PanelDemetrioVallejoController;
+use App\Http\Controllers\Coordinador\Complementarias\PanelDemetrioVallejoComplementariasController;
+use App\Http\Controllers\Coordinador\Complementarias\PanelTlahuitoltepecComplementariasController;
+use App\Http\Controllers\Coordinador\Complementarias\PanelUnionHidalgoComplementariasController;
+use App\Http\Controllers\Coordinador\Complementarias\PanelValleEtlaComplementariasController;
 use App\Http\Controllers\Coordinador\ImportEstudiantesController;
 use App\Http\Controllers\Administrador\InformeController;
 use App\Http\Controllers\Coordinador\InformeDemetrioController;
@@ -131,10 +135,18 @@ Route::get('coordinador/union-hidalgo/panel/{id}', [PanelUnionHidalgoController:
     ->middleware('auth')
     ->name('coordinador.union.panel');
 
+Route::get('coordinador/union-hidalgo/complementarias/panel/{id}', [PanelUnionHidalgoComplementariasController::class, 'show'])
+    ->middleware('auth')
+    ->name('coordinador.union.panel.complementarias');
+
 // Panel principal del Coordinador para la Unidad Valle de Etla (vista por semestre)
 Route::get('coordinador/valle-de-etla/panel/{id}', [PanelValleEtlaController::class, 'show'])
     ->middleware('auth')
     ->name('coordinador.valle.panel');
+
+Route::get('coordinador/valle-de-etla/complementarias/panel/{id}', [PanelValleEtlaComplementariasController::class, 'show'])
+    ->middleware('auth')
+    ->name('coordinador.valle.panel.complementarias');
 
 
     // Rutas para PDFs membretados (coordinador)
@@ -203,10 +215,18 @@ Route::get('coordinador/tlahuitoltepec/panel/{id}', [PanelTlahuitoltepecControll
     ->middleware('auth')
     ->name('coordinador.tlahuitoltepec.panel');
 
+Route::get('coordinador/tlahuitoltepec/complementarias/panel/{id}', [PanelTlahuitoltepecComplementariasController::class, 'show'])
+    ->middleware('auth')
+    ->name('coordinador.tlahuitoltepec.panel.complementarias');
+
 // Panel principal del Coordinador para la Unidad Demetrio Vallejo (vista por semestre)
 Route::get('coordinador/demetrio-vallejo/panel/{id}', [PanelDemetrioVallejoController::class, 'show'])
     ->middleware('auth')
     ->name('coordinador.demetrio.panel');
+
+Route::get('coordinador/demetrio-vallejo/complementarias/panel/{id}', [PanelDemetrioVallejoComplementariasController::class, 'show'])
+    ->middleware('auth')
+    ->name('coordinador.demetrio.panel.complementarias');
 // Sirve el PDF membretado por ID (evita 404 por rutas relativas / subcarpeta / storage)
 Route::get('coordinador/demetrio-vallejo/documento-membrete/{id}', [PanelDemetrioVallejoController::class, 'documentoMembreteArchivo'])
     ->middleware('auth')
@@ -230,6 +250,23 @@ Route::get('coordinador/union-hidalgo/resultados/print/{id}', [PanelUnionHidalgo
 Route::get('coordinador/valle-de-etla/resultados/print/{id}', [PanelValleEtlaController::class, 'printResultados'])
     ->middleware('auth')
     ->name('coordinador.valle.resultados.print');
+
+// Impresión de resultados — panel Actividades Complementarias (Valle de Etla)
+Route::get('coordinador/valle-de-etla/complementarias/resultados/print/{id}', [PanelValleEtlaComplementariasController::class, 'printResultados'])
+    ->middleware('auth')
+    ->name('coordinador.valle.resultados.print.complementarias');
+
+Route::get('coordinador/demetrio-vallejo/complementarias/resultados/print/{id}', [PanelDemetrioVallejoComplementariasController::class, 'printResultados'])
+    ->middleware('auth')
+    ->name('coordinador.demetrio.resultados.print.complementarias');
+
+Route::get('coordinador/tlahuitoltepec/complementarias/resultados/print/{id}', [PanelTlahuitoltepecComplementariasController::class, 'printResultados'])
+    ->middleware('auth')
+    ->name('coordinador.tlahuitoltepec.resultados.print.complementarias');
+
+Route::get('coordinador/union-hidalgo/complementarias/resultados/print/{id}', [PanelUnionHidalgoComplementariasController::class, 'printResultados'])
+    ->middleware('auth')
+    ->name('coordinador.union_hidalgo.resultados.print.complementarias');
 
 Route::get('coordinador/semestres/tlahuitoltepec', [CoordinadorSemestresTlahController::class, 'index'])
     ->name('coordinador.semestres.tlahuitoltepec');
@@ -498,6 +535,27 @@ Route::middleware(['auth'])->prefix('coordinador/valle-de-etla')->group(function
     // Obtener documentos membretados del semestre
     Route::get('documentos-membrete/{id_semestre}', [EvaluacionValleEtlaController::class, 'obtenerDocumentosMembrete'])
         ->name('valleetla.documentos.membrete');
+});
+
+// Constancia PDF con plantilla del panel Complementarias (misma lógica de datos)
+Route::middleware(['auth'])->prefix('coordinador/valle-de-etla/complementarias')->group(function () {
+    Route::get('constancia/{id_evaluacion}/pdf', [EvaluacionValleEtlaController::class, 'generarConstanciaComplementarias'])
+        ->name('valleetla.constancia.pdf.complementarias');
+});
+
+Route::middleware(['auth'])->prefix('coordinador/demetrio-vallejo/complementarias')->group(function () {
+    Route::get('constancia/{id_evaluacion}/pdf', [EvaluacionDemetrioController::class, 'generarConstanciaComplementarias'])
+        ->name('demetrio.constancia.pdf.complementarias');
+});
+
+Route::middleware(['auth'])->prefix('coordinador/tlahuitoltepec/complementarias')->group(function () {
+    Route::get('constancia/{id_evaluacion}/pdf', [EvaluacionTlahuitoltepecController::class, 'generarConstanciaComplementarias'])
+        ->name('tlahuitoltepec.constancia.pdf.complementarias');
+});
+
+Route::middleware(['auth'])->prefix('coordinador/union-hidalgo/complementarias')->group(function () {
+    Route::get('constancia/{id_evaluacion}/pdf', [EvaluacionUnionHidalgoController::class, 'generarConstanciaComplementarias'])
+        ->name('unionhidalgo.constancia.pdf.complementarias');
 });
 
 require __DIR__.'/auth.php';

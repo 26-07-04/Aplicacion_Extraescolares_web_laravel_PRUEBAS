@@ -12,6 +12,27 @@ use App\Models\Informe;
 
 class PanelUnionHidalgoController extends Controller
 {
+    /**
+     * Vista Blade del panel (Extraescolares). Las subclases en Complementarias\ devuelven panel_complementarias.
+     */
+    protected function coordinadorPanelView(): string
+    {
+        return 'coordinador.union_hidalgo.panel';
+    }
+
+    /**
+     * Vista PDF de resultados (extraescolares). El panel complementarias sobreescribe.
+     */
+    protected function resultadosPdfView(): string
+    {
+        return 'coordinador.union_hidalgo.pdf.resultados';
+    }
+
+    protected function panelTipoPrograma(): string
+    {
+        return Actividad::TIPO_EXTRAESCOLAR;
+    }
+
     public function show($id)
     {
         $user = Auth::user();
@@ -30,7 +51,7 @@ class PanelUnionHidalgoController extends Controller
 
         $documentos = \App\Models\Documento::where('id_semestre', $id)->orderBy('created_at', 'desc')->get();
 
-        $informes = Informe::listadoGeneradosPorUnidad((int) $semestre->id_semestre, 1);
+        $informes = Informe::listadoGeneradosPorUnidad((int) $semestre->id_semestre, 1, $this->panelTipoPrograma());
 
         // Filtrar actividades por semestre y por la unidad académica del usuario
         $uaName = $user->unidad_academica ?? '';
@@ -45,7 +66,9 @@ class PanelUnionHidalgoController extends Controller
             }
         }
 
-        $actividadesQuery = Actividad::with('unidad')->where('id_semestre', $semestre->id_semestre);
+        $actividadesQuery = Actividad::with('unidad')
+            ->where('id_semestre', $semestre->id_semestre)
+            ->where('tipo_programa', $this->panelTipoPrograma());
         if (!empty($user_unidad_id)) {
             $actividadesQuery->where('id_unidad', $user_unidad_id);
         } elseif (!empty($uaKeyword)) {
@@ -62,7 +85,10 @@ class PanelUnionHidalgoController extends Controller
 
         // Obtener evaluaciones del semestre y unidad actual
         $evaluacionesQuery = \App\Models\Evaluacion::with(['estudiante', 'actividad'])
-            ->where('id_semestre', $id);
+            ->where('id_semestre', $id)
+            ->whereHas('actividad', function ($q) {
+                $q->where('tipo_programa', $this->panelTipoPrograma());
+            });
 
         if (!empty($user_unidad_id)) {
             $evaluacionesQuery->where('id_unidad', $user_unidad_id);
@@ -76,12 +102,13 @@ class PanelUnionHidalgoController extends Controller
             return $evaluacion->estudiante->nombre ?? '';
         })->values();
 
-        return view('coordinador.union_hidalgo.panel', [
+        return view($this->coordinadorPanelView(), [
             'user' => $user,
             'semestre' => $semestre,
             'unidad' => 'Unidad Académica Unión Hidalgo',
             'documentos' => $documentos,
             'informes' => $informes,
+            'tipo_programa_informes_panel' => $this->panelTipoPrograma(),
             'actividades' => $actividades,
             'evaluaciones' => $evaluaciones,
         ]);
@@ -115,7 +142,10 @@ class PanelUnionHidalgoController extends Controller
         }
 
         $evaluacionesQuery = \App\Models\Evaluacion::with(['estudiante', 'actividad'])
-            ->where('id_semestre', $id);
+            ->where('id_semestre', $id)
+            ->whereHas('actividad', function ($q) {
+                $q->where('tipo_programa', $this->panelTipoPrograma());
+            });
 
         if (!empty($user_unidad_id)) {
             $evaluacionesQuery->where('id_unidad', $user_unidad_id);
@@ -128,6 +158,7 @@ class PanelUnionHidalgoController extends Controller
         $tipo = strtolower(request()->get('tipo', 'cultural'));
         if (in_array($tipo, ['cultural', 'deportiva'])) {
             $evaluacionesQuery->whereHas('actividad', function ($q) use ($tipo) {
+                $q->where('tipo_programa', $this->panelTipoPrograma());
                 if ($tipo === 'cultural') {
                     $q->where(function($qw){
                         $keywords = [
@@ -152,7 +183,7 @@ class PanelUnionHidalgoController extends Controller
             return $evaluacion->estudiante->nombre ?? '';
         })->values();
 
-        return view('coordinador.union_hidalgo.pdf.resultados', [
+        return view($this->resultadosPdfView(), [
             'user' => $user,
             'semestre' => $semestre,
             'unidad' => 'Unidad Académica Unión Hidalgo',
@@ -175,6 +206,9 @@ class PanelUnionHidalgoController extends Controller
 
             $user_unidad_id = $user->unidad_id ?? $user->unidad ?? null;
             if ($user_unidad_id && $actividad->id_unidad != $user_unidad_id) {
+                return response()->json(['success' => false, 'message' => 'No tienes permiso para editar este estudiante'], 403);
+            }
+            if (($actividad->tipo_programa ?? Actividad::TIPO_EXTRAESCOLAR) !== $this->panelTipoPrograma()) {
                 return response()->json(['success' => false, 'message' => 'No tienes permiso para editar este estudiante'], 403);
             }
 
@@ -207,6 +241,9 @@ class PanelUnionHidalgoController extends Controller
 
             $user_unidad_id = $user->unidad_id ?? $user->unidad ?? null;
             if ($user_unidad_id && $actividad->id_unidad != $user_unidad_id) {
+                return response()->json(['success' => false, 'message' => 'No tienes permiso para eliminar este estudiante'], 403);
+            }
+            if (($actividad->tipo_programa ?? Actividad::TIPO_EXTRAESCOLAR) !== $this->panelTipoPrograma()) {
                 return response()->json(['success' => false, 'message' => 'No tienes permiso para eliminar este estudiante'], 403);
             }
 

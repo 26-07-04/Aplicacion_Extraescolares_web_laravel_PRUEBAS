@@ -296,7 +296,8 @@
           'id_semestre' => $idSemestrePanel,
           'informes' => $informes ?? collect(),
           'documentos' => $documentos ?? collect(),
-          'id_unidad' => $id_unidad_informe
+          'id_unidad' => $id_unidad_informe,
+          'tipo_programa_informes_panel' => $tipo_programa_informes_panel ?? \App\Models\Actividad::TIPO_EXTRAESCOLAR,
         ])
       @endif
 

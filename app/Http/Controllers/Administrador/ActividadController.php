@@ -8,6 +8,7 @@ use App\Models\Actividad;
 use App\Models\Semestre;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
@@ -43,6 +44,13 @@ class ActividadController extends Controller
         // CAMBIO 3: Filtrar también por unidad si viene en request
         if ($request->has('id_unidad') && $request->query('id_unidad') !== '') {
             $query->where('id_unidad', $request->query('id_unidad'));
+        }
+
+        if ($request->filled('tipo_programa')) {
+            $tp = $request->query('tipo_programa');
+            if (in_array($tp, [Actividad::TIPO_EXTRAESCOLAR, Actividad::TIPO_COMPLEMENTARIA], true)) {
+                $query->where('tipo_programa', $tp);
+            }
         }
 
         $actividades = $query->get()->map(function ($a) {
@@ -103,7 +111,8 @@ class ActividadController extends Controller
             'id_unidad' => 'required|integer',
             'id_semestre' => 'required|integer',
             'imagen' => 'nullable|image|max:5120',
-            'categorias' => 'nullable|string'
+            'categorias' => 'nullable|string',
+            'tipo_programa' => ['nullable', 'string', Rule::in([Actividad::TIPO_EXTRAESCOLAR, Actividad::TIPO_COMPLEMENTARIA])],
         ]);
 
         if ($v->fails()) {
@@ -121,10 +130,14 @@ class ActividadController extends Controller
         }
 
         try {
-            $data = $request->only(['nombre_actividad','descripcion','id_unidad','id_semestre','categorias']);
+            $data = $request->only(['nombre_actividad','descripcion','id_unidad','id_semestre','categorias','tipo_programa']);
             
             // CAMBIO 7: Asegurar que el id_semestre se guarda correctamente
             $data['id_semestre'] = $id_semestre;
+            $data['tipo_programa'] = $request->input('tipo_programa', Actividad::TIPO_EXTRAESCOLAR);
+            if (! in_array($data['tipo_programa'], [Actividad::TIPO_EXTRAESCOLAR, Actividad::TIPO_COMPLEMENTARIA], true)) {
+                $data['tipo_programa'] = Actividad::TIPO_EXTRAESCOLAR;
+            }
 
             if ($request->hasFile('imagen')) {
                 $file = $request->file('imagen');
@@ -146,7 +159,8 @@ class ActividadController extends Controller
                 'id_unidad' => $actividad->id_unidad,
                 'id_semestre' => $actividad->id_semestre,
                 'imagen_url' => $actividad->imagen_url ?? null,
-                'categorias' => $actividad->categorias ?? null
+                'categorias' => $actividad->categorias ?? null,
+                'tipo_programa' => $actividad->tipo_programa ?? Actividad::TIPO_EXTRAESCOLAR,
             ], 201);
         } catch (\Throwable $e) {
             Log::error('Actividad store error: '.$e->getMessage(), ['trace' => $e->getTraceAsString(), 'input' => $request->all()]);
@@ -172,7 +186,8 @@ class ActividadController extends Controller
             'id_unidad' => 'nullable|integer',
             'id_semestre' => 'nullable|integer',
             'imagen' => 'nullable|image|max:5120',
-            'categorias' => 'nullable|string'
+            'categorias' => 'nullable|string',
+            'tipo_programa' => ['nullable', 'string', Rule::in([Actividad::TIPO_EXTRAESCOLAR, Actividad::TIPO_COMPLEMENTARIA])],
         ]);
 
         if ($v->fails()) return response()->json(['errors' => $v->errors()], 422);
@@ -196,6 +211,13 @@ class ActividadController extends Controller
 
         if ($request->filled('categorias')) {
             $actividad->categorias = $request->input('categorias');
+        }
+
+        if ($request->filled('tipo_programa')) {
+            $tp = $request->input('tipo_programa');
+            $actividad->tipo_programa = in_array($tp, [Actividad::TIPO_EXTRAESCOLAR, Actividad::TIPO_COMPLEMENTARIA], true)
+                ? $tp
+                : Actividad::TIPO_EXTRAESCOLAR;
         }
 
         if ($request->hasFile('imagen')) {

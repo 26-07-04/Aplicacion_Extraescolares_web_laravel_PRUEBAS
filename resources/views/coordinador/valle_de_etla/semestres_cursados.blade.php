@@ -51,7 +51,7 @@
 
       <div class="semestres-grid" id="contenedorSemestres">
         @forelse($semestres as $semestre)
-          <a href="{{ route('coordinador.valle.panel', ['id' => $semestre->id_semestre]) }}" class="semestre-link">
+          <div class="semestre-card-block">
             <div class="semestre-card" data-id="{{ $semestre->id_semestre }}">
               <div class="semestre-header">
                 <span class="semestre-periodo">{{ $semestre->nombre }}</span>
@@ -66,9 +66,13 @@
                   <p><i class="fas fa-calendar-alt"></i> <strong>Fecha inicio:</strong> {{ date('d/m/Y', strtotime($semestre->fecha_inicio)) }}</p>
                   <p><i class="fas fa-calendar-check"></i> <strong>Fecha fin:</strong> {{ date('d/m/Y', strtotime($semestre->fecha_fin)) }}</p>
                 </div>
+                <div class="semestre-panel-actions">
+                  <a href="{{ route('coordinador.valle.panel', ['id' => $semestre->id_semestre]) }}" class="semestre-panel-btn semestre-panel-btn--extra">Actividades extraescolares</a>
+                  <a href="{{ route('coordinador.valle.panel.complementarias', ['id' => $semestre->id_semestre]) }}" class="semestre-panel-btn semestre-panel-btn--comp">Actividades complementarias</a>
+                </div>
               </div>
             </div>
-          </a>
+          </div>
         @empty
           <div class="semestres-empty-card">
             <i class="fas fa-info-circle" aria-hidden="true"></i>

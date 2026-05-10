@@ -159,6 +159,12 @@
               <option value="Cultural">Cultural</option>
               <option value="Academico">Académico</option>
             </select>
+
+            <label for="tipo-programa-actividad" style="display:block; margin-bottom:6px; font-size:13px; color:#555;">Tipo de programa</label>
+            <select id="tipo-programa-actividad" required style="width:100%; padding:12px 12px; border:1px solid #ddd; border-radius:6px; font-size:14px; margin-bottom:15px; color:#6f6f6f; cursor:pointer;">
+              <option value="extraescolar" selected>Extraescolar</option>
+              <option value="complementaria">Complementaria</option>
+            </select>
             
             <textarea id="descripcion-actividad" placeholder="Descripción de la actividad" rows="4" required></textarea>
             
