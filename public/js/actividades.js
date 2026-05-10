@@ -160,6 +160,12 @@ class GestorActividades {
                 categoriaElement.value = catValue;
                 console.log('DEBUG: Cargando categoría en modal:', catValue);
             }
+
+            const tipoProgramaEl = document.getElementById('tipo-programa-actividad');
+            if (tipoProgramaEl) {
+                const tp = modulo.dataset.tipoPrograma || 'extraescolar';
+                tipoProgramaEl.value = tp === 'complementaria' ? 'complementaria' : 'extraescolar';
+            }
             
             if (vistaPrevia) {
                 const img = modulo.querySelector('img');
@@ -182,6 +188,11 @@ class GestorActividades {
             if (categoriaElement) {
                 categoriaElement.value = '';
                 console.log('DEBUG: Categoría reseteada para nueva actividad');
+            }
+
+            const tipoProgramaElNuevo = document.getElementById('tipo-programa-actividad');
+            if (tipoProgramaElNuevo) {
+                tipoProgramaElNuevo.value = 'extraescolar';
             }
             
             if (vistaPrevia) vistaPrevia.style.display = 'none';
@@ -321,6 +332,10 @@ class GestorActividades {
         const nombreGuardado = saved.nombre_actividad ?? saved.nombre ?? nombre;
         const descripcionGuardada = saved.descripcion ?? saved.desc ?? descripcion;
         const categoriaGuardada = saved.categorias ?? saved.categoria ?? document.getElementById('categoria-actividad').value;
+        const tipoProgramaGuardado = saved.tipo_programa
+            ?? saved.tipoPrograma
+            ?? (document.getElementById('tipo-programa-actividad') && document.getElementById('tipo-programa-actividad').value)
+            ?? 'extraescolar';
         const imagenGuardada = saved.imagen_url ?? saved.imagen ?? saved.imagenUrl ?? null;
 
         if (!idGuardado) {
@@ -337,6 +352,7 @@ class GestorActividades {
             
             // Guardar categoría en dataset - IMPORTANTE
             mod.dataset.categoria = categoriaGuardada;
+            mod.dataset.tipoPrograma = tipoProgramaGuardado === 'complementaria' ? 'complementaria' : 'extraescolar';
             console.log('DEBUG: Categoría guardada en dataset después de editar:', categoriaGuardada);
             
             // Actualizar imagen
@@ -360,6 +376,7 @@ class GestorActividades {
                 nombre: nombreGuardado,
                 descripcion: descripcionGuardada,
                 categoria: categoriaGuardada,
+                tipoPrograma: tipoProgramaGuardado === 'complementaria' ? 'complementaria' : 'extraescolar',
                 imagen: imagenPath,
                 id_semestre: semestreId
             });
@@ -382,6 +399,10 @@ class GestorActividades {
         const nombre = (document.getElementById('nombre-actividad') || {}).value;
         const categoria = (document.getElementById('categoria-actividad') || {}).value;
         const descripcion = (document.getElementById('descripcion-actividad') || {}).value;
+        const tipoProgramaInput = document.getElementById('tipo-programa-actividad');
+        const tipo_programa = tipoProgramaInput && tipoProgramaInput.value
+            ? tipoProgramaInput.value
+            : 'extraescolar';
 
         if (!nombre || !categoria || !descripcion) {
             this.mostrarAlerta('Error', 'Por favor completa todos los campos obligatorios (nombre, categoría y descripción)', 'error');
@@ -419,6 +440,7 @@ class GestorActividades {
             fd.append('descripcion', descripcion.trim());
             fd.append('id_unidad', unidadId);
             fd.append('id_semestre', semestreId);
+            fd.append('tipo_programa', tipo_programa === 'complementaria' ? 'complementaria' : 'extraescolar');
 
             // Log para debug
             console.log('Enviando id_unidad:', unidadId);
@@ -597,6 +619,7 @@ class GestorActividades {
                         nombre: item.nombre_actividad ?? item.nombre,
                         descripcion: item.descripcion ?? item.desc,
                         categoria: item.categorias ?? item.categoria ?? '', // IMPORTANTE: Agregar categoría desde servidor
+                        tipoPrograma: item.tipo_programa ?? item.tipoPrograma ?? 'extraescolar',
                         imagen: this.resolveImageSrc(imagenUrl),
                         id_semestre: item.id_semestre ?? item.idSemestre ?? null
                     });
@@ -702,6 +725,9 @@ class GestorActividades {
         modulo.dataset.nombre = actividad.nombre;
         modulo.dataset.descripcion = actividad.descripcion;
         modulo.dataset.categoria = actividad.categoria || '';
+        modulo.dataset.tipoPrograma = (actividad.tipoPrograma === 'complementaria' || actividad.tipo_programa === 'complementaria')
+            ? 'complementaria'
+            : 'extraescolar';
         if (actividad.id_semestre) modulo.dataset.idSemestre = actividad.id_semestre;
         
         console.log('DEBUG crearModuloActividad: dataset.categoria establecida a:', modulo.dataset.categoria);

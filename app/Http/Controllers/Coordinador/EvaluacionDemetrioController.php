@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Coordinador;
 
 use App\Http\Controllers\Controller;
+use App\Models\Actividad;
 use App\Models\Evaluacion;
 use App\Models\Estudiante;
 use App\Models\Documento;
@@ -66,13 +67,18 @@ class EvaluacionDemetrioController extends Controller
      */
     public function generarConstancia(Request $request, $id_evaluacion)
     {
-        try {
-            $evaluacion = Evaluacion::with([
-                'estudiante',
-                'actividad',
-                'semestre'
-            ])->findOrFail($id_evaluacion);
+        $evaluacion = Evaluacion::with([
+            'estudiante',
+            'actividad',
+            'semestre',
+        ])->findOrFail($id_evaluacion);
 
+        $act = $evaluacion->actividad;
+        if (! $act || ($act->tipo_programa ?? Actividad::TIPO_EXTRAESCOLAR) !== Actividad::TIPO_EXTRAESCOLAR) {
+            abort(404);
+        }
+
+        try {
             // Obtener el documento membretado seleccionado
             $documentoMembrete = null;
             if ($request->has('id_documento')) {
@@ -100,6 +106,50 @@ class EvaluacionDemetrioController extends Controller
 
             return $pdf->download($nombreArchivo);
 
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al generar la constancia: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Misma generación que generarConstancia con plantilla del panel Complementarias.
+     */
+    public function generarConstanciaComplementarias(Request $request, $id_evaluacion)
+    {
+        $evaluacion = Evaluacion::with([
+            'estudiante',
+            'actividad',
+            'semestre',
+        ])->findOrFail($id_evaluacion);
+
+        $act = $evaluacion->actividad;
+        if (! $act || ($act->tipo_programa ?? '') !== Actividad::TIPO_COMPLEMENTARIA) {
+            abort(404);
+        }
+
+        try {
+            $documentoMembrete = null;
+            if ($request->has('id_documento')) {
+                $documentoMembrete = Documento::find($request->id_documento);
+            }
+
+            $data = [
+                'evaluacion' => $evaluacion,
+                'estudiante' => $evaluacion->estudiante,
+                'actividad' => $evaluacion->actividad,
+                'semestre' => $evaluacion->semestre,
+                'documentoMembrete' => $documentoMembrete,
+                'fecha' => Carbon::parse($evaluacion->fecha_evaluacion),
+            ];
+
+            $pdf = PDF::loadView('coordinador.demetrio_vallejo.complementarias.pdf.constancia', $data);
+            $pdf->setPaper('letter', 'portrait');
+            $nombreArchivo = 'Constancia_complementarias_' . $evaluacion->estudiante->numero_control . '_' . date('Y-m-d') . '.pdf';
+
+            return $pdf->download($nombreArchivo);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

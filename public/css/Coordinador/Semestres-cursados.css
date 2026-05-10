@@ -138,13 +138,47 @@ body {
 }
 
 /* Quitar subrayado en los enlaces que envuelven las tarjetas */
-/* Soporta ambos nombres de clase por compatibilidad */
-.semestre-link, .semestre-card-link { display: block; text-decoration: none; color: inherit; }
-.semestre-link:hover, .semestre-card-link:hover { text-decoration: none; }
-.semestre-link .semestre-card, .semestre-card-link .semestre-card { text-decoration: none; }
+/* Soporta ambos nombres de clase por compatibilidad; .semestre-card-block = tarjeta sin enlace único (dos botones al pie) */
+.semestre-link, .semestre-card-link, .semestre-card-block { display: block; text-decoration: none; color: inherit; }
+.semestre-link:hover, .semestre-card-link:hover, .semestre-card-block:hover { text-decoration: none; }
+.semestre-link .semestre-card, .semestre-card-link .semestre-card, .semestre-card-block .semestre-card { text-decoration: none; }
 /* Asegurar color correcto: título en negro y texto del cuerpo en gris */
-.semestre-link .semestre-periodo, .semestre-card-link .semestre-periodo { text-decoration: none; color: #000; }
-.semestre-link .semestre-info p, .semestre-card-link .semestre-info p { text-decoration: none; color: #444; }
+.semestre-link .semestre-periodo, .semestre-card-link .semestre-periodo, .semestre-card-block .semestre-periodo { text-decoration: none; color: #000; }
+.semestre-link .semestre-info p, .semestre-card-link .semestre-info p, .semestre-card-block .semestre-info p { text-decoration: none; color: #444; }
+
+.semestre-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #eaeaea;
+}
+.semestre-panel-btn {
+  flex: 1 1 130px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #1B396A;
+  color: #1B396A;
+  background: #fff;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.semestre-panel-btn:hover {
+  background: #1B396A;
+  color: #fff;
+}
+.semestre-panel-btn--comp {
+  border-color: #0d6e5c;
+  color: #0d6e5c;
+}
+.semestre-panel-btn--comp:hover {
+  background: #0d6e5c;
+  color: #fff;
+}
 
 .semestre-card:hover {
   transform: translateY(-5px);

@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Coordinador;
 
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use App\Models\Actividad;
+use App\Models\Informe;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facades\PDF;
 use App\Http\Controllers\Controller;
@@ -30,7 +33,8 @@ class InformeUnionHidalgoController extends Controller
 			->get();
 
 		$id_unidad = 1;
-		$informes = \App\Models\Informe::listadoGeneradosPorUnidad((int) $id_semestre, $id_unidad);
+		$tipoInformes = Informe::tipoProgramaValido($request->query('tipo_programa'));
+		$informes = Informe::listadoGeneradosPorUnidad((int) $id_semestre, $id_unidad, $tipoInformes);
 
 		return view('coordinador.union_hidalgo.informe_actividad', [
 			'documentos' => $documentos,
@@ -38,6 +42,7 @@ class InformeUnionHidalgoController extends Controller
 			'id_semestre' => $id_semestre,
 			'id_unidad' => $id_unidad,
 			'semestreActual' => $semestreActual,
+			'tipo_programa_informes_panel' => $tipoInformes,
 		]);
 	}
 
@@ -52,6 +57,7 @@ class InformeUnionHidalgoController extends Controller
 			'id_semestre' => 'nullable|exists:semestres,id_semestre',
 			'descripcion' => 'nullable|string',
 			'fecha_generacion' => 'nullable|date',
+			'tipo_programa' => ['nullable', 'string', Rule::in([Actividad::TIPO_EXTRAESCOLAR, Actividad::TIPO_COMPLEMENTARIA])],
 		]);
 
 		$id_semestre = $request->input('id_semestre');
@@ -81,8 +87,9 @@ class InformeUnionHidalgoController extends Controller
 			$data['descripcion'] = $request->descripcion;
 		}
 		$data['fecha_generacion'] = $request->filled('fecha_generacion') ? $request->fecha_generacion : now();
+		$data['tipo_programa'] = Informe::tipoProgramaValido($request->input('tipo_programa'));
 
-		$informe = \App\Models\Informe::create($data);
+		$informe = Informe::create($data);
 
 		return response()->json([
 			'status' => 'ok',
@@ -96,9 +103,13 @@ class InformeUnionHidalgoController extends Controller
 	 */
 	public function destroy($id)
 	{
-		$informe = \App\Models\Informe::find($id);
-		if (!$informe || (int) $informe->id_unidad !== 1) {
+		$informe = Informe::find($id);
+		$tipoEsperado = Informe::tipoProgramaValido(request()->input('tipo_programa'));
+		if (! $informe || (int) $informe->id_unidad !== 1) {
 			return back()->with('error', 'Informe no encontrado o no pertenece a esta unidad.');
+		}
+		if (($informe->tipo_programa ?? Actividad::TIPO_EXTRAESCOLAR) !== $tipoEsperado) {
+			return back()->with('error', 'No se puede eliminar este informe desde este panel.');
 		}
 		$id_semestre = request('id_semestre', $informe->id_semestre);
 		if ($informe->archivo && file_exists(public_path($informe->archivo))) {
