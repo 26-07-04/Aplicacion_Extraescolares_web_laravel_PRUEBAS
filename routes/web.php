@@ -472,6 +472,35 @@ Route::post('coordinador/valle-de-etla/estudiantes/{id}/eliminar', [App\Http\Con
     ->middleware('auth')
     ->name('coordinador.valle_de_etla.estudiantes.eliminar');
 
+// CRUD estudiantes — paneles Actividades Complementarias (usa panelTipoPrograma = complementaria)
+Route::post('coordinador/valle-de-etla/complementarias/estudiantes/{id}/actualizar', [PanelValleEtlaComplementariasController::class, 'actualizarEstudiante'])
+    ->middleware('auth')
+    ->name('coordinador.valle_de_etla.complementarias.estudiantes.actualizar');
+Route::post('coordinador/valle-de-etla/complementarias/estudiantes/{id}/eliminar', [PanelValleEtlaComplementariasController::class, 'eliminarEstudiante'])
+    ->middleware('auth')
+    ->name('coordinador.valle_de_etla.complementarias.estudiantes.eliminar');
+
+Route::post('coordinador/demetrio-vallejo/complementarias/estudiantes/{id}/actualizar', [PanelDemetrioVallejoComplementariasController::class, 'actualizarEstudiante'])
+    ->middleware('auth')
+    ->name('coordinador.demetrio_vallejo.complementarias.estudiantes.actualizar');
+Route::post('coordinador/demetrio-vallejo/complementarias/estudiantes/{id}/eliminar', [PanelDemetrioVallejoComplementariasController::class, 'eliminarEstudiante'])
+    ->middleware('auth')
+    ->name('coordinador.demetrio_vallejo.complementarias.estudiantes.eliminar');
+
+Route::post('coordinador/tlahuitoltepec/complementarias/estudiantes/{id}/actualizar', [PanelTlahuitoltepecComplementariasController::class, 'actualizarEstudiante'])
+    ->middleware('auth')
+    ->name('coordinador.tlahuitoltepec.complementarias.estudiantes.actualizar');
+Route::post('coordinador/tlahuitoltepec/complementarias/estudiantes/{id}/eliminar', [PanelTlahuitoltepecComplementariasController::class, 'eliminarEstudiante'])
+    ->middleware('auth')
+    ->name('coordinador.tlahuitoltepec.complementarias.estudiantes.eliminar');
+
+Route::post('coordinador/union-hidalgo/complementarias/estudiantes/{id}/actualizar', [PanelUnionHidalgoComplementariasController::class, 'actualizarEstudiante'])
+    ->middleware('auth')
+    ->name('coordinador.union_hidalgo.complementarias.estudiantes.actualizar');
+Route::post('coordinador/union-hidalgo/complementarias/estudiantes/{id}/eliminar', [PanelUnionHidalgoComplementariasController::class, 'eliminarEstudiante'])
+    ->middleware('auth')
+    ->name('coordinador.union_hidalgo.complementarias.estudiantes.eliminar');
+
 // ============ RUTAS PARA EVALUACIONES Y CONSTANCIAS (DEMETRIO VALLEJO) ============
 use App\Http\Controllers\Coordinador\EvaluacionDemetrioController;
 use App\Http\Controllers\Coordinador\EvaluacionTlahuitoltepecController;

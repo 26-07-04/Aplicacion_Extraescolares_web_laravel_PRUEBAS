@@ -161,7 +161,7 @@
               // Proceder con la eliminación
               const csrfToken = document.querySelector('input[name="_token"]')?.value || '{{ csrf_token() }}';
 
-              fetch(`/coordinador/tlahuitoltepec/estudiantes/${id}/eliminar`, {
+              fetch(`/coordinador/tlahuitoltepec/complementarias/estudiantes/${id}/eliminar`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -535,7 +535,7 @@
 
     const csrfToken = document.querySelector('input[name="_token"]')?.value || '{{ csrf_token() }}';
 
-    fetch(`/coordinador/tlahuitoltepec/estudiantes/${id}/actualizar`, {
+    fetch(`/coordinador/tlahuitoltepec/complementarias/estudiantes/${id}/actualizar`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
