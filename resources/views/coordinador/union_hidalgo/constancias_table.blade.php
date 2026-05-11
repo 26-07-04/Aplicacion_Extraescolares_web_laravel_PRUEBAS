@@ -331,7 +331,14 @@
             ['No. Control','Nombre','Carrera','Sexo','Semestre','Estado']
         ];
         estudiantesFiltrados.forEach(s => rows.push([s.numero_control, s.nombre, s.carrera, s.sexo ?? '', s.semestre, s.status]));
-        const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(',')).join('\n');
+        const escapeCsv = (cell) => {
+            let v = cell == null ? '' : String(cell);
+            v = v.replace(/\r\n|\r|\n/g, ' ');
+            return '"' + v.replace(/"/g, '""') + '"';
+        };
+        const lineSep = '\r\n';
+        const csvBody = rows.map(r => r.map(escapeCsv).join(',')).join(lineSep);
+        const csv = '\uFEFF' + csvBody;
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
