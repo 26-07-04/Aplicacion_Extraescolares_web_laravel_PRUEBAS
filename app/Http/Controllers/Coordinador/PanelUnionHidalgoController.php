@@ -214,7 +214,7 @@ class PanelUnionHidalgoController extends Controller
 
             $validated = $request->validate([
                 'nombre' => 'required|string|max:255',
-                'numero_control' => 'required|string|max:100',
+                'numero_control' => \App\Models\Estudiante::reglasNumeroControlEnActividad((int) $estudiante->id_actividad, (int) $estudiante->id_alumno),
                 'carrera' => 'required|string|max:255',
                 'sexo' => 'nullable|string|max:20',
                 'semestre' => 'required|string|max:50'
