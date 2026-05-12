@@ -40,4 +40,32 @@ class Estudiante extends Model
     {
         return $this->belongsTo(\App\Models\Unidad::class, 'id_unidad', 'id_unidad');
     }
+
+    /**
+     * Reglas de validación para número de control dentro de una actividad.
+     */
+    public static function reglasNumeroControlEnActividad(int $idActividad, ?int $ignorarIdAlumno = null): array
+    {
+        $rule = \Illuminate\Validation\Rule::unique('estudiantes', 'numero_control')
+            ->where(fn ($q) => $q->where('id_actividad', $idActividad));
+
+        if ($ignorarIdAlumno !== null) {
+            $rule = $rule->ignore($ignorarIdAlumno, 'id_alumno');
+        }
+
+        return ['required', 'string', 'max:100', $rule];
+    }
+
+    public static function yaInscritoEnActividad(string $numeroControl, int $idActividad, ?int $exceptAlumnoId = null): bool
+    {
+        $query = static::query()
+            ->where('numero_control', $numeroControl)
+            ->where('id_actividad', $idActividad);
+
+        if ($exceptAlumnoId !== null) {
+            $query->where('id_alumno', '!=', $exceptAlumnoId);
+        }
+
+        return $query->exists();
+    }
 }

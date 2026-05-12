@@ -53,7 +53,9 @@ class EstudianteController extends Controller
                 'required',
                 'string',
                 'max:20',
-                Rule::unique('estudiantes', 'numero_control')->ignore($estudiante->id_alumno, 'id_alumno'),
+                Rule::unique('estudiantes', 'numero_control')
+                    ->where(fn ($q) => $q->where('id_actividad', $estudiante->id_actividad))
+                    ->ignore($estudiante->id_alumno, 'id_alumno'),
             ];
         }
 
