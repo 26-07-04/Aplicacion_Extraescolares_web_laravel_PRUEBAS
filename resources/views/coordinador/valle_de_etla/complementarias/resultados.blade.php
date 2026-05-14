@@ -57,6 +57,11 @@
         font-size: 1rem;
     }
 
+    .btn-usar-pdf-resultados.active {
+        outline: 2px solid #2e7d32;
+        outline-offset: 2px;
+    }
+
     .table-container {
         background: white;
         border-radius: 12px;
@@ -199,14 +204,43 @@
                 <i class="fas fa-calendar-alt"></i> {{ $semestre->nombre ?? 'Semestre Actual' }}
             </p>
         </div>
-        <div style="display:flex; gap:8px; flex-wrap:nowrap; margin-top:-30px;">
-            <button class="btn-imprimir" onclick="abrirImpresion('cultural')">
+    </div>
+
+    <div class="resultados-acciones-print" style="margin-bottom: 20px; padding: 0 4px; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start;">
+        @if(isset($documentos) && $documentos->isNotEmpty())
+            <div style="flex: 1; min-width: 260px;">
+                <p style="margin: 0 0 8px 0; font-weight: 600; color: #333; font-size: 0.95rem;">PDF membretado para impresión</p>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    @foreach($documentos as $doc)
+                        <div class="documento-card-resultados" style="background: #fff; border-radius: 8px; border: 1px solid #e1e5eb; padding: 10px 12px; display: flex; align-items: center; gap: 10px; max-width: 100%;">
+                            <i class="fas fa-file-pdf" style="color: #c0392b; font-size: 1.4rem;"></i>
+                            <div style="flex: 1; min-width: 0;">
+                                <div class="doc-nombre" style="font-weight: 600; font-size: 0.9rem; color: #1a365d;">{{ $doc->nombre }}</div>
+                                @if($doc->descripcion)
+                                    <div style="font-size: 0.8rem; color: #6c757d;">{{ $doc->descripcion }}</div>
+                                @endif
+                            </div>
+                            <button type="button" class="btn-usar-pdf-resultados btn-imprimir" style="flex-shrink: 0;" data-id="{{ $doc->id }}" data-archivo="{{ asset($doc->archivo) }}">
+                                <i class="fas fa-check"></i> Usar PDF
+                            </button>
+                        </div>
+                    @endforeach
+                </div>
+                <p id="pdfResultadosSeleccionadoInfo" style="margin-top: 8px; font-size: 0.88rem; color: #2e7d32; min-height: 1.2em;"></p>
+            </div>
+        @endif
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+            <button type="button" class="btn-imprimir" onclick="abrirImpresion('cultural')">
                 <i class="fas fa-print"></i>
                 Lista Cultural
             </button>
-            <button class="btn-imprimir" onclick="abrirImpresion('deportiva')">
+            <button type="button" class="btn-imprimir" onclick="abrirImpresion('deportiva')">
                 <i class="fas fa-print"></i>
                 Lista Deportiva
+            </button>
+            <button type="button" class="btn-imprimir" onclick="abrirImpresion('academica')">
+                <i class="fas fa-print"></i>
+                Lista Académica
             </button>
         </div>
     </div>
@@ -305,6 +339,29 @@
 </div>
 
 <script>
+    window.pdfResultadosSeleccionado = window.pdfResultadosSeleccionado || null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.btn-usar-pdf-resultados').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                window.pdfResultadosSeleccionado = {
+                    id: btn.getAttribute('data-id'),
+                    archivo: btn.getAttribute('data-archivo') || ''
+                };
+                document.querySelectorAll('.btn-usar-pdf-resultados').forEach(function(b) {
+                    b.classList.remove('active');
+                });
+                btn.classList.add('active');
+                var card = btn.closest('.documento-card-resultados');
+                var nombre = card ? card.querySelector('.doc-nombre') : null;
+                var info = document.getElementById('pdfResultadosSeleccionadoInfo');
+                if (info) {
+                    info.textContent = nombre ? ('Usando: ' + nombre.textContent.trim()) : 'PDF seleccionado.';
+                }
+            });
+        });
+    });
+
     const allEvaluaciones = {!! json_encode($evaluaciones->values()->toArray()) !!};
     const evaluacionesPorPagina = 10;
     const totalPaginas = {{ $totalPaginas }};
@@ -469,8 +526,16 @@
             alert('No se encontró el semestre para imprimir.');
             return;
         }
+        const documentosCount = {{ isset($documentos) ? $documentos->count() : 0 }};
+        if (documentosCount > 0 && (!window.pdfResultadosSeleccionado || !window.pdfResultadosSeleccionado.id)) {
+            alert('Selecciona el PDF membretado con el botón "Usar PDF".');
+            return;
+        }
         const baseUrl = `{{ route('coordinador.valle.resultados.print.complementarias', ['id' => '__ID__']) }}`.replace('__ID__', semestreId);
-        const url = tipo ? `${baseUrl}?tipo=${encodeURIComponent(tipo)}` : baseUrl;
+        let url = tipo ? `${baseUrl}?tipo=${encodeURIComponent(tipo)}` : baseUrl;
+        if (window.pdfResultadosSeleccionado && window.pdfResultadosSeleccionado.id) {
+            url += (url.indexOf('?') === -1 ? '?' : '&') + 'id_documento=' + encodeURIComponent(window.pdfResultadosSeleccionado.id);
+        }
         const iframe = document.createElement('iframe');
         iframe.style.position = 'fixed';
         iframe.style.right = '0';
@@ -480,22 +545,13 @@
         iframe.style.border = '0';
         iframe.src = url;
         document.body.appendChild(iframe);
-
-        iframe.onload = function() {
-            try {
-                const iframeWindow = iframe.contentWindow || iframe;
-                if (iframeWindow && iframeWindow.print) {
-                    iframeWindow.focus();
-                    iframeWindow.print();
-                }
-            } catch (e) {
-                console.error('Error al imprimir desde iframe:', e);
-            } finally {
-                setTimeout(() => {
+        iframe.addEventListener('load', function() {
+            setTimeout(function() {
+                try {
                     document.body.removeChild(iframe);
-                }, 1000);
-            }
-        };
+                } catch (e) {}
+            }, 180000);
+        });
     }
 </script>
 

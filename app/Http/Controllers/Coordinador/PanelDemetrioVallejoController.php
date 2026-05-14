@@ -11,6 +11,9 @@ use App\Models\Unidad;
 use App\Models\Estudiante;
 use App\Models\Evaluacion;
 use App\Models\Informe;
+use App\Models\Documento;
+use App\Support\ResultadosExtraescolaresFirmas;
+use App\Support\ResultadosTipoFiltro;
 
 class PanelDemetrioVallejoController extends Controller
 {
@@ -154,7 +157,7 @@ class PanelDemetrioVallejoController extends Controller
         ]);
     }
 
-    public function printResultados($id)
+    public function printResultados($id, Request $request)
     {
         $user = Auth::user();
         if ($user && ($user->rol ?? '') === 'Coordinador') {
@@ -195,42 +198,36 @@ class PanelDemetrioVallejoController extends Controller
             });
         }
 
-        // Filtrar por tipo de actividad si viene en la petición ("cultural" | "deportiva")
-        $tipo = strtolower(request()->get('tipo', 'cultural'));
-        if (in_array($tipo, ['cultural', 'deportiva'])) {
-            $evaluacionesQuery->whereHas('actividad', function ($q) use ($tipo) {
-                $q->where('tipo_programa', $this->panelTipoPrograma());
-                // Filtrar únicamente por palabras clave en nombre_actividad para evitar columnas inexistentes
-                if ($tipo === 'cultural') {
-                    $q->where(function($qw){
-                        $keywords = [
-                            'cultural','arte','artística','artistica','danzas','danza','folklor','folklórica','folklorica','baile',
-                            'música','musica','teatro','pintura','coro','orquesta','ajedrez','lectura','fotografía','fotografia','rondalla','escolta','banda de guerra'
-                        ];
-                        foreach ($keywords as $kw) { $qw->orWhere('nombre_actividad', 'like', "%$kw%"); }
-                    });
-                } else {
-                    $q->where(function($qw){
-                        $keywords = [
-                            'deportiva','deporte','fútbol','futbol','basquetbol','basket','voleibol','atletismo','natación','natacion',
-                            'tenis','gimnasia','acondicionamiento','acondicionamiento fisico','acondicionamiento físico','preparacion fisica'
-                        ];
-                        foreach ($keywords as $kw) { $qw->orWhere('nombre_actividad', 'like', "%$kw%"); }
-                    });
-                }
-            });
+        $tipo = strtolower((string) $request->query('tipo', 'cultural'));
+        if (! in_array($tipo, ['cultural', 'deportiva', 'academica'], true)) {
+            $tipo = 'cultural';
         }
+        ResultadosTipoFiltro::apply($evaluacionesQuery, $tipo, $this->panelTipoPrograma());
 
         $evaluaciones = $evaluacionesQuery->get()->sortBy(function($evaluacion) {
             return $evaluacion->estudiante->nombre ?? '';
         })->values();
+
+        $membreteArchivoUrl = null;
+        $idDoc = $request->query('id_documento');
+        if ($idDoc) {
+            $doc = Documento::where('id_semestre', $semestre->id_semestre)
+                ->where('id', $idDoc)
+                ->first();
+            if ($doc && ! empty($doc->archivo)) {
+                $membreteArchivoUrl = asset($doc->archivo);
+            }
+        }
 
         return view($this->resultadosPdfView(), [
             'user' => $user,
             'semestre' => $semestre,
             'unidad' => 'Unidad Académica Demetrio Vallejo Martínez - El Espinal',
             'evaluaciones' => $evaluaciones,
-            'tipo' => in_array($tipo, ['cultural','deportiva']) ? $tipo : 'cultural',
+            'tipo' => $tipo,
+            'lugar' => 'El Espinal, Oax.',
+            'firmas' => ResultadosExtraescolaresFirmas::forUnidad('demetrio_vallejo'),
+            'membreteArchivoUrl' => $membreteArchivoUrl,
         ]);
     }
 
