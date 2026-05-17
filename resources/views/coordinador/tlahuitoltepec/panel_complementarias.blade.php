@@ -106,8 +106,8 @@
           </a>
         </li>
         <li>
-          <a href="{{ url()->current() }}?show=resultados" class="{{ $show === 'resultados' ? 'active' : '' }}">
-            <i class="fas fa-chart-line"></i> Resultados
+          <a href="{{ url()->current() }}?show=formatos" class="{{ in_array($show, ['formatos', 'resultados'], true) ? 'active' : '' }}">
+            <i class="fas fa-file-alt"></i> Formatos
           </a>
         </li>
         <li style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.15);">
@@ -167,7 +167,7 @@
         <h1>Bienvenido al Sistema de Actividades Complementarias</h1>
         <div class="unidad-nombre">Unidad Académica Santa María Tlahuitoltepec</div>
         <p>Semestre: <strong>{{ $semestre->nombre ?? '—' }}</strong></p>
-        <p>Desde este panel podrás gestionar estudiantes, constancias, informes y visualizar resultados de actividades complementarias para el semestre seleccionado.</p>
+        <p>Desde este panel podrás gestionar estudiantes, constancias, informes y generar formatos de impresión de actividades complementarias para el semestre seleccionado.</p>
       </div>
 
       <!-- Stats Cards (compact, uniform sizes only) -->
@@ -201,11 +201,11 @@
 
         <div class="stat-card" style="flex:0 0 24%; max-width:24%; box-sizing:border-box; padding:8px 6px; display:flex; flex-direction:column; justify-content:space-between; height:130px;">
           <div class="stat-card-header" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-            <span class="stat-card-title" style="font-size:0.85rem;">Resultados</span>
-            <div class="stat-card-icon purple" style="width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:14px; padding:0; border-radius:50%;"><i class="fas fa-chart-line"></i></div>
+            <span class="stat-card-title" style="font-size:0.85rem;">Formatos</span>
+            <div class="stat-card-icon purple" style="width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:14px; padding:0; border-radius:50%;"><i class="fas fa-file-alt"></i></div>
           </div>
           <div class="stat-card-value" style="font-size:1rem; margin:6px 0;">—</div>
-          <div class="stat-card-footer" style="font-size:0.72rem; color:inherit; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">Visualizar indicadores y estadísticas del semestre.</div>
+          <div class="stat-card-footer" style="font-size:0.72rem; color:inherit; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">Imprimir formatos de registro y resultados por actividad.</div>
         </div>
       </div>
       @endif
@@ -306,8 +306,12 @@
         ])
       @endif
 
-      @if(request()->get('show') === 'resultados')
-        @include('coordinador.tlahuitoltepec.complementarias.resultados')
+      @if(in_array(request()->get('show'), ['formatos', 'resultados'], true))
+        @include('coordinador.valle_de_etla.formatos', [
+            'firmasUnidadKey' => 'tlahuitoltepec',
+            'formatosPrintRoute' => 'coordinador.tlahuitoltepec.formatos.print.complementarias',
+            'formatosLugarBase' => 'Santiago Suchilquitongo',
+        ])
       @endif
 
     </div>
