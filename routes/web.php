@@ -251,10 +251,42 @@ Route::get('coordinador/valle-de-etla/resultados/print/{id}', [PanelValleEtlaCon
     ->middleware('auth')
     ->name('coordinador.valle.resultados.print');
 
+Route::get('coordinador/valle-de-etla/formatos/print/{semestre}/{actividad}', [PanelValleEtlaController::class, 'printFormato'])
+    ->middleware('auth')
+    ->name('coordinador.valle.formatos.print');
+
+Route::get('coordinador/demetrio-vallejo/formatos/print/{semestre}/{actividad}', [PanelDemetrioVallejoController::class, 'printFormato'])
+    ->middleware('auth')
+    ->name('coordinador.demetrio.formatos.print');
+
+Route::get('coordinador/union-hidalgo/formatos/print/{semestre}/{actividad}', [PanelUnionHidalgoController::class, 'printFormato'])
+    ->middleware('auth')
+    ->name('coordinador.union_hidalgo.formatos.print');
+
+Route::get('coordinador/tlahuitoltepec/formatos/print/{semestre}/{actividad}', [PanelTlahuitoltepecController::class, 'printFormato'])
+    ->middleware('auth')
+    ->name('coordinador.tlahuitoltepec.formatos.print');
+
 // Impresión de resultados — panel Actividades Complementarias (Valle de Etla)
+Route::get('coordinador/valle-de-etla/complementarias/formatos/print/{semestre}/{actividad}', [PanelValleEtlaComplementariasController::class, 'printFormato'])
+    ->middleware('auth')
+    ->name('coordinador.valle.formatos.print.complementarias');
+
 Route::get('coordinador/valle-de-etla/complementarias/resultados/print/{id}', [PanelValleEtlaComplementariasController::class, 'printResultados'])
     ->middleware('auth')
     ->name('coordinador.valle.resultados.print.complementarias');
+
+Route::get('coordinador/demetrio-vallejo/complementarias/formatos/print/{semestre}/{actividad}', [PanelDemetrioVallejoComplementariasController::class, 'printFormato'])
+    ->middleware('auth')
+    ->name('coordinador.demetrio.formatos.print.complementarias');
+
+Route::get('coordinador/union-hidalgo/complementarias/formatos/print/{semestre}/{actividad}', [PanelUnionHidalgoComplementariasController::class, 'printFormato'])
+    ->middleware('auth')
+    ->name('coordinador.union_hidalgo.formatos.print.complementarias');
+
+Route::get('coordinador/tlahuitoltepec/complementarias/formatos/print/{semestre}/{actividad}', [PanelTlahuitoltepecComplementariasController::class, 'printFormato'])
+    ->middleware('auth')
+    ->name('coordinador.tlahuitoltepec.formatos.print.complementarias');
 
 Route::get('coordinador/demetrio-vallejo/complementarias/resultados/print/{id}', [PanelDemetrioVallejoComplementariasController::class, 'printResultados'])
     ->middleware('auth')

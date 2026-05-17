@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Coordinador;
 
+use App\Http\Controllers\Coordinador\Concerns\ImprimeFormatoActividadCoordinador;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +18,7 @@ use App\Support\ResultadosTipoFiltro;
 
 class PanelDemetrioVallejoController extends Controller
 {
+    use ImprimeFormatoActividadCoordinador;
     /**
      * Vista Blade del panel (Extraescolares). Las subclases en Complementarias\ devuelven panel_complementarias.
      */
@@ -38,8 +40,42 @@ class PanelDemetrioVallejoController extends Controller
         return Actividad::TIPO_EXTRAESCOLAR;
     }
 
-    public function show($id)
+    protected function firmasUnidadKey(): string
     {
+        return 'demetrio_vallejo';
+    }
+
+    protected function formatoActividadLugar(): string
+    {
+        return 'El Espinal';
+    }
+
+    protected function autorizarCoordinadorFormato($user): void
+    {
+        if ($user && ($user->rol ?? '') === 'Coordinador') {
+            $ua = $user->unidad_academica ?? '';
+            if (stripos($ua, 'Demetrio') === false && stripos($ua, 'Vallejo') === false && stripos($ua, 'Espinal') === false) {
+                abort(403);
+            }
+        }
+    }
+
+    protected function keywordsActividadPanel(): array
+    {
+        return ['Demetrio', 'Vallejo', 'Espinal'];
+    }
+
+    protected function fallbackLikeActividadPanel(): array
+    {
+        return ['%Demetrio%', '%Vallejo%', '%Espinal%'];
+    }
+
+    public function show($id, Request $request)
+    {
+        if ($redirect = $this->redirigirResultadosAFormatos($request)) {
+            return $redirect;
+        }
+
         $user = Auth::user();
         if ($user && ($user->rol ?? '') === 'Coordinador') {
             $ua = $user->unidad_academica ?? '';
