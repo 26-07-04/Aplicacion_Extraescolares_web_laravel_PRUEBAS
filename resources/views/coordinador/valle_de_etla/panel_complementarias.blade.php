@@ -374,6 +374,7 @@
     (function(){
       const __csrf = '{{ csrf_token() }}';
       const __currentSemestreId = '{{ $semestre->id ?? $semestre->id_semestre ?? request()->route('id') ?? 0 }}';
+      const __tipoProgramaPanel = @json($tipo_programa_informes_panel ?? \App\Models\Actividad::TIPO_COMPLEMENTARIA);
       const __currentUnidadId = '{{ $user->id_unidad ?? 0 }}';
       
       const actividadesUnidadMap = {
@@ -587,7 +588,8 @@
         const payload = {
           students: mapped,
           id_unidad: unidadIdFromActividad,
-          id_semestre: __currentSemestreId
+          id_semestre: __currentSemestreId,
+          tipo_programa: __tipoProgramaPanel
         };
 
         modalUpload.disabled = true;

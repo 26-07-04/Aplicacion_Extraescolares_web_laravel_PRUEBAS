@@ -110,6 +110,11 @@
             <i class="fas fa-chart-line"></i> Resultados
           </a>
         </li>
+        <li style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.15);">
+          <a href="{{ route('coordinador.tlahuitoltepec.panel.complementarias', $semestre->id_semestre ?? $semestre->id) }}" style="font-size:0.9rem;">
+            <i class="fas fa-exchange-alt"></i> Ir a Complementarias
+          </a>
+        </li>
       </ul>
     </div>
   </div>
@@ -377,6 +382,7 @@
       // Tomar el token CSRF siempre actualizado desde el meta
       const __csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
       const __currentSemestreId = '{{ $semestre->id ?? $semestre->id_semestre ?? request()->route('id') ?? 0 }}';
+      const __tipoProgramaPanel = @json($tipo_programa_informes_panel ?? \App\Models\Actividad::TIPO_EXTRAESCOLAR);
       const __currentUnidadId = '{{ $user->id_unidad ?? 0 }}';
       
       // Mapear actividades a su id_unidad
@@ -612,7 +618,8 @@
         const payload = {
           students: mapped,
           id_unidad: unidadIdFromActividad,
-          id_semestre: __currentSemestreId
+          id_semestre: __currentSemestreId,
+          tipo_programa: __tipoProgramaPanel
         };
 
         modalUpload.disabled = true;

@@ -28,14 +28,8 @@
       </thead>
       <tbody id="estudiantesTableBody">
         @php
-          // Traer todos los estudiantes de las actividades del semestre y unidad
-          $allEstudiantes = \App\Models\Estudiante::whereIn('estudiantes.id_actividad', 
-            $actividades->pluck('id_actividad')->toArray()
-          )
-          ->join('actividades', 'estudiantes.id_actividad', '=', 'actividades.id_actividad')
-          ->select('estudiantes.*', 'actividades.nombre_actividad')
-          ->orderBy('estudiantes.nombre', 'asc')
-          ->get();
+          $tipoProgramaPanel = $tipo_programa_informes_panel ?? \App\Models\Actividad::TIPO_EXTRAESCOLAR;
+          $allEstudiantes = \App\Support\EstudiantesPanelQuery::listar($actividades ?? collect(), $tipoProgramaPanel);
 
           // Paginar de 50 en 50
           $estudiantesPorPagina = 50;

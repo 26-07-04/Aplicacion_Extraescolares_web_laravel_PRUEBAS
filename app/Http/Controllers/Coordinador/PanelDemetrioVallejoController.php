@@ -78,14 +78,14 @@ class PanelDemetrioVallejoController extends Controller
         // Todas las actividades del semestre (sin filtrar por unidad) — útil para depuración
         $actividades_semestre = Actividad::with('unidad')
             ->where('id_semestre', $semestre->id_semestre)
-            ->where('tipo_programa', $this->panelTipoPrograma())
+            ->delTipoPrograma($this->panelTipoPrograma())
             ->orderBy('created_at', 'desc')
             ->get();
 
         // Actividades filtradas por la unidad académica del usuario
         $actividadesQuery = Actividad::with('unidad')
             ->where('id_semestre', $semestre->id_semestre)
-            ->where('tipo_programa', $this->panelTipoPrograma());
+            ->delTipoPrograma($this->panelTipoPrograma());
 
         if (!empty($user_unidad_id)) {
             $actividadesQuery->where('id_unidad', $user_unidad_id);
@@ -121,7 +121,7 @@ class PanelDemetrioVallejoController extends Controller
         $evaluacionesQuery = Evaluacion::with(['estudiante', 'actividad'])
             ->where('id_semestre', $id)
             ->whereHas('actividad', function ($q) {
-                $q->where('tipo_programa', $this->panelTipoPrograma());
+                $q->delTipoPrograma($this->panelTipoPrograma());
             });
         
         // Filtrar por unidad solo si tenemos id_unidad
@@ -187,7 +187,7 @@ class PanelDemetrioVallejoController extends Controller
         $evaluacionesQuery = Evaluacion::with(['estudiante', 'actividad'])
             ->where('id_semestre', $id)
             ->whereHas('actividad', function ($q) {
-                $q->where('tipo_programa', $this->panelTipoPrograma());
+                $q->delTipoPrograma($this->panelTipoPrograma());
             });
 
         if (!empty($user_unidad_id)) {

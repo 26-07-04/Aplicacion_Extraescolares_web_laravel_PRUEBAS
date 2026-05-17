@@ -71,7 +71,7 @@ class PanelUnionHidalgoController extends Controller
 
         $actividadesQuery = Actividad::with('unidad')
             ->where('id_semestre', $semestre->id_semestre)
-            ->where('tipo_programa', $this->panelTipoPrograma());
+            ->delTipoPrograma($this->panelTipoPrograma());
         if (!empty($user_unidad_id)) {
             $actividadesQuery->where('id_unidad', $user_unidad_id);
         } elseif (!empty($uaKeyword)) {
@@ -90,7 +90,7 @@ class PanelUnionHidalgoController extends Controller
         $evaluacionesQuery = \App\Models\Evaluacion::with(['estudiante', 'actividad'])
             ->where('id_semestre', $id)
             ->whereHas('actividad', function ($q) {
-                $q->where('tipo_programa', $this->panelTipoPrograma());
+                $q->delTipoPrograma($this->panelTipoPrograma());
             });
 
         if (!empty($user_unidad_id)) {
@@ -147,7 +147,7 @@ class PanelUnionHidalgoController extends Controller
         $evaluacionesQuery = \App\Models\Evaluacion::with(['estudiante', 'actividad'])
             ->where('id_semestre', $id)
             ->whereHas('actividad', function ($q) {
-                $q->where('tipo_programa', $this->panelTipoPrograma());
+                $q->delTipoPrograma($this->panelTipoPrograma());
             });
 
         if (!empty($user_unidad_id)) {

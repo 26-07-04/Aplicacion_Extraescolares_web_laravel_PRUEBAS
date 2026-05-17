@@ -162,7 +162,7 @@ class EvaluacionTlahuitoltepecController extends Controller
     {
         try {
             $documentos = Documento::where('id_semestre', $id_semestre)
-                                   ->where('tipo_documento', 'membrete')
+                                   ->orderByDesc('created_at')
                                    ->get();
 
             return response()->json([

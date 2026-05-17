@@ -191,14 +191,13 @@
         // Obtener el semestre activo (estatus = 1 o true)
         $semestreActivo = \App\Models\Semestre::where('estatus', 1)->first();
         
-        $allEstudiantes = \App\Models\Estudiante::whereIn('estudiantes.id_actividad', 
-            $actividades->pluck('id_actividad')->toArray()
-        )
-        ->join('actividades', 'estudiantes.id_actividad', '=', 'actividades.id_actividad')
-        ->leftJoin('evaluaciones', 'estudiantes.id_alumno', '=', 'evaluaciones.id_alumno')
-        ->select('estudiantes.*', 'actividades.nombre_actividad', 'evaluaciones.id_evaluacion')
-        ->orderBy('estudiantes.nombre', 'asc')
-        ->get();
+        $tipoProgramaPanel = $tipo_programa_informes_panel ?? \App\Models\Actividad::TIPO_COMPLEMENTARIA;
+        $idsActividades = ($actividades ?? collect())->pluck('id_actividad')->filter()->values()->all();
+        $allEstudiantes = $idsActividades === [] ? collect() : \App\Support\EstudiantesPanelQuery::queryBase($idsActividades, $tipoProgramaPanel)
+            ->leftJoin('evaluaciones', 'estudiantes.id_alumno', '=', 'evaluaciones.id_alumno')
+            ->select('estudiantes.*', 'actividades.nombre_actividad', 'evaluaciones.id_evaluacion')
+            ->orderBy('estudiantes.nombre', 'asc')
+            ->get();
         
         $estudiantesArray = [];
         foreach ($allEstudiantes as $est) {

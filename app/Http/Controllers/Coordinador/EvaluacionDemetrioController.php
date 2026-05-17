@@ -166,7 +166,7 @@ class EvaluacionDemetrioController extends Controller
         try {
             // Filtrar documentos del tipo membrete del semestre seleccionado
             $documentos = Documento::where('id_semestre', $id_semestre)
-                                   ->where('tipo_documento', 'membrete') // Ajusta según tu BD
+                                   ->orderByDesc('created_at')
                                    ->get();
 
             return response()->json([

@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Coordinador;
 
 use App\Http\Controllers\Controller;
+use App\Models\Actividad;
+use App\Models\Estudiante;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\Estudiante;
 
 class ImportEstudiantesController extends Controller
 {
@@ -80,6 +81,23 @@ class ImportEstudiantesController extends Controller
 
         if (! is_array($students) || count($students) === 0) {
             return response()->json(['message' => 'No hay estudiantes para importar'], 422);
+        }
+
+        $actividad = Actividad::find($actividadId);
+        if (! $actividad) {
+            return response()->json(['message' => 'Actividad no encontrada'], 404);
+        }
+
+        $tipoEsperado = $request->input('tipo_programa');
+        if ($tipoEsperado) {
+            $tipoEsperado = \App\Models\Informe::tipoProgramaValido($tipoEsperado);
+            $tipoActividad = $actividad->tipo_programa ?? Actividad::TIPO_EXTRAESCOLAR;
+            if ($tipoActividad !== $tipoEsperado
+                && ! ($tipoEsperado === Actividad::TIPO_EXTRAESCOLAR && $tipoActividad === null)) {
+                return response()->json([
+                    'message' => 'La actividad no pertenece al panel seleccionado (extraescolar / complementaria).',
+                ], 422);
+            }
         }
 
         $inserted = 0;

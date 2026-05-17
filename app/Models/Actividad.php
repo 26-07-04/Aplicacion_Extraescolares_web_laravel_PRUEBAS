@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -36,6 +37,44 @@ class Actividad extends Model
     public function semestre()
     {
         return $this->belongsTo(Semestre::class, 'id_semestre', 'id_semestre');
+    }
+
+    /**
+     * Solo actividades del tipo de programa del panel (extraescolar o complementaria).
+     * Las actividades sin tipo_programa se consideran extraescolares (datos antiguos).
+     */
+    public function scopeDelTipoPrograma(Builder $query, ?string $tipoPrograma): Builder
+    {
+        $tipo = Informe::tipoProgramaValido($tipoPrograma);
+
+        if ($tipo === self::TIPO_COMPLEMENTARIA) {
+            return $query->where('tipo_programa', self::TIPO_COMPLEMENTARIA);
+        }
+
+        return $query->where(function (Builder $q) {
+            $q->where('tipo_programa', self::TIPO_EXTRAESCOLAR)
+                ->orWhereNull('tipo_programa');
+        });
+    }
+
+    /**
+     * Mismo criterio que scopeDelTipoPrograma, en consultas con join a actividades.
+     */
+    public static function restringirJoinTipoPrograma(Builder $query, ?string $tipoPrograma, string $tabla = 'actividades'): void
+    {
+        $tipo = Informe::tipoProgramaValido($tipoPrograma);
+        $columna = $tabla . '.tipo_programa';
+
+        if ($tipo === self::TIPO_COMPLEMENTARIA) {
+            $query->where($columna, self::TIPO_COMPLEMENTARIA);
+
+            return;
+        }
+
+        $query->where(function (Builder $q) use ($columna) {
+            $q->where($columna, self::TIPO_EXTRAESCOLAR)
+                ->orWhereNull($columna);
+        });
     }
 
     /**

@@ -77,7 +77,7 @@ class PanelValleEtlaController extends Controller
 
         $actividadesQuery = Actividad::with('unidad')
             ->where('id_semestre', $semestre->id_semestre)
-            ->where('tipo_programa', $this->panelTipoPrograma());
+            ->delTipoPrograma($this->panelTipoPrograma());
         if (!empty($user_unidad_id)) {
             $actividadesQuery->where('id_unidad', $user_unidad_id);
         } else {
@@ -106,7 +106,7 @@ class PanelValleEtlaController extends Controller
         $evaluacionesQuery = Evaluacion::with(['estudiante', 'actividad'])
             ->where('id_semestre', $semestre->id_semestre)
             ->whereHas('actividad', function ($q) {
-                $q->where('tipo_programa', $this->panelTipoPrograma());
+                $q->delTipoPrograma($this->panelTipoPrograma());
             });
 
         // Restringir a actividades que están en el panel (evita traer evaluaciones de actividades/otras unidades no listadas)
@@ -188,13 +188,13 @@ class PanelValleEtlaController extends Controller
         $evaluacionesQuery = Evaluacion::with(['estudiante', 'actividad'])
             ->where('id_semestre', $id)
             ->whereHas('actividad', function ($q) {
-                $q->where('tipo_programa', $this->panelTipoPrograma());
+                $q->delTipoPrograma($this->panelTipoPrograma());
             });
 
         // Construir lista de actividades válidas para este semestre/unidad (usar la misma lógica que en show)
         $actividadesQuery = Actividad::with('unidad')
             ->where('id_semestre', $semestre->id_semestre)
-            ->where('tipo_programa', $this->panelTipoPrograma());
+            ->delTipoPrograma($this->panelTipoPrograma());
         if (!empty($user_unidad_id)) {
             $actividadesQuery->where('id_unidad', $user_unidad_id);
         } else {
@@ -227,7 +227,7 @@ class PanelValleEtlaController extends Controller
                 $evaluacionesQuery->whereHas('actividad', function ($q) use ($user_unidad_id, $semestre) {
                     $q->where('id_unidad', $user_unidad_id)
                       ->where('id_semestre', $semestre->id_semestre)
-                      ->where('tipo_programa', $this->panelTipoPrograma());
+                      ->delTipoPrograma($this->panelTipoPrograma());
                 });
             } elseif (!empty($uaKeyword)) {
                 $evaluacionesQuery->whereHas('actividad.unidad', function ($q) use ($uaKeyword, $semestre) {
@@ -238,12 +238,12 @@ class PanelValleEtlaController extends Controller
                 });
                 $evaluacionesQuery->whereHas('actividad', function ($q) use ($semestre) {
                     $q->where('id_semestre', $semestre->id_semestre)
-                      ->where('tipo_programa', $this->panelTipoPrograma());
+                      ->delTipoPrograma($this->panelTipoPrograma());
                 });
             } else {
                 $evaluacionesQuery->whereHas('actividad', function ($q) use ($semestre) {
                     $q->where('id_semestre', $semestre->id_semestre)
-                      ->where('tipo_programa', $this->panelTipoPrograma());
+                      ->delTipoPrograma($this->panelTipoPrograma());
                 })->whereHas('actividad.unidad', function ($q) {
                     $q->where('nombre_unidad', 'like', '%Valle%')->orWhere('nombre_unidad','like','%Etla%');
                 });
