@@ -29,7 +29,7 @@ class InformeTlahuitoltepecController extends Controller
 		}
 
 		$documentos = \App\Models\Documento::where('id_semestre', $id_semestre)
-			->where('tipo_documento', 'membrete')
+			->orderByDesc('created_at')
 			->get();
 
 		$id_unidad = 3;

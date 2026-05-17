@@ -163,13 +163,8 @@
 <script>
     // Datos de estudiantes cargados desde la base de datos
     @php
-        $allEstudiantes = \App\Models\Estudiante::whereIn('estudiantes.id_actividad', 
-            $actividades->pluck('id_actividad')->toArray()
-        )
-        ->join('actividades', 'estudiantes.id_actividad', '=', 'actividades.id_actividad')
-        ->select('estudiantes.*', 'actividades.nombre_actividad')
-        ->orderBy('estudiantes.nombre', 'asc')
-        ->get();
+        $tipoProgramaPanel = $tipo_programa_informes_panel ?? \App\Models\Actividad::TIPO_COMPLEMENTARIA;
+        $allEstudiantes = \App\Support\EstudiantesPanelQuery::listar($actividades ?? collect(), $tipoProgramaPanel);
         
         $estudiantesArray = [];
         // Determinar id de semestre para buscar evaluaciones existentes

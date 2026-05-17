@@ -207,19 +207,21 @@
         
         $semId = $semestre->id_semestre ?? $semestre->id ?? $semestreActivo->id_semestre ?? $semestreActivo->id ?? null;
         $unidadId = $user->id_unidad ?? null;
-        // Filtrar evaluaciones por semestre y unidad para reconocer correctamente las que cumplen en el periodo actual
-        $allEstudiantes = \App\Models\Estudiante::whereIn('estudiantes.id_actividad', 
-            $actividades->pluck('id_actividad')->toArray()
-        )
-        ->join('actividades', 'estudiantes.id_actividad', '=', 'actividades.id_actividad')
-        ->leftJoin('evaluaciones', function($join) use ($semId, $unidadId) {
-            $join->on('estudiantes.id_alumno', '=', 'evaluaciones.id_alumno');
-            if ($semId) { $join->where('evaluaciones.id_semestre', '=', $semId); }
-            if ($unidadId) { $join->where('evaluaciones.id_unidad', '=', $unidadId); }
-        })
-        ->select('estudiantes.*', 'actividades.nombre_actividad', 'evaluaciones.id_evaluacion')
-        ->orderBy('estudiantes.nombre', 'asc')
-        ->get();
+        $tipoProgramaPanel = $tipo_programa_informes_panel ?? \App\Models\Actividad::TIPO_COMPLEMENTARIA;
+        $idsActividades = ($actividades ?? collect())->pluck('id_actividad')->filter()->values()->all();
+        $allEstudiantes = $idsActividades === [] ? collect() : \App\Support\EstudiantesPanelQuery::queryBase($idsActividades, $tipoProgramaPanel)
+            ->leftJoin('evaluaciones', function ($join) use ($semId, $unidadId) {
+                $join->on('estudiantes.id_alumno', '=', 'evaluaciones.id_alumno');
+                if ($semId) {
+                    $join->where('evaluaciones.id_semestre', '=', $semId);
+                }
+                if ($unidadId) {
+                    $join->where('evaluaciones.id_unidad', '=', $unidadId);
+                }
+            })
+            ->select('estudiantes.*', 'actividades.nombre_actividad', 'evaluaciones.id_evaluacion')
+            ->orderBy('estudiantes.nombre', 'asc')
+            ->get();
         
         $estudiantesArray = [];
         foreach ($allEstudiantes as $est) {

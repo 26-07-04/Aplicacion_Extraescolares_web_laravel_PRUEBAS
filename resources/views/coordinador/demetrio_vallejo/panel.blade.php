@@ -396,6 +396,7 @@
       // Definir variables globales al inicio
       const __csrf = '{{ csrf_token() }}';
       const __currentSemestreId = '{{ $semestre->id ?? $semestre->id_semestre ?? request()->route('id') ?? 0 }}';
+      const __tipoProgramaPanel = @json($tipo_programa_informes_panel ?? \App\Models\Actividad::TIPO_EXTRAESCOLAR);
       const __currentUnidadId = '{{ $user->id_unidad ?? 0 }}';
       
       // Mapear actividades a su id_unidad
@@ -631,7 +632,8 @@
         const payload = {
           students: mapped,
           id_unidad: unidadIdFromActividad,
-          id_semestre: __currentSemestreId
+          id_semestre: __currentSemestreId,
+          tipo_programa: __tipoProgramaPanel
         };
 
         modalUpload.disabled = true;
