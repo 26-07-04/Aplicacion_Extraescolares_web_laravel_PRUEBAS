@@ -1,1 +1,1 @@
-@include('coordinador.pdf.resultados_extraescolares_print')
+@include('coordinador.complementarias.pdf.resultados_liberaciones_print')
