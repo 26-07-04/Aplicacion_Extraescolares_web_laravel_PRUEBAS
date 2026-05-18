@@ -49,6 +49,22 @@ class PanelValleEtlaController extends Controller
         return 'valle_etla';
     }
 
+    /** Si es false, la impresión de resultados incluye todas las actividades (sin filtro cultural/deportiva/académica). */
+    protected function filtrarResultadosPorTipoEnImpresion(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Datos extra para la vista PDF de resultados (p. ej. cabecera de oficio en complementarias).
+     *
+     * @return array<string, mixed>
+     */
+    protected function datosAdicionalesVistaResultadosPdf(Semestre $semestre, $evaluaciones, Request $request): array
+    {
+        return [];
+    }
+
     protected function formatoActividadLugar(): string
     {
         return 'Santiago Suchilquitongo';
@@ -286,11 +302,14 @@ class PanelValleEtlaController extends Controller
             }
         }
 
-        $tipo = strtolower((string) $request->query('tipo', 'cultural'));
-        if (! in_array($tipo, ['cultural', 'deportiva', 'academica'], true)) {
-            $tipo = 'cultural';
+        $tipo = 'cultural';
+        if ($this->filtrarResultadosPorTipoEnImpresion()) {
+            $tipo = strtolower((string) $request->query('tipo', 'cultural'));
+            if (! in_array($tipo, ['cultural', 'deportiva', 'academica'], true)) {
+                $tipo = 'cultural';
+            }
+            ResultadosTipoFiltro::apply($evaluacionesQuery, $tipo, $this->panelTipoPrograma());
         }
-        ResultadosTipoFiltro::apply($evaluacionesQuery, $tipo, $this->panelTipoPrograma());
 
         $evaluaciones = $evaluacionesQuery->get()->sortBy(function($evaluacion) {
             return $evaluacion->estudiante->nombre ?? '';
@@ -307,7 +326,7 @@ class PanelValleEtlaController extends Controller
             }
         }
 
-        return view($this->resultadosPdfView(), [
+        return view($this->resultadosPdfView(), array_merge([
             'user' => $user,
             'semestre' => $semestre,
             'unidad' => 'Unidad Académica Valle de Etla',
@@ -316,7 +335,7 @@ class PanelValleEtlaController extends Controller
             'lugar' => 'Santiago Suchilquitongo, Oax',
             'firmas' => ResultadosExtraescolaresFirmas::forUnidad('valle_etla'),
             'membreteArchivoUrl' => $membreteArchivoUrl,
-        ]);
+        ], $this->datosAdicionalesVistaResultadosPdf($semestre, $evaluaciones, $request)));
     }
 
     public function actualizarEstudiante($id, Request $request)

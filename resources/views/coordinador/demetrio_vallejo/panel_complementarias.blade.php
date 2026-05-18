@@ -107,8 +107,8 @@
           </a>
         </li>
         <li>
-          <a href="{{ url()->current() }}?show=formatos" class="{{ in_array($show, ['formatos', 'resultados'], true) ? 'active' : '' }}">
-            <i class="fas fa-file-alt"></i> Formatos
+          <a href="{{ url()->current() }}?show=resultados" class="{{ $show === 'resultados' ? 'active' : '' }}">
+            <i class="fas fa-chart-line"></i> Resultados
           </a>
         </li>
       </ul>
@@ -199,11 +199,11 @@
 
         <div class="stat-card" style="flex:0 0 24%; max-width:24%; box-sizing:border-box; padding:8px 6px; display:flex; flex-direction:column; justify-content:space-between; height:130px;">
           <div class="stat-card-header" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-            <span class="stat-card-title" style="font-size:0.85rem;">Formatos</span>
+            <span class="stat-card-title" style="font-size:0.85rem;">Resultados</span>
             <div class="stat-card-icon purple" style="width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:14px; padding:0; border-radius:50%;"><i class="fas fa-chart-line"></i></div>
           </div>
           <div class="stat-card-value" style="font-size:1rem; margin:6px 0;">—</div>
-          <div class="stat-card-footer" style="font-size:0.72rem; color:inherit; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">Imprimir formatos de registro y resultados por actividad.</div>
+          <div class="stat-card-footer" style="font-size:0.72rem; color:inherit; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">Visualizar indicadores y estadísticas del semestre.</div>
         </div>
       </div>
       @endif
@@ -326,12 +326,8 @@
         ])
       @endif
 
-      @if(in_array(request()->get('show'), ['formatos', 'resultados'], true))
-        @include('coordinador.valle_de_etla.formatos', [
-            'firmasUnidadKey' => 'demetrio_vallejo',
-            'formatosPrintRoute' => 'coordinador.demetrio.formatos.print.complementarias',
-            'formatosLugarBase' => 'El Espinal',
-        ])
+      @if(request()->get('show') === 'resultados')
+        @include('coordinador.demetrio_vallejo.complementarias.resultados')
       @endif
 
     </div>
