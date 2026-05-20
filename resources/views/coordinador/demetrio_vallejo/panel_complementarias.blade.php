@@ -101,11 +101,6 @@
             <i class="fas fa-file-signature"></i> Constancia de Cumplimiento
           </a>
         </li>
-         <li>
-          <a href="{{ url()->current() }}?show=informe" class="{{ $show === 'informe' ? 'active' : '' }}">
-            <i class="fas fa-file-pdf"></i> Informe de Actividad
-          </a>
-        </li>
         <li>
           <a href="{{ url()->current() }}?show=resultados" class="{{ $show === 'resultados' ? 'active' : '' }}">
             <i class="fas fa-chart-line"></i> Resultados
@@ -165,7 +160,7 @@
         <div class="unidad-nombre">Unidad Académica Demetrio Vallejo Martínez - El Espinal</div>
         <p>Semestre: <strong>{{ $semestre->nombre ?? '—' }}</strong></p>
         
-        <p>Desde este panel podrás gestionar estudiantes, constancias, informes y generar formatos de impresión de actividades complementarias para el semestre seleccionado.</p>
+        <p>Desde este panel podrás gestionar estudiantes, constancias y visualizar resultados de actividades complementarias para el semestre seleccionado.</p>
       </div>
 
       <!-- Stats Cards (compact, uniform sizes only) -->
@@ -188,7 +183,7 @@
           <div class="stat-card-footer" style="font-size:0.72rem; color:inherit; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">Generar y descargar constancias de cumplimiento para los estudiantes.</div>
         </div>
 
-        <div class="stat-card" style="flex:0 0 24%; max-width:24%; box-sizing:border-box; padding:8px 6px; display:flex; flex-direction:column; justify-content:space-between; height:130px;">
+        <div class="stat-card" style="display:none;" aria-hidden="true">
           <div class="stat-card-header" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
             <span class="stat-card-title" style="font-size:0.85rem;">Informes</span>
             <div class="stat-card-icon green" style="width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:14px; padding:0; border-radius:50%;"><i class="fas fa-file-pdf"></i></div>
@@ -309,21 +304,6 @@
 
       @if(request()->get('show') === 'constancias')
         @include('coordinador.demetrio_vallejo.complementarias.constancias_table')
-      @endif
-
-      @if(request()->get('show') === 'informe')
-        @php
-            $idSemestrePanel = $semestre->id_semestre ?? $semestre->id ?? null;
-            $id_unidad_informe = 2;
-        @endphp
-        @include('coordinador.demetrio_vallejo.complementarias.informe_actividad', [
-          'semestreActual' => $semestre,
-          'id_semestre' => $idSemestrePanel,
-          'informes' => $informes ?? collect(),
-          'documentos' => $documentos ?? collect(),
-          'id_unidad' => $id_unidad_informe,
-          'tipo_programa_informes_panel' => $tipo_programa_informes_panel ?? \App\Models\Actividad::TIPO_COMPLEMENTARIA,
-        ])
       @endif
 
       @if(request()->get('show') === 'resultados')
