@@ -94,22 +94,10 @@ class PanelDemetrioVallejoController extends Controller
 
         $informes = Informe::listadoGeneradosPorUnidad((int) $semestre->id_semestre, 2, $this->panelTipoPrograma());
 
-        // Filtrar actividades por semestre y por la unidad académica del usuario
-        // Nota: la tabla `unidades` no tiene columna `id_semestre`, por eso usamos whereHas para filtrar
-        $uaName = $user->unidad_academica ?? '';
-
-        // Intentar usar unidad_id si existe (más fiable)
-        $user_unidad_id = $user->unidad_id ?? $user->unidad ?? null;
-
-        // Derivar palabra clave a buscar en `unidades.nombre_unidad`
-        $uaKeyword = null;
-        $candidates = ['Demetrio','Vallejo','Unión','Union','Valle','Etla','Tlahuitoltepec','Tlahui','Santa','Espinal'];
-        foreach ($candidates as $cand) {
-            if (!empty($uaName) && stripos($uaName, $cand) !== false) {
-                $uaKeyword = $cand;
-                break;
-            }
-        }
+        $ctxUnidad = $this->resolverContextoUnidadPanel($user);
+        $uaName = $ctxUnidad['uaName'];
+        $uaKeyword = $ctxUnidad['uaKeyword'];
+        $user_unidad_id = $ctxUnidad['user_unidad_id'];
 
         // Todas las actividades del semestre (sin filtrar por unidad) — útil para depuración
         $actividades_semestre = Actividad::with('unidad')
@@ -118,24 +106,7 @@ class PanelDemetrioVallejoController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Actividades filtradas por la unidad académica del usuario
-        $actividadesQuery = Actividad::with('unidad')
-            ->where('id_semestre', $semestre->id_semestre)
-            ->delTipoPrograma($this->panelTipoPrograma());
-
-        if (!empty($user_unidad_id)) {
-            $actividadesQuery->where('id_unidad', $user_unidad_id);
-        } elseif (!empty($uaKeyword)) {
-            $actividadesQuery->whereHas('unidad', function ($q) use ($uaKeyword) {
-                $q->where('nombre_unidad', 'like', '%' . $uaKeyword . '%');
-            });
-        } else {
-            // Si no se detecta nada, intentar con 'Demetrio' por compatibilidad
-            $actividadesQuery->whereHas('unidad', function ($q) {
-                $q->where('nombre_unidad', 'like', '%Demetrio%');
-            });
-        }
-
+        [$actividadesQuery] = $this->actividadesDelPanelQuery($user, $semestre);
         $actividades = $actividadesQuery->orderBy('created_at', 'desc')->get();
 
         // Pasar también los conjuntos para diagnóstico en la vista
@@ -153,24 +124,9 @@ class PanelDemetrioVallejoController extends Controller
             ];
         })->toArray();
 
-        // Obtener evaluaciones del semestre y unidad actual
-        $evaluacionesQuery = Evaluacion::with(['estudiante', 'actividad'])
-            ->where('id_semestre', $id)
-            ->whereHas('actividad', function ($q) {
-                $q->delTipoPrograma($this->panelTipoPrograma());
-            });
-        
-        // Filtrar por unidad solo si tenemos id_unidad
-        if (!empty($user_unidad_id)) {
-            $evaluacionesQuery->where('id_unidad', $user_unidad_id);
-        } elseif (!empty($uaKeyword)) {
-            // Si no hay id_unidad, filtrar por nombre de unidad usando relación
-            $evaluacionesQuery->whereHas('unidad', function ($q) use ($uaKeyword) {
-                $q->where('nombre_unidad', 'like', '%' . $uaKeyword . '%');
-            });
-        }
-        
-        $evaluaciones = $evaluacionesQuery->get()->sortBy(function($evaluacion) {
+        $evaluaciones = $this->evaluacionesDelPanelQuery($user, $semestre, $actividades, $ctxUnidad)
+            ->get()
+            ->sortBy(function ($evaluacion) {
             return $evaluacion->estudiante->nombre ?? '';
         })->values();
 
@@ -209,38 +165,21 @@ class PanelDemetrioVallejoController extends Controller
             abort(404);
         }
 
-        $uaName = $user->unidad_academica ?? '';
-        $user_unidad_id = $user->unidad_id ?? $user->unidad ?? null;
-        $uaKeyword = null;
-        $candidates = ['Demetrio','Vallejo','Unión','Union','Espinal'];
-        foreach ($candidates as $cand) {
-            if (!empty($uaName) && stripos($uaName, $cand) !== false) {
-                $uaKeyword = $cand;
-                break;
+        [$actividadesPrintQuery, $ctxUnidad] = $this->actividadesDelPanelQuery($user, $semestre);
+        $actividadesPrint = $actividadesPrintQuery->get();
+
+        $evaluacionesQuery = $this->evaluacionesDelPanelQuery($user, $semestre, $actividadesPrint, $ctxUnidad);
+
+        $tipo = 'cultural';
+        if ($this->filtrarResultadosPorTipoEnImpresion()) {
+            $tipo = strtolower((string) $request->query('tipo', 'cultural'));
+            if (! in_array($tipo, ['cultural', 'deportiva', 'academica'], true)) {
+                $tipo = 'cultural';
             }
+            ResultadosTipoFiltro::apply($evaluacionesQuery, $tipo, $this->panelTipoPrograma());
         }
 
-        $evaluacionesQuery = Evaluacion::with(['estudiante', 'actividad'])
-            ->where('id_semestre', $id)
-            ->whereHas('actividad', function ($q) {
-                $q->delTipoPrograma($this->panelTipoPrograma());
-            });
-
-        if (!empty($user_unidad_id)) {
-            $evaluacionesQuery->where('id_unidad', $user_unidad_id);
-        } elseif (!empty($uaKeyword)) {
-            $evaluacionesQuery->whereHas('unidad', function ($q) use ($uaKeyword) {
-                $q->where('nombre_unidad', 'like', '%' . $uaKeyword . '%');
-            });
-        }
-
-        $tipo = strtolower((string) $request->query('tipo', 'cultural'));
-        if (! in_array($tipo, ['cultural', 'deportiva', 'academica'], true)) {
-            $tipo = 'cultural';
-        }
-        ResultadosTipoFiltro::apply($evaluacionesQuery, $tipo, $this->panelTipoPrograma());
-
-        $evaluaciones = $evaluacionesQuery->get()->sortBy(function($evaluacion) {
+        $evaluaciones = $evaluacionesQuery->get()->sortBy(function ($evaluacion) {
             return $evaluacion->estudiante->nombre ?? '';
         })->values();
 

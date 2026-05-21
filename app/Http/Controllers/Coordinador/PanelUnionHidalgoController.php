@@ -92,52 +92,14 @@ class PanelUnionHidalgoController extends Controller
 
         $informes = Informe::listadoGeneradosPorUnidad((int) $semestre->id_semestre, 1, $this->panelTipoPrograma());
 
-        // Filtrar actividades por semestre y por la unidad académica del usuario
-        $uaName = $user->unidad_academica ?? '';
-        $user_unidad_id = $user->unidad_id ?? $user->unidad ?? null;
+        $ctxUnidad = $this->resolverContextoUnidadPanel($user);
 
-        $candidates = ['Unión','Union','Hidalgo','Unión','Unio'];
-        $uaKeyword = null;
-        foreach ($candidates as $cand) {
-            if (!empty($uaName) && stripos($uaName, $cand) !== false) {
-                $uaKeyword = $cand;
-                break;
-            }
-        }
-
-        $actividadesQuery = Actividad::with('unidad')
-            ->where('id_semestre', $semestre->id_semestre)
-            ->delTipoPrograma($this->panelTipoPrograma());
-        if (!empty($user_unidad_id)) {
-            $actividadesQuery->where('id_unidad', $user_unidad_id);
-        } elseif (!empty($uaKeyword)) {
-            $actividadesQuery->whereHas('unidad', function ($q) use ($uaKeyword) {
-                $q->where('nombre_unidad', 'like', '%' . $uaKeyword . '%');
-            });
-        } else {
-            $actividadesQuery->whereHas('unidad', function ($q) {
-                $q->where('nombre_unidad', 'like', '%Unión%')->orWhere('nombre_unidad','like','%Union%');
-            });
-        }
-
+        [$actividadesQuery] = $this->actividadesDelPanelQuery($user, $semestre);
         $actividades = $actividadesQuery->orderBy('created_at', 'desc')->get();
 
-        // Obtener evaluaciones del semestre y unidad actual
-        $evaluacionesQuery = \App\Models\Evaluacion::with(['estudiante', 'actividad'])
-            ->where('id_semestre', $id)
-            ->whereHas('actividad', function ($q) {
-                $q->delTipoPrograma($this->panelTipoPrograma());
-            });
-
-        if (!empty($user_unidad_id)) {
-            $evaluacionesQuery->where('id_unidad', $user_unidad_id);
-        } elseif (!empty($uaKeyword)) {
-            $evaluacionesQuery->whereHas('unidad', function ($q) use ($uaKeyword) {
-                $q->where('nombre_unidad', 'like', '%' . $uaKeyword . '%');
-            });
-        }
-
-        $evaluaciones = $evaluacionesQuery->get()->sortBy(function($evaluacion) {
+        $evaluaciones = $this->evaluacionesDelPanelQuery($user, $semestre, $actividades, $ctxUnidad)
+            ->get()
+            ->sortBy(function ($evaluacion) {
             return $evaluacion->estudiante->nombre ?? '';
         })->values();
 
@@ -169,38 +131,21 @@ class PanelUnionHidalgoController extends Controller
             abort(404);
         }
 
-        $uaName = $user->unidad_academica ?? '';
-        $user_unidad_id = $user->unidad_id ?? $user->unidad ?? null;
-        $uaKeyword = null;
-        $candidates = ['Unión','Union','Hidalgo','Unión','Unio'];
-        foreach ($candidates as $cand) {
-            if (!empty($uaName) && stripos($uaName, $cand) !== false) {
-                $uaKeyword = $cand;
-                break;
+        [$actividadesPrintQuery, $ctxUnidad] = $this->actividadesDelPanelQuery($user, $semestre);
+        $actividadesPrint = $actividadesPrintQuery->get();
+
+        $evaluacionesQuery = $this->evaluacionesDelPanelQuery($user, $semestre, $actividadesPrint, $ctxUnidad);
+
+        $tipo = 'cultural';
+        if ($this->filtrarResultadosPorTipoEnImpresion()) {
+            $tipo = strtolower((string) $request->query('tipo', 'cultural'));
+            if (! in_array($tipo, ['cultural', 'deportiva', 'academica'], true)) {
+                $tipo = 'cultural';
             }
+            ResultadosTipoFiltro::apply($evaluacionesQuery, $tipo, $this->panelTipoPrograma());
         }
 
-        $evaluacionesQuery = \App\Models\Evaluacion::with(['estudiante', 'actividad'])
-            ->where('id_semestre', $id)
-            ->whereHas('actividad', function ($q) {
-                $q->delTipoPrograma($this->panelTipoPrograma());
-            });
-
-        if (!empty($user_unidad_id)) {
-            $evaluacionesQuery->where('id_unidad', $user_unidad_id);
-        } elseif (!empty($uaKeyword)) {
-            $evaluacionesQuery->whereHas('unidad', function ($q) use ($uaKeyword) {
-                $q->where('nombre_unidad', 'like', '%' . $uaKeyword . '%');
-            });
-        }
-
-        $tipo = strtolower((string) $request->query('tipo', 'cultural'));
-        if (! in_array($tipo, ['cultural', 'deportiva', 'academica'], true)) {
-            $tipo = 'cultural';
-        }
-        ResultadosTipoFiltro::apply($evaluacionesQuery, $tipo, $this->panelTipoPrograma());
-
-        $evaluaciones = $evaluacionesQuery->get()->sortBy(function($evaluacion) {
+        $evaluaciones = $evaluacionesQuery->get()->sortBy(function ($evaluacion) {
             return $evaluacion->estudiante->nombre ?? '';
         })->values();
 

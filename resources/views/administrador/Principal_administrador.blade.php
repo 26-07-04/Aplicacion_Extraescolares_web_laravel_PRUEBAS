@@ -152,7 +152,6 @@
           
           $documentosUrl = $baseUrl . '?view=documentos';
           $usuariosUrl = $baseUrl . '?view=usuarios';
-          $informesUrl = route('admin.informes', ['id' => $idSemestreActual]);
         @endphp
 
         <li class="admin-documentos" style="transition: all 0.3s; cursor: pointer;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)';">
@@ -164,12 +163,6 @@
         <li class="admin-usuarios" style="transition: all 0.3s; cursor: pointer;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)';">
           <a href="{{ $usuariosUrl }}">
             <i class="fas fa-users" style="margin-right: 8px;"></i>Gestión de Usuarios
-          </a>
-        </li>
-
-        <li class="admin-informes" style="transition: all 0.3s; cursor: pointer;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)';">
-          <a href="{{ $informesUrl }}">
-            <i class="fas fa-file-invoice" style="margin-right: 8px;"></i>Informes
           </a>
         </li>
       </ul>

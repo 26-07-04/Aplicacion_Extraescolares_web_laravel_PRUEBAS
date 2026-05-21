@@ -10,7 +10,9 @@ use App\Models\Semestre;
 use App\Models\Unidad;
 use App\Support\FormatoActividadTitulo;
 use App\Support\ResultadosExtraescolaresFirmas;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
@@ -36,6 +38,220 @@ trait ImprimeFormatoActividadCoordinador
         }
 
         return null;
+    }
+
+    /** En complementarias debe ser false (trait ResultadosLiberacionesComplementarias). */
+    protected function filtrarResultadosPorTipoEnImpresion(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Resuelve la unidad del panel desde unidad_academica (como Valle de Etla), no solo unidad_id en usuarios.
+     *
+     * @param  object|null  $user
+     * @return array{uaName: string, user_unidad_id: ?int, uaKeyword: ?string, unidadesIds: list<int>, stored_unidad_id: ?int}
+     */
+    protected function resolverContextoUnidadPanel($user): array
+    {
+        $uaName = $user->unidad_academica ?? '';
+        $storedUnidadId = $user->unidad_id ?? $user->unidad ?? null;
+        if ($storedUnidadId !== null && $storedUnidadId !== '') {
+            $storedUnidadId = (int) $storedUnidadId;
+        } else {
+            $storedUnidadId = null;
+        }
+
+        $uaKeyword = null;
+        foreach ($this->keywordsActividadPanel() as $cand) {
+            if ($uaName !== '' && stripos($uaName, $cand) !== false) {
+                $uaKeyword = $cand;
+                break;
+            }
+        }
+
+        $unidadesIds = [];
+        if ($uaKeyword) {
+            $unidadesIds = Unidad::where('nombre_unidad', 'like', '%' . $uaKeyword . '%')
+                ->pluck('id_unidad')
+                ->map(fn ($id) => (int) $id)
+                ->values()
+                ->all();
+        }
+
+        if ($unidadesIds === []) {
+            $uaNorm = Str::ascii(Str::lower($uaName));
+            if ($uaNorm !== '') {
+                $unidadesIds = Unidad::all()
+                    ->filter(function ($u) use ($uaNorm) {
+                        $nombreNorm = Str::ascii(Str::lower($u->nombre_unidad));
+
+                        return strpos($nombreNorm, $uaNorm) !== false || strpos($uaNorm, $nombreNorm) !== false;
+                    })
+                    ->pluck('id_unidad')
+                    ->map(fn ($id) => (int) $id)
+                    ->values()
+                    ->all();
+            }
+        }
+
+        if ($unidadesIds === []) {
+            $fallback = $this->fallbackLikeActividadPanel();
+            $unidadesIds = Unidad::query()
+                ->where(function ($inner) use ($fallback) {
+                    foreach ($fallback as $i => $like) {
+                        if ($i === 0) {
+                            $inner->where('nombre_unidad', 'like', $like);
+                        } else {
+                            $inner->orWhere('nombre_unidad', 'like', $like);
+                        }
+                    }
+                })
+                ->pluck('id_unidad')
+                ->map(fn ($id) => (int) $id)
+                ->values()
+                ->all();
+        }
+
+        $user_unidad_id = null;
+        if ($unidadesIds !== []) {
+            if ($storedUnidadId !== null && in_array($storedUnidadId, $unidadesIds, true)) {
+                $user_unidad_id = $storedUnidadId;
+            } else {
+                $user_unidad_id = $unidadesIds[0];
+            }
+        } elseif ($storedUnidadId !== null) {
+            $user_unidad_id = $storedUnidadId;
+            $unidadesIds = [$storedUnidadId];
+        }
+
+        return [
+            'uaName' => $uaName,
+            'user_unidad_id' => $user_unidad_id,
+            'uaKeyword' => $uaKeyword,
+            'unidadesIds' => $unidadesIds,
+            'stored_unidad_id' => $storedUnidadId,
+        ];
+    }
+
+    /**
+     * @param  Builder<Actividad>  $query
+     * @param  array{uaName: string, user_unidad_id: ?int, uaKeyword: ?string, unidadesIds: list<int>, stored_unidad_id: ?int}  $ctx
+     */
+    protected function aplicarFiltroUnidadEnQueryActividades(Builder $query, array $ctx): void
+    {
+        if (! empty($ctx['unidadesIds'])) {
+            $query->whereIn('id_unidad', $ctx['unidadesIds']);
+
+            return;
+        }
+
+        if (! empty($ctx['user_unidad_id'])) {
+            $query->where('id_unidad', $ctx['user_unidad_id']);
+
+            return;
+        }
+
+        if (! empty($ctx['uaKeyword'])) {
+            $query->whereHas('unidad', function ($q) use ($ctx) {
+                $q->where('nombre_unidad', 'like', '%' . $ctx['uaKeyword'] . '%');
+            });
+
+            return;
+        }
+
+        $fallback = $this->fallbackLikeActividadPanel();
+        $query->whereHas('unidad', function ($q) use ($fallback) {
+            $q->where(function ($inner) use ($fallback) {
+                foreach ($fallback as $i => $like) {
+                    if ($i === 0) {
+                        $inner->where('nombre_unidad', 'like', $like);
+                    } else {
+                        $inner->orWhere('nombre_unidad', 'like', $like);
+                    }
+                }
+            });
+        });
+    }
+
+    /**
+     * @param  object|null  $user
+     * @return array{0: Builder<Actividad>, 1: array}
+     */
+    protected function actividadesDelPanelQuery($user, Semestre $semestre): array
+    {
+        $ctx = $this->resolverContextoUnidadPanel($user);
+        $query = Actividad::with('unidad')
+            ->where('id_semestre', $semestre->id_semestre)
+            ->delTipoPrograma($this->panelTipoPrograma());
+        $this->aplicarFiltroUnidadEnQueryActividades($query, $ctx);
+
+        return [$query, $ctx];
+    }
+
+    /**
+     * Misma lógica de evaluaciones que PanelValleEtlaController (actividad del panel, no evaluaciones.id_unidad).
+     *
+     * @param  Collection<int, Actividad>|iterable<Actividad>  $actividades
+     * @param  array{uaName: string, user_unidad_id: ?int, uaKeyword: ?string, unidadesIds: list<int>, stored_unidad_id: ?int}  $ctx
+     * @return Builder<Evaluacion>
+     */
+    protected function evaluacionesDelPanelQuery($user, Semestre $semestre, $actividades, array $ctx): Builder
+    {
+        $evaluacionesQuery = Evaluacion::with(['estudiante', 'actividad'])
+            ->where('id_semestre', $semestre->id_semestre)
+            ->whereHas('actividad', function ($q) {
+                $q->delTipoPrograma($this->panelTipoPrograma());
+            });
+
+        $actividadIds = collect($actividades)->pluck('id_actividad')->filter()->values()->all();
+        if ($actividadIds !== []) {
+            $evaluacionesQuery->whereIn('id_actividad', $actividadIds);
+        }
+
+        $user_unidad_id = $ctx['user_unidad_id'] ?? null;
+        $uaKeyword = $ctx['uaKeyword'] ?? null;
+
+        if (! empty($user_unidad_id)) {
+            $evaluacionesQuery->whereHas('actividad', function ($q) use ($user_unidad_id, $semestre) {
+                $q->where('id_unidad', $user_unidad_id)
+                    ->where('id_semestre', $semestre->id_semestre);
+            });
+        } elseif (! empty($uaKeyword)) {
+            $evaluacionesQuery->whereHas('actividad.unidad', function ($q) use ($uaKeyword, $semestre) {
+                $q->where('nombre_unidad', 'like', '%' . $uaKeyword . '%')
+                    ->whereHas('actividades', function ($q2) use ($semestre) {
+                        $q2->where('id_semestre', $semestre->id_semestre);
+                    });
+            });
+            $evaluacionesQuery->whereHas('actividad', function ($q) use ($semestre) {
+                $q->where('id_semestre', $semestre->id_semestre);
+            });
+        } else {
+            $evaluacionesQuery->whereHas('actividad', function ($q) use ($semestre) {
+                $q->where('id_semestre', $semestre->id_semestre);
+            });
+            if (! empty($ctx['unidadesIds'])) {
+                $evaluacionesQuery->whereHas('actividad', function ($q) use ($ctx) {
+                    $q->whereIn('id_unidad', $ctx['unidadesIds']);
+                });
+            } else {
+                $fallback = $this->fallbackLikeActividadPanel();
+                $evaluacionesQuery->whereHas('actividad.unidad', function ($q) use ($fallback) {
+                    $q->where(function ($inner) use ($fallback) {
+                        foreach ($fallback as $i => $like) {
+                            if ($i === 0) {
+                                $inner->where('nombre_unidad', 'like', $like);
+                            } else {
+                                $inner->orWhere('nombre_unidad', 'like', $like);
+                            }
+                        }
+                    });
+                });
+            }
+        }
+
+        return $evaluacionesQuery;
     }
 
     public function printFormato($semestreId, $actividadId, Request $request)

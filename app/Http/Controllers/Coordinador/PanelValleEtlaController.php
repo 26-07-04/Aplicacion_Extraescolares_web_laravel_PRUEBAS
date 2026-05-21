@@ -8,14 +8,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Semestre;
 use App\Models\Actividad;
-use App\Models\Unidad;
 use App\Models\Evaluacion;
 use App\Models\Informe;
 use App\Models\Estudiante;
 use App\Models\Documento;
 use App\Support\ResultadosExtraescolaresFirmas;
 use App\Support\ResultadosTipoFiltro;
-use Illuminate\Support\Str;
 
 class PanelValleEtlaController extends Controller
 {
@@ -47,12 +45,6 @@ class PanelValleEtlaController extends Controller
     protected function firmasUnidadKey(): string
     {
         return 'valle_etla';
-    }
-
-    /** Si es false, la impresión de resultados incluye todas las actividades (sin filtro cultural/deportiva/académica). */
-    protected function filtrarResultadosPorTipoEnImpresion(): bool
-    {
-        return true;
     }
 
     /**
@@ -114,87 +106,14 @@ class PanelValleEtlaController extends Controller
 
         $informes = Informe::listadoGeneradosPorUnidad((int) $semestre->id_semestre, 4, $this->panelTipoPrograma());
 
-        // Filtrar actividades por semestre y por la unidad académica del usuario
-        $uaName = $user->unidad_academica ?? '';
-        $user_unidad_id = $user->unidad_id ?? $user->unidad ?? null;
+        $ctxUnidad = $this->resolverContextoUnidadPanel($user);
 
-        $candidates = ['Valle','Etla','Valle de Etla','Valle de Etla'];
-        $uaKeyword = null;
-        foreach ($candidates as $cand) {
-            if (!empty($uaName) && stripos($uaName, $cand) !== false) {
-                $uaKeyword = $cand;
-                break;
-            }
-        }
-
-        $actividadesQuery = Actividad::with('unidad')
-            ->where('id_semestre', $semestre->id_semestre)
-            ->delTipoPrograma($this->panelTipoPrograma());
-        if (!empty($user_unidad_id)) {
-            $actividadesQuery->where('id_unidad', $user_unidad_id);
-        } else {
-            $uaNorm = Str::ascii(Str::lower($uaName));
-            $unidades = Unidad::all()->filter(function ($u) use ($uaNorm) {
-                $nombreNorm = Str::ascii(Str::lower($u->nombre_unidad));
-                return ($uaNorm !== '' && (strpos($nombreNorm, $uaNorm) !== false || strpos($uaNorm, $nombreNorm) !== false));
-            })->pluck('id_unidad')->toArray();
-
-            if (!empty($unidades)) {
-                $actividadesQuery->whereIn('id_unidad', $unidades);
-            } elseif (!empty($uaKeyword)) {
-                $actividadesQuery->whereHas('unidad', function ($q) use ($uaKeyword) {
-                    $q->where('nombre_unidad', 'like', '%' . $uaKeyword . '%');
-                });
-            } else {
-                $actividadesQuery->whereHas('unidad', function ($q) {
-                    $q->where('nombre_unidad', 'like', '%Valle%')->orWhere('nombre_unidad','like','%Etla%');
-                });
-            }
-        }
-
+        [$actividadesQuery] = $this->actividadesDelPanelQuery($user, $semestre);
         $actividades = $actividadesQuery->orderBy('created_at', 'desc')->get();
 
-        // Obtener evaluaciones del semestre y unidad actual (si aplica)
-        $evaluacionesQuery = Evaluacion::with(['estudiante', 'actividad'])
-            ->where('id_semestre', $semestre->id_semestre)
-            ->whereHas('actividad', function ($q) {
-                $q->delTipoPrograma($this->panelTipoPrograma());
-            });
-
-        // Restringir a actividades que están en el panel (evita traer evaluaciones de actividades/otras unidades no listadas)
-        $actividadIds = $actividades->pluck('id_actividad')->toArray();
-        if (!empty($actividadIds)) {
-            $evaluacionesQuery->whereIn('id_actividad', $actividadIds);
-        }
-
-        if (!empty($user_unidad_id)) {
-            // Filtrar por la unidad asociada a la actividad (más fiable que el campo id_unidad en evaluaciones)
-            $evaluacionesQuery->whereHas('actividad', function ($q) use ($user_unidad_id, $semestre) {
-                $q->where('id_unidad', $user_unidad_id)
-                  ->where('id_semestre', $semestre->id_semestre);
-            });
-        } elseif (!empty($uaKeyword)) {
-            // Filtrar por coincidencia en el nombre de la unidad de la actividad y por semestre
-            $evaluacionesQuery->whereHas('actividad.unidad', function ($q) use ($uaKeyword, $semestre) {
-                $q->where('nombre_unidad', 'like', '%' . $uaKeyword . '%')
-                  ->whereHas('actividades', function ($q2) use ($semestre) {
-                      $q2->where('id_semestre', $semestre->id_semestre);
-                  });
-            });
-            // además asegure que la actividad pertenece al mismo semestre
-            $evaluacionesQuery->whereHas('actividad', function ($q) use ($semestre) {
-                $q->where('id_semestre', $semestre->id_semestre);
-            });
-        } else {
-            // Asegurar que la actividad asociada pertenece al mismo semestre
-            $evaluacionesQuery->whereHas('actividad', function ($q) use ($semestre) {
-                $q->where('id_semestre', $semestre->id_semestre);
-            })->whereHas('actividad.unidad', function ($q) {
-                $q->where('nombre_unidad', 'like', '%Valle%')->orWhere('nombre_unidad','like','%Etla%');
-            });
-        }
-
-        $evaluaciones = $evaluacionesQuery->get()->sortBy(function($evaluacion) {
+        $evaluaciones = $this->evaluacionesDelPanelQuery($user, $semestre, $actividades, $ctxUnidad)
+            ->get()
+            ->sortBy(function ($evaluacion) {
             return $evaluacion->estudiante->nombre ?? '';
         })->values();
 
@@ -226,81 +145,10 @@ class PanelValleEtlaController extends Controller
             abort(404);
         }
 
-        $uaName = $user->unidad_academica ?? '';
-        $user_unidad_id = $user->unidad_id ?? $user->unidad ?? null;
-        $uaKeyword = null;
-        $candidates = ['Valle','Etla','Valle de Etla'];
-        foreach ($candidates as $cand) {
-            if (!empty($uaName) && stripos($uaName, $cand) !== false) {
-                $uaKeyword = $cand;
-                break;
-            }
-        }
+        [$actividadesPrintQuery, $ctxUnidad] = $this->actividadesDelPanelQuery($user, $semestre);
+        $actividadesPrint = $actividadesPrintQuery->get();
 
-        $evaluacionesQuery = Evaluacion::with(['estudiante', 'actividad'])
-            ->where('id_semestre', $id)
-            ->whereHas('actividad', function ($q) {
-                $q->delTipoPrograma($this->panelTipoPrograma());
-            });
-
-        // Construir lista de actividades válidas para este semestre/unidad (usar la misma lógica que en show)
-        $actividadesQuery = Actividad::with('unidad')
-            ->where('id_semestre', $semestre->id_semestre)
-            ->delTipoPrograma($this->panelTipoPrograma());
-        if (!empty($user_unidad_id)) {
-            $actividadesQuery->where('id_unidad', $user_unidad_id);
-        } else {
-            $uaNorm = Str::ascii(Str::lower($uaName));
-            $unidades = Unidad::all()->filter(function ($u) use ($uaNorm) {
-                $nombreNorm = Str::ascii(Str::lower($u->nombre_unidad));
-                return ($uaNorm !== '' && (strpos($nombreNorm, $uaNorm) !== false || strpos($uaNorm, $nombreNorm) !== false));
-            })->pluck('id_unidad')->toArray();
-
-            if (!empty($unidades)) {
-                $actividadesQuery->whereIn('id_unidad', $unidades);
-            } elseif (!empty($uaKeyword)) {
-                $actividadesQuery->whereHas('unidad', function ($q) use ($uaKeyword) {
-                    $q->where('nombre_unidad', 'like', '%' . $uaKeyword . '%');
-                });
-            } else {
-                $actividadesQuery->whereHas('unidad', function ($q) {
-                    $q->where('nombre_unidad', 'like', '%Valle%')->orWhere('nombre_unidad','like','%Etla%');
-                });
-            }
-        }
-
-        $actividadIdsForPrint = $actividadesQuery->pluck('id_actividad')->toArray();
-
-        if (!empty($actividadIdsForPrint)) {
-            $evaluacionesQuery->whereIn('id_actividad', $actividadIdsForPrint);
-        } else {
-            // Fallback: si no hay actividades listadas, filtrar por unidad/semestre
-            if (!empty($user_unidad_id)) {
-                $evaluacionesQuery->whereHas('actividad', function ($q) use ($user_unidad_id, $semestre) {
-                    $q->where('id_unidad', $user_unidad_id)
-                      ->where('id_semestre', $semestre->id_semestre)
-                      ->delTipoPrograma($this->panelTipoPrograma());
-                });
-            } elseif (!empty($uaKeyword)) {
-                $evaluacionesQuery->whereHas('actividad.unidad', function ($q) use ($uaKeyword, $semestre) {
-                    $q->where('nombre_unidad', 'like', '%' . $uaKeyword . '%')
-                      ->whereHas('actividades', function ($q2) use ($semestre) {
-                          $q2->where('id_semestre', $semestre->id_semestre);
-                      });
-                });
-                $evaluacionesQuery->whereHas('actividad', function ($q) use ($semestre) {
-                    $q->where('id_semestre', $semestre->id_semestre)
-                      ->delTipoPrograma($this->panelTipoPrograma());
-                });
-            } else {
-                $evaluacionesQuery->whereHas('actividad', function ($q) use ($semestre) {
-                    $q->where('id_semestre', $semestre->id_semestre)
-                      ->delTipoPrograma($this->panelTipoPrograma());
-                })->whereHas('actividad.unidad', function ($q) {
-                    $q->where('nombre_unidad', 'like', '%Valle%')->orWhere('nombre_unidad','like','%Etla%');
-                });
-            }
-        }
+        $evaluacionesQuery = $this->evaluacionesDelPanelQuery($user, $semestre, $actividadesPrint, $ctxUnidad);
 
         $tipo = 'cultural';
         if ($this->filtrarResultadosPorTipoEnImpresion()) {
