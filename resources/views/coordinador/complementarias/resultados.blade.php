@@ -57,9 +57,122 @@
         font-size: 1rem;
     }
 
+    .resultados-membrete-block {
+        background: #fff;
+        border-radius: 12px;
+        padding: 18px 20px;
+        margin-bottom: 22px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+        width: 100%;
+    }
+    .resultados-membrete-block h3 {
+        margin: 0 0 10px 0;
+        font-size: 1rem;
+        color: #1B396A;
+    }
+    .membrete-scroll {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 10px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 4px 2px 12px;
+        margin: 0 -2px;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x proximity;
+        scrollbar-width: thin;
+        scrollbar-color: #1B396A #e8ecf1;
+    }
+    .membrete-scroll::-webkit-scrollbar {
+        height: 8px;
+    }
+    .membrete-scroll::-webkit-scrollbar-track {
+        background: #eef1f5;
+        border-radius: 4px;
+    }
+    .membrete-scroll::-webkit-scrollbar-thumb {
+        background: #1B396A;
+        border-radius: 4px;
+    }
+    .documento-card-resultados {
+        flex: 0 0 auto;
+        width: 168px;
+        min-width: 168px;
+        max-width: 168px;
+        background: #f9fafb;
+        border-radius: 10px;
+        border: 1px solid #e1e5eb;
+        padding: 10px 10px 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 6px;
+        scroll-snap-align: start;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .documento-card-resultados:hover {
+        border-color: #b8c4d6;
+        box-shadow: 0 2px 8px rgba(27, 57, 106, 0.08);
+    }
+    .documento-card-resultados.is-selected {
+        border-color: #2e7d32;
+        background: #f1f8f2;
+        box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2);
+    }
+    .documento-card-resultados .doc-icon {
+        color: #c62828;
+        font-size: 1.35rem;
+        line-height: 1;
+    }
+    .documento-card-resultados .doc-info {
+        width: 100%;
+        min-width: 0;
+    }
+    .documento-card-resultados .doc-info strong {
+        display: block;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #222;
+        line-height: 1.25;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .documento-card-resultados .doc-info span {
+        display: block;
+        font-size: 0.65rem;
+        color: #777;
+        margin-top: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .btn-usar-pdf-resultados {
+        background: #1B396A;
+        color: #fff;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.7rem;
+        cursor: pointer;
+        width: 100%;
+        white-space: nowrap;
+    }
+    .btn-usar-pdf-resultados:hover {
+        background: #2c5aa0;
+    }
     .btn-usar-pdf-resultados.active {
-        outline: 2px solid #2e7d32;
-        outline-offset: 2px;
+        background: #2e7d32;
+        outline: none;
+    }
+    .membrete-seleccion-info {
+        margin-top: 6px;
+        font-size: 0.82rem;
+        color: #2e7d32;
+        min-height: 1.2em;
     }
 
     .table-container {
@@ -311,28 +424,26 @@
         </div>
     </div>
 
-    <div class="resultados-acciones-print" style="margin-bottom: 20px; padding: 0 4px; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start;">
+    <div class="resultados-membrete-block">
+        <h3><i class="fas fa-file-pdf"></i> PDF membretado</h3>
         @if(isset($documentos) && $documentos->isNotEmpty())
-            <div style="flex: 1; min-width: 260px;">
-                <p style="margin: 0 0 8px 0; font-weight: 600; color: #333; font-size: 0.95rem;">PDF membretado para impresión</p>
-                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                    @foreach($documentos as $doc)
-                        <div class="documento-card-resultados" style="background: #fff; border-radius: 8px; border: 1px solid #e1e5eb; padding: 10px 12px; display: flex; align-items: center; gap: 10px; max-width: 100%;">
-                            <i class="fas fa-file-pdf" style="color: #c0392b; font-size: 1.4rem;"></i>
-                            <div style="flex: 1; min-width: 0;">
-                                <div class="doc-nombre" style="font-weight: 600; font-size: 0.9rem; color: #1a365d;">{{ $doc->nombre }}</div>
-                                @if($doc->descripcion)
-                                    <div style="font-size: 0.8rem; color: #6c757d;">{{ $doc->descripcion }}</div>
-                                @endif
-                            </div>
-                            <button type="button" class="btn-usar-pdf-resultados btn-imprimir" style="flex-shrink: 0;" data-id="{{ $doc->id }}" data-archivo="{{ asset($doc->archivo) }}">
-                                <i class="fas fa-check"></i> Usar PDF
-                            </button>
+            <div class="membrete-scroll" role="list" aria-label="PDFs membretados disponibles">
+                @foreach($documentos as $doc)
+                    <div class="documento-card-resultados" role="listitem">
+                        <i class="fas fa-file-pdf doc-icon" aria-hidden="true"></i>
+                        <div class="doc-info">
+                            <strong title="{{ $doc->nombre ?? 'Documento' }}">{{ $doc->nombre ?? 'Documento' }}</strong>
+                            <span title="{{ basename($doc->archivo ?? '') }}">{{ basename($doc->archivo ?? '') }}</span>
                         </div>
-                    @endforeach
-                </div>
-                <p id="pdfResultadosSeleccionadoInfo" style="margin-top: 8px; font-size: 0.88rem; color: #2e7d32; min-height: 1.2em;"></p>
+                        <button type="button" class="btn-usar-pdf-resultados" data-id="{{ $doc->id }}" data-archivo="{{ asset($doc->archivo) }}">
+                            Usar PDF
+                        </button>
+                    </div>
+                @endforeach
             </div>
+            <div id="pdfResultadosSeleccionadoInfo" class="membrete-seleccion-info"></div>
+        @else
+            <p style="margin:0; color:#666;">No hay PDF membretado cargado para este semestre. Puedes imprimir sin fondo o subir uno desde el panel de documentos.</p>
         @endif
     </div>
 
@@ -455,19 +566,25 @@
     document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.btn-usar-pdf-resultados').forEach(function(btn) {
             btn.addEventListener('click', function() {
+                document.querySelectorAll('.btn-usar-pdf-resultados').forEach(function(b) {
+                    b.classList.remove('active');
+                });
+                document.querySelectorAll('.documento-card-resultados').forEach(function(card) {
+                    card.classList.remove('is-selected');
+                });
+                btn.classList.add('active');
+                var card = btn.closest('.documento-card-resultados');
+                if (card) {
+                    card.classList.add('is-selected');
+                }
                 window.pdfResultadosSeleccionado = {
                     id: btn.getAttribute('data-id'),
                     archivo: btn.getAttribute('data-archivo') || ''
                 };
-                document.querySelectorAll('.btn-usar-pdf-resultados').forEach(function(b) {
-                    b.classList.remove('active');
-                });
-                btn.classList.add('active');
-                var card = btn.closest('.documento-card-resultados');
-                var nombre = card ? card.querySelector('.doc-nombre') : null;
                 var info = document.getElementById('pdfResultadosSeleccionadoInfo');
                 if (info) {
-                    info.textContent = nombre ? ('Usando: ' + nombre.textContent.trim()) : 'PDF seleccionado.';
+                    var nombre = card ? (card.querySelector('.doc-info strong')?.textContent || '') : '';
+                    info.textContent = nombre ? ('PDF seleccionado: ' + nombre.trim()) : 'PDF membretado seleccionado.';
                 }
             });
         });
