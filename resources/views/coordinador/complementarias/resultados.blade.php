@@ -175,6 +175,16 @@
         min-height: 1.2em;
     }
 
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin-top: 6px;
+        padding: 4px 12px 8px;
+        flex-wrap: wrap;
+    }
+
     .table-container {
         background: white;
         border-radius: 12px;
@@ -522,11 +532,10 @@
                     </tbody>
                 </table>
 
-                <div class="pagination-container" style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:20px; padding:20px; flex-wrap:wrap;">
+                <div class="pagination-container">
                     <button id="btnPaginaAnterior" class="btn-paginacion" style="padding:8px 16px; border-radius:6px; background:#1B396A; color:#fff; border:none; cursor:pointer; display:none; font-weight:600;">
                         <i class="fas fa-chevron-left"></i> Anterior
                     </button>
-                    
                     <div id="paginasContainer" style="display:flex; gap:4px;">
                         @for($i = 1; $i <= min($totalPaginas, 5); $i++)
                             <button class="btn-pagina" data-pagina="{{ $i }}" style="padding:8px 14px; border-radius:6px; background:{{ $i === 1 ? '#1B396A' : '#e0e0e0' }}; color:{{ $i === 1 ? '#fff' : '#333' }}; border:none; cursor:pointer; font-weight:{{ $i === 1 ? '700' : '500' }};">
@@ -540,14 +549,9 @@
                             </button>
                         @endif
                     </div>
-                    
                     <button id="btnPaginaSiguiente" class="btn-paginacion" style="padding:8px 16px; border-radius:6px; background:#1B396A; color:#fff; border:none; cursor:pointer; font-weight:600;">
                         Siguiente <i class="fas fa-chevron-right"></i>
                     </button>
-                    
-                    <span style="margin-left:16px; font-size:13px; color:#666; font-weight:500;">
-                        Página <span id="numeroPagina">1</span> de {{ $totalPaginas }} ({{ $totalEvaluaciones }} evaluaciones)
-                    </span>
                 </div>
             @else
                 <div class="no-resultados">
@@ -598,8 +602,7 @@
 
     function renderizarPagina(pagina, filtro = '') {
         const tableBody = document.getElementById('evaluacionesTableBody');
-        const numeroPagina = document.getElementById('numeroPagina');
-        
+
         if (!tableBody) return;
         
         let evaluacionesFiltradas = allEvaluaciones;
@@ -644,9 +647,7 @@
             tableBody.innerHTML += row;
         });
 
-        numeroPagina.textContent = pagina;
         actualizarBotonesPaginacion(pagina, totalPaginasFiltradas);
-        actualizarInfoPaginacion(totalFiltradas, totalPaginasFiltradas);
     }
 
     function actualizarBotonesPaginacion(pagina, totalPaginas) {
@@ -690,13 +691,6 @@
             btnUltima.style.cssText = 'padding:8px 14px; border-radius:6px; background:#e0e0e0; color:#333; border:none; cursor:pointer; font-weight:500;';
             btnUltima.addEventListener('click', () => renderizarPagina(totalPaginas, filtroActual));
             paginasContainer.appendChild(btnUltima);
-        }
-    }
-
-    function actualizarInfoPaginacion(total, totalPaginas) {
-        const info = document.querySelector('.pagination-container span:last-child');
-        if (info) {
-            info.innerHTML = `Página <span id="numeroPagina">${paginaActual}</span> de ${totalPaginas} (${total} evaluaciones)`;
         }
     }
 
