@@ -56,17 +56,6 @@
 
         .print-page-bg[src=""], .print-page-bg:not([src]) { display: none; }
 
-        .pagina-indicador {
-            position: absolute;
-            top: 0.72in;
-            right: 0.28in;
-            font-size: 9pt;
-            font-weight: bold;
-            z-index: 3;
-            white-space: nowrap;
-            text-align: right;
-        }
-
         .foreground {
             position: absolute;
             left: 0;
@@ -372,7 +361,6 @@
     @endphp
     <div class="print-page{{ $clasePagina }}" data-page="{{ $pIndex + 1 }}">
         <img class="print-page-bg" src="" alt="" />
-        <div class="pagina-indicador" aria-hidden="true">Página {{ $pIndex + 1 }} de {{ $totalPages }}</div>
         <div class="foreground">
             @if($pIndex === 0)
                 <div class="oficio-meta-derecha">
