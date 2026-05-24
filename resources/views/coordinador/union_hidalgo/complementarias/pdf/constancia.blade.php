@@ -23,13 +23,8 @@
             object-fit: cover;
             z-index: -1;
         }
-        .content { padding: 4.8cm 2.4cm 2cm 2.4cm; }
+        .content { padding: 5.2cm 2.4cm 2cm 2.4cm; }
         .container { position: relative; width: 100%; }
-        .depto-top {
-            text-align: right;
-            font-size: 10pt;
-            margin-bottom: 0.35cm;
-        }
         .titulo-principal {
             text-align: center;
             font-weight: bold;
@@ -121,7 +116,6 @@
     @endif
 
     @php
-        $encabezadoDerecho = 'Unidad Académica Unión Hidalgo';
         $lugarExtiende = 'Unión Hidalgo, Oax';
 
         $nombreJefeServicios = mb_strtoupper(trim((string) ($evaluacion->jefe_servicios_escolares ?? '')), 'UTF-8');
@@ -195,8 +189,6 @@
 
     <div class="content">
         <div class="container">
-            <div class="depto-top">{{ $encabezadoDerecho }}</div>
-
             <div class="titulo-principal">
                 Constancia de cumplimiento de actividad complementaria
             </div>
