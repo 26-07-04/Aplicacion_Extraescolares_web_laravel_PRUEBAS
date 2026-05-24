@@ -5,10 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resultados — {{ $semestre->nombre ?? '' }}</title>
     <style>
-        /* Margen respecto al borde de la hoja al imprimir (área segura) */
         @page {
             size: letter;
-            margin: 0.38in 0.42in 0.42in 0.42in;
+            margin: 0;
         }
 
         * {
@@ -39,10 +38,10 @@
          */
         .print-page {
             position: relative;
-            width: 100%;
+            width: 8.5in;
             max-width: 100%;
-            min-height: calc(11in - 0.8in);
-            height: calc(11in - 0.8in);
+            min-height: 11in;
+            height: 11in;
             page-break-after: always;
             overflow: visible;
             -webkit-print-color-adjust: exact;
@@ -198,8 +197,9 @@
                 print-color-adjust: exact !important;
             }
             .print-page {
-                min-height: calc(11in - 0.8in);
-                height: calc(11in - 0.8in);
+                width: 8.5in;
+                min-height: 11in;
+                height: 11in;
             }
             .results-table {
                 font-size: 7.5pt;

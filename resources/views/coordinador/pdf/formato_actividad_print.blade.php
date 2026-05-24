@@ -7,7 +7,7 @@
     <style>
         @page {
             size: letter;
-            margin: 0.38in 0.42in 0.42in 0.42in;
+            margin: 0;
         }
         * { box-sizing: border-box; }
         html, body {
@@ -28,10 +28,10 @@
         }
         .print-page {
             position: relative;
-            width: 100%;
+            width: 8.5in;
             max-width: 100%;
-            min-height: calc(11in - 0.8in);
-            height: calc(11in - 0.8in);
+            min-height: 11in;
+            height: 11in;
             page-break-after: always;
             overflow: visible;
         }
@@ -213,8 +213,9 @@
                 print-color-adjust: exact !important;
             }
             .print-page {
-                min-height: calc(11in - 0.8in);
-                height: calc(11in - 0.8in);
+                width: 8.5in;
+                min-height: 11in;
+                height: 11in;
                 overflow: visible;
             }
             .foreground, .tabla-resultados-wrap {
