@@ -35,18 +35,12 @@
         }
 
         .content {
-            padding: 4.8cm 2.4cm 2cm 2.4cm;
+            padding: 5.2cm 2.4cm 2cm 2.4cm;
         }
 
         .container {
             position: relative;
             width: 100%;
-        }
-
-        .depto-top {
-            text-align: right;
-            font-size: 10pt;
-            margin-bottom: 0.35cm;
         }
 
         .titulo-principal {
@@ -180,7 +174,6 @@
     @endif
 
     @php
-        $encabezadoDerecho = 'Departamento de Ingenierías';
         $lugarExtiende = 'Santiago Suchilquitongo, Etla, Oax';
 
         $nombreJefeServicios = mb_strtoupper(trim((string) ($evaluacion->jefe_servicios_escolares ?? '')), 'UTF-8');
@@ -255,8 +248,6 @@
 
     <div class="content">
         <div class="container">
-            <div class="depto-top">{{ $encabezadoDerecho }}</div>
-
             <div class="titulo-principal">
                 Constancia de cumplimiento de actividad complementaria
             </div>
