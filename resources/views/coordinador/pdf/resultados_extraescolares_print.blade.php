@@ -34,14 +34,15 @@
         }
 
         /*
-         * Una hoja por bloque: ocupa el área útil tras @page (no pegado al borde físico).
+         * Área útil como antes (márgenes en .print-page, no en @page, para ocultar encabezados del navegador).
          */
         .print-page {
             position: relative;
-            width: 8.5in;
-            max-width: 100%;
-            min-height: 11in;
-            height: 11in;
+            width: calc(8.5in - 0.84in);
+            max-width: calc(8.5in - 0.84in);
+            min-height: calc(11in - 0.8in);
+            height: calc(11in - 0.8in);
+            margin: 0.38in 0.42in 0.42in 0.42in;
             page-break-after: always;
             overflow: visible;
             -webkit-print-color-adjust: exact;
@@ -197,9 +198,11 @@
                 print-color-adjust: exact !important;
             }
             .print-page {
-                width: 8.5in;
-                min-height: 11in;
-                height: 11in;
+                width: calc(8.5in - 0.84in);
+                max-width: calc(8.5in - 0.84in);
+                min-height: calc(11in - 0.8in);
+                height: calc(11in - 0.8in);
+                margin: 0.38in 0.42in 0.42in 0.42in;
             }
             .results-table {
                 font-size: 7.5pt;
@@ -212,7 +215,7 @@
         }
     </style>
 </head>
-<body>
+<body class="{{ $resultadosUnidadBodyClass ?? '' }}">
 @php
     $lista = ($evaluaciones ?? collect())->values();
     /* Filas por hoja (altura de fila puede crecer con nombres largos) */
@@ -243,7 +246,7 @@
 @foreach($pages as $pIndex => $pageItems)
     <div class="print-page" data-page="{{ $pIndex + 1 }}">
         <img class="print-page-bg" src="" alt="" />
-        <div class="pagina-indicador" aria-hidden="true">Página {{ $pIndex + 1 }} de {{ $totalPages }}</div>
+        <div class="pagina-indicador" aria-hidden="true"@if(!empty($paginaIndicadorTop)) style="position:absolute !important;top:{{ $paginaIndicadorTop }} !important;right:{{ $paginaIndicadorRight ?? '0.28in' }} !important;left:auto !important;z-index:3 !important;"@endif>Página {{ $pIndex + 1 }} de {{ $totalPages }}</div>
         <div class="foreground">
             @if($pIndex === 0)
                 <div class="document-title">
@@ -405,9 +408,28 @@
         });
     }
 
+    function aplicarAjustePaginaIndicador() {
+        var top = @json($paginaIndicadorTop ?? null);
+        var right = @json($paginaIndicadorRight ?? null);
+        if (!top) {
+            return;
+        }
+        document.querySelectorAll('.pagina-indicador').forEach(function (el) {
+            el.style.setProperty('position', 'absolute', 'important');
+            el.style.setProperty('top', top, 'important');
+            if (right) {
+                el.style.setProperty('right', right, 'important');
+            }
+            el.style.setProperty('left', 'auto', 'important');
+            el.style.setProperty('z-index', '3', 'important');
+        });
+    }
+
     function finalizarImpresion() {
+        aplicarAjustePaginaIndicador();
         requestAnimationFrame(function () {
             setTimeout(function () {
+                aplicarAjustePaginaIndicador();
                 try {
                     window.focus();
                     window.print();
@@ -417,6 +439,7 @@
     }
 
     function iniciar() {
+        aplicarAjustePaginaIndicador();
         if (!membreteUrl) {
             finalizarImpresion();
             return;
@@ -458,6 +481,7 @@
     } else {
         window.addEventListener('DOMContentLoaded', function () { setTimeout(iniciar, 0); });
     }
+    window.addEventListener('beforeprint', aplicarAjustePaginaIndicador);
 })();
 </script>
 </body>
