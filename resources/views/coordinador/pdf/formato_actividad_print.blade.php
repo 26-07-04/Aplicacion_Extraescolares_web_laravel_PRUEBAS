@@ -28,10 +28,11 @@
         }
         .print-page {
             position: relative;
-            width: 8.5in;
-            max-width: 100%;
-            min-height: 11in;
-            height: 11in;
+            width: calc(8.5in - 0.84in);
+            max-width: calc(8.5in - 0.84in);
+            min-height: calc(11in - 0.8in);
+            height: calc(11in - 0.8in);
+            margin: 0.38in 0.42in 0.42in 0.42in;
             page-break-after: always;
             overflow: visible;
         }
@@ -213,9 +214,11 @@
                 print-color-adjust: exact !important;
             }
             .print-page {
-                width: 8.5in;
-                min-height: 11in;
-                height: 11in;
+                width: calc(8.5in - 0.84in);
+                max-width: calc(8.5in - 0.84in);
+                min-height: calc(11in - 0.8in);
+                height: calc(11in - 0.8in);
+                margin: 0.38in 0.42in 0.42in 0.42in;
                 overflow: visible;
             }
             .foreground, .tabla-resultados-wrap {
@@ -281,9 +284,18 @@
         }
     </style>
 </head>
-<body>
 @php
+    $firmasUnidadKeyEarly = $firmasUnidadKey ?? 'valle_etla';
     $formatoNorm = ($formato ?? 'resultados') === 'registro' ? 'registro' : 'resultados';
+    $bodyClassFormato = trim(
+        ($firmasUnidadKeyEarly === 'valle_etla' ? 'unidad-valle-etla' : '')
+        . ' formato-print-' . $formatoNorm
+    );
+    $paginaTopFormato = $paginaIndicadorFormato['top'] ?? null;
+    $paginaRightFormato = $paginaIndicadorFormato['right'] ?? null;
+@endphp
+<body class="{{ $bodyClassFormato }}">
+@php
     $lista = collect($filas ?? [])->values();
     $pages = \App\Support\FormatoActividadPaginacion::paginar($lista);
     $totalPages = max(1, $pages->count());
@@ -311,7 +323,7 @@
     @endphp
     <div class="print-page {{ $clasePagina }}" data-page="{{ $pIndex + 1 }}" data-filas="{{ $pageItems->count() }}">
         <img class="print-page-bg" src="" alt="" />
-        <div class="pagina-indicador" aria-hidden="true">Página {{ $pIndex + 1 }} de {{ $totalPages }}</div>
+        <div class="pagina-indicador" aria-hidden="true"@if($paginaTopFormato) style="position: absolute !important; top: {{ $paginaTopFormato }} !important; right: {{ $paginaRightFormato ?? '1.78in' }} !important; left: auto !important; z-index: 3 !important;" @endif>Página {{ $pIndex + 1 }} de {{ $totalPages }}</div>
         <div class="foreground">
             @if($pIndex === 0)
                 <div class="document-title {{ $formatoNorm === 'registro' ? 'document-title-registro' : 'document-title-resultados' }}">
@@ -490,9 +502,25 @@
         } catch (e) {}
     }
 
+    function aplicarAjustePaginaIndicadorFormato() {
+        var pagina = @json($paginaIndicadorFormato ?? null);
+        if (!pagina || !pagina.top) {
+            return;
+        }
+        document.querySelectorAll('.pagina-indicador').forEach(function (el) {
+            el.style.setProperty('position', 'absolute', 'important');
+            el.style.setProperty('top', pagina.top, 'important');
+            el.style.setProperty('right', pagina.right || '1.78in', 'important');
+            el.style.setProperty('left', 'auto', 'important');
+            el.style.setProperty('z-index', '3', 'important');
+        });
+    }
+
     function finalizarImpresion() {
+        aplicarAjustePaginaIndicadorFormato();
         requestAnimationFrame(function () {
             setTimeout(function () {
+                aplicarAjustePaginaIndicadorFormato();
                 try {
                     if (window.frameElement) {
                         window.focus();
@@ -526,6 +554,7 @@
     }
 
     function iniciar() {
+        aplicarAjustePaginaIndicadorFormato();
         cargarDatosDesdePanel();
         cargarMembreteEImprimir();
     }
@@ -535,6 +564,7 @@
     } else {
         window.addEventListener('DOMContentLoaded', function () { setTimeout(iniciar, 0); });
     }
+    window.addEventListener('beforeprint', aplicarAjustePaginaIndicadorFormato);
 })();
 </script>
 </body>

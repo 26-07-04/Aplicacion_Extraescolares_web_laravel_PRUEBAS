@@ -22,6 +22,42 @@ trait ImprimeFormatoActividadCoordinador
 
     abstract protected function formatoActividadLugar(): string;
 
+    /**
+     * Posición de «Página X de Y» en formatos (misma calibración en todas las unidades).
+     *
+     * @return array{top: string, right: string}|null
+     */
+    protected function paginaIndicadorFormatoActividad(string $formato): ?array
+    {
+        if ($formato === 'registro') {
+            return [
+                'top' => '1.06in',
+                'right' => '1.52in',
+            ];
+        }
+
+        return [
+            'top' => '1.24in',
+            'right' => '1.70in',
+        ];
+    }
+
+    /**
+     * Datos extra para la vista PDF de resultados extraescolares.
+     *
+     * @return array<string, mixed>
+     */
+    protected function datosAdicionalesVistaResultadosPdf(Semestre $semestre, $evaluaciones, Request $request): array
+    {
+        $unidadSlug = str_replace('_', '-', $this->firmasUnidadKey());
+
+        return [
+            'resultadosUnidadBodyClass' => 'unidad-' . $unidadSlug . '-resultados-print',
+            'paginaIndicadorTop' => '1.02in',
+            'paginaIndicadorRight' => '0.20in',
+        ];
+    }
+
     /** @param  object|null  $user */
     abstract protected function autorizarCoordinadorFormato($user): void;
 
@@ -324,6 +360,7 @@ trait ImprimeFormatoActividadCoordinador
             'firmas' => ResultadosExtraescolaresFirmas::forUnidad($this->firmasUnidadKey()),
             'firmasUnidadKey' => $this->firmasUnidadKey(),
             'membreteArchivoUrl' => $membreteArchivoUrl,
+            'paginaIndicadorFormato' => $this->paginaIndicadorFormatoActividad($formato),
         ]);
     }
 

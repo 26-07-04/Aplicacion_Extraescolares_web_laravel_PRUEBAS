@@ -194,7 +194,7 @@ class PanelDemetrioVallejoController extends Controller
             }
         }
 
-        return view($this->resultadosPdfView(), [
+        return view($this->resultadosPdfView(), array_merge([
             'user' => $user,
             'semestre' => $semestre,
             'unidad' => 'Unidad Académica Demetrio Vallejo Martínez - El Espinal',
@@ -203,7 +203,7 @@ class PanelDemetrioVallejoController extends Controller
             'lugar' => 'El Espinal, Oax.',
             'firmas' => ResultadosExtraescolaresFirmas::forUnidad('demetrio_vallejo'),
             'membreteArchivoUrl' => $membreteArchivoUrl,
-        ]);
+        ], $this->datosAdicionalesVistaResultadosPdf($semestre, $evaluaciones, $request)));
     }
 
     public function actualizarEstudiante($id, Request $request)

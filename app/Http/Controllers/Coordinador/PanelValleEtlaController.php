@@ -47,16 +47,6 @@ class PanelValleEtlaController extends Controller
         return 'valle_etla';
     }
 
-    /**
-     * Datos extra para la vista PDF de resultados (p. ej. cabecera de oficio en complementarias).
-     *
-     * @return array<string, mixed>
-     */
-    protected function datosAdicionalesVistaResultadosPdf(Semestre $semestre, $evaluaciones, Request $request): array
-    {
-        return [];
-    }
-
     protected function formatoActividadLugar(): string
     {
         return 'Santiago Suchilquitongo';

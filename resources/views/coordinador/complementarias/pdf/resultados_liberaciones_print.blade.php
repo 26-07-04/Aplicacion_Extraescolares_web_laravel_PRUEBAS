@@ -32,10 +32,11 @@
 
         .print-page {
             position: relative;
-            width: 8.5in;
-            max-width: 100%;
-            min-height: 11in;
-            height: 11in;
+            width: calc(8.5in - 0.84in);
+            max-width: calc(8.5in - 0.84in);
+            min-height: calc(11in - 0.8in);
+            height: calc(11in - 0.8in);
+            margin: 0.38in 0.42in 0.42in 0.42in;
             page-break-after: always;
             overflow: visible;
         }
@@ -275,9 +276,11 @@
                 print-color-adjust: exact !important;
             }
             .print-page {
-                width: 8.5in;
-                min-height: 11in;
-                height: 11in;
+                width: calc(8.5in - 0.84in);
+                max-width: calc(8.5in - 0.84in);
+                min-height: calc(11in - 0.8in);
+                height: calc(11in - 0.8in);
+                margin: 0.38in 0.42in 0.42in 0.42in;
                 overflow: visible;
             }
             .foreground, .tabla-resultados-wrap {

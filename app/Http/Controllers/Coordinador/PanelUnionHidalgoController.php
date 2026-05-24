@@ -160,7 +160,7 @@ class PanelUnionHidalgoController extends Controller
             }
         }
 
-        return view($this->resultadosPdfView(), [
+        return view($this->resultadosPdfView(), array_merge([
             'user' => $user,
             'semestre' => $semestre,
             'unidad' => 'Unidad Académica Unión Hidalgo',
@@ -169,7 +169,7 @@ class PanelUnionHidalgoController extends Controller
             'lugar' => 'Santiago Suchilquitongo, Oax',
             'firmas' => ResultadosExtraescolaresFirmas::forUnidad('union_hidalgo'),
             'membreteArchivoUrl' => $membreteArchivoUrl,
-        ]);
+        ], $this->datosAdicionalesVistaResultadosPdf($semestre, $evaluaciones, $request)));
     }
 
     public function actualizarEstudiante($id, Request $request)
