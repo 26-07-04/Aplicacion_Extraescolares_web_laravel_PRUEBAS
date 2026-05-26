@@ -236,20 +236,52 @@ Route::get('coordinador/demetrio-vallejo/resultados/print/{id}', [PanelDemetrioV
     ->middleware('auth')
     ->name('coordinador.demetrio.resultados.print');
 
+Route::get('coordinador/demetrio-vallejo/evaluacion-formulario/print/{id_evaluacion}', [PanelDemetrioVallejoController::class, 'printEvaluacionFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.demetrio.evaluacion-formulario.print');
+
+Route::get('coordinador/demetrio-vallejo/evaluacion-formulario/print-all/{id}', [PanelDemetrioVallejoController::class, 'printAllEvaluacionesFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.demetrio.evaluacion-formulario.print-all');
+
 // Ruta de impresión de resultados (Tlahuitoltepec)
 Route::get('coordinador/tlahuitoltepec/resultados/print/{id}', [PanelTlahuitoltepecController::class, 'printResultados'])
     ->middleware('auth')
     ->name('coordinador.tlahuitoltepec.resultados.print');
+
+Route::get('coordinador/tlahuitoltepec/evaluacion-formulario/print/{id_evaluacion}', [PanelTlahuitoltepecController::class, 'printEvaluacionFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.tlahuitoltepec.evaluacion-formulario.print');
+
+Route::get('coordinador/tlahuitoltepec/evaluacion-formulario/print-all/{id}', [PanelTlahuitoltepecController::class, 'printAllEvaluacionesFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.tlahuitoltepec.evaluacion-formulario.print-all');
 
 // Ruta de impresión de resultados (Unión Hidalgo)
 Route::get('coordinador/union-hidalgo/resultados/print/{id}', [PanelUnionHidalgoController::class, 'printResultados'])
     ->middleware('auth')
     ->name('coordinador.union_hidalgo.resultados.print');
 
+Route::get('coordinador/union-hidalgo/evaluacion-formulario/print/{id_evaluacion}', [PanelUnionHidalgoController::class, 'printEvaluacionFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.union_hidalgo.evaluacion-formulario.print');
+
+Route::get('coordinador/union-hidalgo/evaluacion-formulario/print-all/{id}', [PanelUnionHidalgoController::class, 'printAllEvaluacionesFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.union_hidalgo.evaluacion-formulario.print-all');
+
 // Ruta de impresión de resultados (Valle de Etla)
 Route::get('coordinador/valle-de-etla/resultados/print/{id}', [PanelValleEtlaController::class, 'printResultados'])
     ->middleware('auth')
     ->name('coordinador.valle.resultados.print');
+
+Route::get('coordinador/valle-de-etla/evaluacion-formulario/print/{id_evaluacion}', [PanelValleEtlaController::class, 'printEvaluacionFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.valle.evaluacion-formulario.print');
+
+Route::get('coordinador/valle-de-etla/evaluacion-formulario/print-all/{id}', [PanelValleEtlaController::class, 'printAllEvaluacionesFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.valle.evaluacion-formulario.print-all');
 
 Route::get('coordinador/valle-de-etla/formatos/print/{semestre}/{actividad}', [PanelValleEtlaController::class, 'printFormato'])
     ->middleware('auth')

@@ -15,6 +15,7 @@ class Evaluacion extends Model
         'id_semestre',
         'id_unidad',
         'nivel_desempeno',
+        'criterios_desempeno',
         'calificacion_numerica',
         'creditos',
         'observaciones',
@@ -29,6 +30,7 @@ class Evaluacion extends Model
         'fecha_evaluacion' => 'date',
         'calificacion_numerica' => 'decimal:2',
         'creditos' => 'integer',
+        'criterios_desempeno' => 'array',
     ];
 
     // Relaciones

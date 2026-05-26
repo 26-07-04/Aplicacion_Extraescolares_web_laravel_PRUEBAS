@@ -595,15 +595,27 @@
         }
     }
 
+    function obtenerCriteriosDesempeno() {
+        const valores = [];
+        for (let i = 1; i <= 7; i++) {
+            const radio = document.querySelector(`input[name="criterio${i}"]:checked`);
+            valores.push(radio ? parseInt(radio.value, 10) : null);
+        }
+        return valores;
+    }
+
     function cerrarModalEvaluacion() { const modal = document.getElementById('modalEvaluacion'); if (modal) modal.remove(); }
 
     function guardarEvaluacion(estudiante) {
         const documentoMembrete = document.getElementById('selectDocumentoMembrete').value;
         if (!documentoMembrete) { alert('Por favor, seleccione un documento membretado antes de evaluar.'); return; }
-        const criterios = [];
-        for (let i = 1; i <= 7; i++) { const radioSeleccionado = document.querySelector(`input[name="criterio${i}"]:checked`); if (radioSeleccionado) criterios.push({ numero: i, valor: parseInt(radioSeleccionado.value) }); }
         const valorNumerico = parseFloat(document.getElementById('valorNumerico').value);
         const nivelDesempeno = document.getElementById('nivelDesempeno').value;
+        const criteriosDesempeno = obtenerCriteriosDesempeno();
+        if (criteriosDesempeno.some(v => v === null) || nivelDesempeno === 'No evaluado' || !nivelDesempeno) {
+            alert('Por favor, evalúe los 7 criterios antes de guardar.');
+            return;
+        }
         const nombreProfesor = document.getElementById('nombreProfesor').value.trim();
         const jefeExtraescolares = document.getElementById('jefeExtraescolares').value.trim();
         const jefeServiciosEscolares = document.getElementById('jefeServiciosEscolares').value.trim();
@@ -613,6 +625,7 @@
         const datosEvaluacion = {
             id_alumno: estudiante.id_alumno,
             nivel_desempeno: nivelDesempeno,
+            criterios_desempeno: criteriosDesempeno,
             calificacion_numerica: valorNumerico,
             creditos: 5,
             observaciones: document.getElementById('observaciones').value,

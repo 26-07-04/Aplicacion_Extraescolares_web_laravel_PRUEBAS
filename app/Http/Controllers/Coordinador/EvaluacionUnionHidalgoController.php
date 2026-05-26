@@ -7,6 +7,7 @@ use App\Models\Actividad;
 use App\Models\Evaluacion;
 use App\Models\Estudiante;
 use App\Models\Documento;
+use App\Support\EvaluacionExtraescolarFormulario;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,6 +26,9 @@ class EvaluacionUnionHidalgoController extends Controller
             ]);
 
             $estudiante = Estudiante::find($request->id_alumno);
+            $criteriosDesempeno = EvaluacionExtraescolarFormulario::normalizarCriteriosDesempeno(
+                $request->input('criterios_desempeno')
+            );
 
             $evaluacion = Evaluacion::create([
                 'id_alumno' => $request->id_alumno,
@@ -32,6 +36,7 @@ class EvaluacionUnionHidalgoController extends Controller
                 'id_semestre' => $estudiante->id_semestre,
                 'id_unidad' => $estudiante->id_unidad,
                 'nivel_desempeno' => $request->nivel_desempeno,
+                'criterios_desempeno' => $criteriosDesempeno,
                 'calificacion_numerica' => $request->calificacion_numerica,
                 'creditos' => $request->creditos,
                 'observaciones' => $request->observaciones,
