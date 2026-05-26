@@ -99,6 +99,11 @@
             <i class="fas fa-file-signature"></i> Constancia de Cumplimiento
           </a>
         </li>
+        <li>
+          <a href="{{ url()->current() }}?show=evaluaciones_impresion" class="{{ $show === 'evaluaciones_impresion' ? 'active' : '' }}">
+            <i class="fas fa-clipboard-check"></i> Impresión de evaluación
+          </a>
+        </li>
          <li>
           <a href="{{ url()->current() }}?show=informe" class="{{ $show === 'informe' ? 'active' : '' }}">
             <i class="fas fa-file-pdf"></i> Informe de Actividad
@@ -283,6 +288,13 @@
 
       @if(request()->get('show') === 'constancias')
         @include('coordinador.union_hidalgo.constancias_table')
+      @endif
+
+      @if(request()->get('show') === 'evaluaciones_impresion')
+        @include('coordinador.partials.evaluaciones_impresion_table', [
+          'rutaEvalImpPrint' => 'coordinador.union_hidalgo.evaluacion-formulario.print',
+          'rutaEvalImpPrintAll' => 'coordinador.union_hidalgo.evaluacion-formulario.print-all',
+        ])
       @endif
 
       @if(request()->get('show') === 'informe')

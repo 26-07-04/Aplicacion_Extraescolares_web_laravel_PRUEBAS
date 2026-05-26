@@ -696,6 +696,15 @@
         }
     }
 
+    function obtenerCriteriosDesempeno() {
+        const valores = [];
+        for (let i = 1; i <= 7; i++) {
+            const radio = document.querySelector(`input[name="criterio${i}"]:checked`);
+            valores.push(radio ? parseInt(radio.value, 10) : null);
+        }
+        return valores;
+    }
+
     function cerrarModalEvaluacion() {
         const modal = document.getElementById('modalEvaluacion');
         if (modal) {
@@ -712,6 +721,11 @@
 
         const valorNumerico = parseFloat(document.getElementById('valorNumerico').value);
         const nivelDesempeno = document.getElementById('nivelDesempeno').value;
+        const criteriosDesempeno = obtenerCriteriosDesempeno();
+        if (criteriosDesempeno.some(v => v === null) || nivelDesempeno === 'No evaluado' || !nivelDesempeno) {
+            alert('Por favor, evalúe los 7 criterios antes de guardar.');
+            return;
+        }
         
         const nombreProfesor = document.getElementById('nombreProfesor').value.trim();
         const jefeExtraescolares = document.getElementById('jefeExtraescolares').value.trim();
@@ -738,6 +752,7 @@
         const datosEvaluacion = {
             id_alumno: estudiante.id_alumno,
             nivel_desempeno: nivelDesempeno,
+            criterios_desempeno: criteriosDesempeno,
             calificacion_numerica: valorNumerico,
             creditos: 5,
             observaciones: document.getElementById('observaciones').value,

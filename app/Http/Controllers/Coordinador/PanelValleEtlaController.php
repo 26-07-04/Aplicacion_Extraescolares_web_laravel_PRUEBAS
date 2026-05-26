@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Coordinador;
 
+use App\Http\Controllers\Coordinador\Concerns\ImprimeEvaluacionFormularioCoordinador;
 use App\Http\Controllers\Coordinador\Concerns\ImprimeFormatoActividadCoordinador;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ use App\Support\ResultadosTipoFiltro;
 class PanelValleEtlaController extends Controller
 {
     use ImprimeFormatoActividadCoordinador;
+    use ImprimeEvaluacionFormularioCoordinador;
     /**
      * Vista Blade del panel (Extraescolares). Las subclases en Complementarias\ devuelven panel_complementarias.
      */
