@@ -201,7 +201,7 @@
 
             <div class="cuerpo">
                 <p>
-                    La que suscribe <strong>{{ $nombreQuienSuscribe }}</strong>, por este medio me permito hacer de su conocimiento que el estudiante
+                    El/la que suscribe <strong>{{ $nombreQuienSuscribe }}</strong>, por este medio me permito hacer de su conocimiento que el estudiante
                     <strong>{{ $estudiante->nombre }}</strong> con número de control <strong>{{ $estudiante->numero_control }}</strong>
                     de la carrera de <strong>{{ $estudiante->carrera }}</strong> ha cumplido su actividad complementaria académica
                     <strong>{{ $nombreActividad }}</strong>, con el nivel de desempeño <strong>{{ $nivelTitulo !== null ? $nivelTitulo : '________' }}</strong>
