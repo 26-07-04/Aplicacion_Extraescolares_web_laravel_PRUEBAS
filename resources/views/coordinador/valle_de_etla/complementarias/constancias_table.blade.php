@@ -522,9 +522,9 @@
                                 </div>
                                 <div>
                                     <label style="display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 0.95em;">
-                                        <i class="fas fa-user-shield"></i> Nombre del Jefe(a) del Depto. de Actividades Complementarias: <span style="color: #dc3545;">*</span>
+                                        <i class="fas fa-user-shield"></i> Nombre del Subdirector Académico: <span style="color: #dc3545;">*</span>
                                     </label>
-                                    <input type="text" id="jefeExtraescolares" required placeholder="Ingrese el nombre completo del jefe de departamento" style="width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em;">
+                                    <input type="text" id="jefeExtraescolares" required placeholder="Ingrese el nombre completo del subdirector académico" style="width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em;">
                                 </div>
                                 <div>
                                     <label style="display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 0.95em;">
@@ -738,7 +738,7 @@
         }
         
         if (!jefeExtraescolares) {
-            alert('Por favor, ingrese el nombre del Jefe del Departamento de Actividades Complementarias.');
+            alert('Por favor, ingrese el nombre del Subdirector Académico.');
             document.getElementById('jefeExtraescolares').focus();
             return;
         }

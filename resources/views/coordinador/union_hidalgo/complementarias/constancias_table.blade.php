@@ -455,8 +455,8 @@
                                     <input type="text" id="nombreProfesor" required value="{{ Auth::user()->name ?? '' }}" placeholder="Ingrese el nombre completo del profesor responsable" style="width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em;">
                                 </div>
                                 <div>
-                                    <label style="display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 0.95em;"><i class="fas fa-user-shield"></i> Nombre del Jefe(a) del Depto. de Actividades Complementarias: <span style="color: #dc3545;">*</span></label>
-                                    <input type="text" id="jefeExtraescolares" required placeholder="Ingrese el nombre completo del jefe de departamento" style="width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em;">
+                                    <label style="display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 0.95em;"><i class="fas fa-user-shield"></i> Nombre del Subdirector Académico: <span style="color: #dc3545;">*</span></label>
+                                    <input type="text" id="jefeExtraescolares" required placeholder="Ingrese el nombre completo del subdirector académico" style="width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em;">
                                 </div>
                                 <div>
                                     <label style="display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 0.95em;"><i class="fas fa-user-cog"></i> Nombre del Jefe(a) del Depto. de Servicios Escolares: <span style="color: #dc3545;">*</span></label>
@@ -580,7 +580,7 @@
         const jefeExtraescolares = document.getElementById('jefeExtraescolares').value.trim();
         const jefeServiciosEscolares = document.getElementById('jefeServiciosEscolares').value.trim();
         if (!nombreProfesor) { alert('Por favor, ingrese el nombre del profesor responsable.'); document.getElementById('nombreProfesor').focus(); return; }
-        if (!jefeExtraescolares) { alert('Por favor, ingrese el nombre del Jefe del Departamento de Actividades Complementarias.'); document.getElementById('jefeExtraescolares').focus(); return; }
+        if (!jefeExtraescolares) { alert('Por favor, ingrese el nombre del Subdirector Académico.'); document.getElementById('jefeExtraescolares').focus(); return; }
         if (!jefeServiciosEscolares) { alert('Por favor, ingrese el nombre del Jefe del Departamento de Servicios Escolares.'); document.getElementById('jefeServiciosEscolares').focus(); return; }
         const datosEvaluacion = {
             id_alumno: estudiante.id_alumno,
