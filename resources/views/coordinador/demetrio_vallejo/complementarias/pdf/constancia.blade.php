@@ -23,7 +23,7 @@
             object-fit: cover;
             z-index: -1;
         }
-        .content { padding: 5.2cm 2.4cm 2cm 2.4cm; }
+        .content { padding: 5.8cm 2.4cm 2cm 2.4cm; }
         .container { position: relative; width: 100%; }
         .titulo-principal {
             text-align: center;
@@ -88,6 +88,8 @@
             min-height: 1.15em;
         }
         strong { font-weight: bold; }
+        .ccp-footer { margin-top: 0.55cm; text-align: left; font-size: 9pt; line-height: 1.4; }
+        .ccp-footer p { margin: 0; }
     </style>
 </head>
 <body>
@@ -185,6 +187,13 @@
         }
 
         $presenteEspaciado = implode(' ', preg_split('//u', 'PRESENTE', -1, PREG_SPLIT_NO_EMPTY));
+
+        $cargoProfesorPdf = mb_strtoupper(trim((string) ($evaluacion->cargo_profesor ?? 'Docente encargado')), 'UTF-8');
+        $cargoVoboPdf = mb_strtoupper(trim((string) ($evaluacion->cargo_vobo ?? 'Subdirector Académico')), 'UTF-8');
+        $cargoDestinatarioPdf = mb_strtoupper(
+            \App\Support\EvaluacionExtraescolarFormulario::cargoDestinatarioEvaluacion($evaluacion, 'Jefe de Departamento de Servicios Escolares'),
+            'UTF-8'
+        );
     @endphp
 
     <div class="content">
@@ -195,7 +204,7 @@
 
             <div class="destinatario">
                 <p><strong>{{ $nombreJefeServicios }}</strong></p>
-                <p><strong>JEFE DE DEPARTAMENTO DE SERVICIOS ESCOLARES</strong></p>
+                <p><strong>{{ $cargoDestinatarioPdf }}</strong></p>
                 <p><strong>{{ $presenteEspaciado }}</strong></p>
             </div>
 
@@ -233,7 +242,7 @@
                             <div class="firma-linea"></div>
                             <div class="firma-nombre">
                                 <strong>{{ $nombreDocenteFirma }}</strong><br>
-                                <strong>DOCENTE ENCARGADO</strong>
+                                <strong>{{ $cargoProfesorPdf }}</strong>
                             </div>
                         </td>
                         <td class="firma-cell">
@@ -242,12 +251,14 @@
                             <div class="firma-linea"></div>
                             <div class="firma-nombre">
                                 <strong>{{ $nombreVoBo }}</strong><br>
-                                <strong>SUBDIRECTOR ACADÉMICO</strong>
+                                <strong>{{ $cargoVoboPdf }}</strong>
                             </div>
                         </td>
                     </tr>
                 </table>
             </div>
+
+            @include('coordinador.partials.constancia_complementarias_ccp_footer')
         </div>
     </div>
 </body>

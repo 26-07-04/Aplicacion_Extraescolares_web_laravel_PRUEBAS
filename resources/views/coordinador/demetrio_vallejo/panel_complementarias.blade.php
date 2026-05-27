@@ -102,6 +102,11 @@
           </a>
         </li>
         <li>
+          <a href="{{ url()->current() }}?show=evaluaciones_impresion" class="{{ $show === 'evaluaciones_impresion' ? 'active' : '' }}">
+            <i class="fas fa-clipboard-check"></i> Impresión de evaluación
+          </a>
+        </li>
+        <li>
           <a href="{{ url()->current() }}?show=resultados" class="{{ $show === 'resultados' ? 'active' : '' }}">
             <i class="fas fa-chart-line"></i> Resultados
           </a>
@@ -304,6 +309,13 @@
 
       @if(request()->get('show') === 'constancias')
         @include('coordinador.demetrio_vallejo.complementarias.constancias_table')
+      @endif
+
+      @if(request()->get('show') === 'evaluaciones_impresion')
+        @include('coordinador.partials.evaluaciones_impresion_table', [
+          'rutaEvalImpPrint' => 'coordinador.demetrio.evaluacion-formulario.print.complementarias',
+          'rutaEvalImpPrintAll' => 'coordinador.demetrio.evaluacion-formulario.print-all.complementarias',
+        ])
       @endif
 
       @if(request()->get('show') === 'resultados')

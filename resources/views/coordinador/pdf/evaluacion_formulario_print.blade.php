@@ -309,7 +309,8 @@
 <body>
 @php
     $lista = collect($evaluaciones ?? [])->values();
-    $criterios = \App\Support\EvaluacionExtraescolarFormulario::CRITERIOS;
+    $criterios = $criteriosEvaluacion ?? \App\Support\EvaluacionExtraescolarFormulario::CRITERIOS;
+    $etiquetaActividad = $etiquetaCampoActividad ?? 'Actividad Cultural y/o Deportiva';
 @endphp
 
 @php $totalPaginasEval = $lista->count(); @endphp
@@ -336,7 +337,7 @@
 
             <div class="datos-estudiante">
                 <p><strong>Nombre del estudiante:</strong> {{ $d['nombreEstudiante'] }}</p>
-                <p><strong>Actividad Cultural y/o Deportiva:</strong> {{ $d['lineaActividad'] }}</p>
+                <p><strong>{{ $etiquetaActividad }}:</strong> {{ $d['lineaActividad'] }}</p>
                 <p><strong>Periodo de realización:</strong> {{ $d['periodoRealizacion'] }}</p>
             </div>
 
