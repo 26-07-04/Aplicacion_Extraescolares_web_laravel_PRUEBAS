@@ -72,6 +72,11 @@ class PanelDemetrioVallejoController extends Controller
         return ['%Demetrio%', '%Vallejo%', '%Espinal%'];
     }
 
+    protected function idsUnidadPanel(): array
+    {
+        return [2];
+    }
+
     public function show($id, Request $request)
     {
         if ($redirect = $this->redirigirResultadosAFormatos($request)) {

@@ -224,6 +224,38 @@ class EvaluacionExtraescolarFormulario
         return $valores;
     }
 
+    /**
+     * @param  array<string, mixed>  $datos
+     * @return array{cargo_profesor: string, cargo_vobo: string, cargo_destinatario: string}
+     */
+    public static function cargosConstanciaDesdeEntrada(array $datos): array
+    {
+        $defProfesor = 'Profesor responsable';
+        $defVobo = 'Subdirección de Planeación y Vinculación';
+        $defDestinatario = 'Jefe del Departamento de Servicios Escolares';
+
+        $profesor = trim((string) ($datos['cargo_profesor'] ?? ''));
+        $vobo = trim((string) ($datos['cargo_vobo'] ?? ''));
+        $destinatario = trim((string) ($datos['cargo_destinatario'] ?? ''));
+
+        return [
+            'cargo_profesor' => $profesor !== '' ? $profesor : $defProfesor,
+            'cargo_vobo' => $vobo !== '' ? $vobo : $defVobo,
+            'cargo_destinatario' => $destinatario !== '' ? $destinatario : $defDestinatario,
+        ];
+    }
+
+    public static function cargoDestinatarioEvaluacion(Evaluacion $evaluacion): string
+    {
+        $def = 'Jefe del Departamento de Servicios Escolares';
+        $destinatario = trim((string) ($evaluacion->cargo_destinatario ?? ''));
+        if ($destinatario !== '') {
+            return $destinatario;
+        }
+
+        return trim((string) ($evaluacion->cargo_docente ?? '')) ?: $def;
+    }
+
     public static function asegurarEvaluacionExtraescolar(Evaluacion $evaluacion): void
     {
         $act = $evaluacion->actividad;
