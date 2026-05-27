@@ -34,7 +34,7 @@
         }
         
         .content {
-            padding: 5.0cm 2.5cm 2.3cm 2.5cm; /* bajar más el contenido y compactar fondo */
+            padding: 5.6cm 2.5cm 2.3cm 2.5cm;
         }
         
         .container {
@@ -164,12 +164,6 @@
             margin-top: -4px; /* acercar el bloque izquierdo a la línea para simetría */
         }
         
-        /* Copia */
-        .copia {
-            font-size: 9pt;
-            margin-top: -0.6cm; /* subir más el bloque de copias (valor negativo) */
-        }
-        
         /* Pie de página */
         .footer {
             position: relative;
@@ -225,31 +219,25 @@
 
         <!-- Título principal -->
         <div class="titulo-principal">
-            CONSTANCIA DE CUMPLIMIENTO DE ACTIVIDADES COMPLEMENTARIAS
+            CONSTANCIA DE CUMPLIMIENTO DE ACTIVIDAD CULTURAL Y/O DEPORTIVA
         </div>
 
         <!-- Destinatario -->
         <div class="destinatario">
             <p><strong>{{ $evaluacion->jefe_servicios_escolares ?? '_____________________________________' }}</strong></p>
-            <p><strong>JEFE DEL DEPARTAMENTO DE SERVICIOS ESCOLARES</strong></p>
+            <p><strong>{{ mb_strtoupper(\App\Support\EvaluacionExtraescolarFormulario::cargoDestinatarioEvaluacion($evaluacion), 'UTF-8') }}</strong></p>
             <p><strong>PRESENTE</strong></p>
         </div>
 
         <!-- Cuerpo del documento -->
         <div class="cuerpo">
-            @php
-                // Obtener la categoría directamente desde la actividad guardada en BD
-                $categoria = strtoupper(trim($actividad->categorias ?? 'COMPLEMENTARIA'));
-            @endphp
-            <p>
-                El/la que suscribe: <strong>{{ $evaluacion->nombre_profesor ?? '______________________________' }}</strong>, por este medio se permite hacer de su conocimiento que el (la) estudiante: <strong>{{ $estudiante->nombre }}</strong> con número de control: <strong>{{ $estudiante->numero_control }}</strong> de la carrera de <strong>{{ $estudiante->carrera }}</strong>, ha cumplido su actividad complementaria <strong>{{ $categoria }}</strong> "{{ $actividad->nombre_actividad ?? ($evaluacion->actividad->nombre_actividad ?? '________________') }}" con el nivel de desempeño <strong>{{ strtoupper($evaluacion->nivel_desempeno ?? '') }}</strong> y un valor numérico de <strong>{{ number_format($evaluacion->calificacion_numerica ?? 0, 1) }}</strong> durante el ciclo escolar <strong>{{ $semestre->nombre ?? 'N/A' }}</strong>, con un valor curricular de UN crédito.
-            </p>
+            @include('coordinador.partials.constancia_extraescolar_cuerpo')
         </div>
 
         <!-- Lugar y fecha -->
         <div class="lugar-fecha">
             <p style="margin-top: 0.2cm;">
-                Se extiende la presente en Santiago Suchilquitongo, Oax, a los <strong>{{ $fecha->day }}</strong> días del mes de <strong>{{ $fecha->locale('es')->translatedFormat('F') }}</strong> de <strong>{{ $fecha->year }}</strong>.
+                Se extiende la presente en Santiago Suchilquitongo, Oax, a los {{ $fecha->day }} días del mes de {{ $fecha->locale('es')->translatedFormat('F') }} de {{ $fecha->year }}.
             </p>
         </div>
 
@@ -262,37 +250,8 @@
             <strong><em>“Ciencia y Sustentbilidad al Servicio de la Humanidad”</em></strong>
         </div>
 
-        <!-- Firmas -->
-        <div class="firmas">
-            <div class="sello-centered">Sello</div>
-            <div class="firmas-columns">
-                <div class="firma-izq">
-                    <div class="etiqueta-firma">&nbsp;</div>
-                    <div class="firma-linea"></div>
-                    <div class="firma-nombre">
-                        <strong>{{ strtoupper($evaluacion->nombre_profesor ?? '_______________________________') }}</strong><br>
-                        <strong style="font-size: 8pt; color: #000;">DOCENTE RESPONSABLE</strong>
-                    </div>
-                </div>
-                <div class="firma-der">
-                    <div class="etiqueta-firma">&nbsp;</div>
-                    <div class="firma-linea"></div>
-                    <div class="firma-nombre">
-                        <div class="vobo" style="margin-top:6px; margin-bottom:6px;"><strong>Vo. Bo.</strong></div>
-                        <strong>{{ $evaluacion->jefe_extraescolares ?? '_______________________________' }}</strong><br>
-                        <strong style="font-size: 8pt; color: #000;">JEFE DEL DEPARTAMENTO DE ACTIVIDADES EXTRAESCOLARES</strong>
-                    </div>
-                </div>
-            </div>
-        </div>
+        @include('coordinador.partials.constancia_extraescolar_firmas', ['mostrarSello' => true])
 
-        <!-- Copia -->
-        <div class="copia">
-            c.c.p. Jefe del departamento correspondiente.<br>
-            c.c.p. Departamento de Servicios Escolares
-        </div>
-
-        
     </div>
     </div>
 </body>

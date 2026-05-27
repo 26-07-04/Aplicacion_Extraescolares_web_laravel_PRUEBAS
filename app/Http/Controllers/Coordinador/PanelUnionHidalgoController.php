@@ -70,6 +70,11 @@ class PanelUnionHidalgoController extends Controller
         return ['%Unión%', '%Union%', '%Hidalgo%'];
     }
 
+    protected function idsUnidadPanel(): array
+    {
+        return [1];
+    }
+
     public function show($id, Request $request)
     {
         if ($redirect = $this->redirigirResultadosAFormatos($request)) {

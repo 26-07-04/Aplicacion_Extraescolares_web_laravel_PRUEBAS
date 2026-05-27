@@ -67,6 +67,13 @@ trait ImprimeFormatoActividadCoordinador
     /** @return list<string> */
     abstract protected function fallbackLikeActividadPanel(): array;
 
+    /**
+     * IDs de unidad académica del panel (catálogo unidades). Evita filtros LIKE ambiguos (p. ej. «Valle» en Demetrio Vallejo).
+     *
+     * @return list<int>
+     */
+    abstract protected function idsUnidadPanel(): array;
+
     protected function redirigirResultadosAFormatos(Request $request): ?\Illuminate\Http\RedirectResponse
     {
         if ($request->query('show') === 'resultados') {
@@ -98,6 +105,8 @@ trait ImprimeFormatoActividadCoordinador
             $storedUnidadId = null;
         }
 
+        $unidadesIds = $this->idsUnidadPanel();
+
         $uaKeyword = null;
         foreach ($this->keywordsActividadPanel() as $cand) {
             if ($uaName !== '' && stripos($uaName, $cand) !== false) {
@@ -106,59 +115,9 @@ trait ImprimeFormatoActividadCoordinador
             }
         }
 
-        $unidadesIds = [];
-        if ($uaKeyword) {
-            $unidadesIds = Unidad::where('nombre_unidad', 'like', '%' . $uaKeyword . '%')
-                ->pluck('id_unidad')
-                ->map(fn ($id) => (int) $id)
-                ->values()
-                ->all();
-        }
-
-        if ($unidadesIds === []) {
-            $uaNorm = Str::ascii(Str::lower($uaName));
-            if ($uaNorm !== '') {
-                $unidadesIds = Unidad::all()
-                    ->filter(function ($u) use ($uaNorm) {
-                        $nombreNorm = Str::ascii(Str::lower($u->nombre_unidad));
-
-                        return strpos($nombreNorm, $uaNorm) !== false || strpos($uaNorm, $nombreNorm) !== false;
-                    })
-                    ->pluck('id_unidad')
-                    ->map(fn ($id) => (int) $id)
-                    ->values()
-                    ->all();
-            }
-        }
-
-        if ($unidadesIds === []) {
-            $fallback = $this->fallbackLikeActividadPanel();
-            $unidadesIds = Unidad::query()
-                ->where(function ($inner) use ($fallback) {
-                    foreach ($fallback as $i => $like) {
-                        if ($i === 0) {
-                            $inner->where('nombre_unidad', 'like', $like);
-                        } else {
-                            $inner->orWhere('nombre_unidad', 'like', $like);
-                        }
-                    }
-                })
-                ->pluck('id_unidad')
-                ->map(fn ($id) => (int) $id)
-                ->values()
-                ->all();
-        }
-
-        $user_unidad_id = null;
-        if ($unidadesIds !== []) {
-            if ($storedUnidadId !== null && in_array($storedUnidadId, $unidadesIds, true)) {
-                $user_unidad_id = $storedUnidadId;
-            } else {
-                $user_unidad_id = $unidadesIds[0];
-            }
-        } elseif ($storedUnidadId !== null) {
+        $user_unidad_id = $unidadesIds[0] ?? null;
+        if ($storedUnidadId !== null && in_array($storedUnidadId, $unidadesIds, true)) {
             $user_unidad_id = $storedUnidadId;
-            $unidadesIds = [$storedUnidadId];
         }
 
         return [
@@ -176,6 +135,13 @@ trait ImprimeFormatoActividadCoordinador
      */
     protected function aplicarFiltroUnidadEnQueryActividades(Builder $query, array $ctx): void
     {
+        $idsPanel = $this->idsUnidadPanel();
+        if ($idsPanel !== []) {
+            $query->whereIn('id_unidad', $idsPanel);
+
+            return;
+        }
+
         if (! empty($ctx['unidadesIds'])) {
             $query->whereIn('id_unidad', $ctx['unidadesIds']);
 
@@ -243,6 +209,18 @@ trait ImprimeFormatoActividadCoordinador
         $actividadIds = collect($actividades)->pluck('id_actividad')->filter()->values()->all();
         if ($actividadIds !== []) {
             $evaluacionesQuery->whereIn('id_actividad', $actividadIds);
+
+            return $evaluacionesQuery;
+        }
+
+        $panelUnidadIds = $ctx['unidadesIds'] ?? $this->idsUnidadPanel();
+        if ($panelUnidadIds !== []) {
+            $evaluacionesQuery->whereHas('actividad', function ($q) use ($panelUnidadIds, $semestre) {
+                $q->whereIn('id_unidad', $panelUnidadIds)
+                    ->where('id_semestre', $semestre->id_semestre);
+            });
+
+            return $evaluacionesQuery;
         }
 
         $user_unidad_id = $ctx['user_unidad_id'] ?? null;
@@ -369,6 +347,17 @@ trait ImprimeFormatoActividadCoordinador
      */
     protected function findActividadDelPanel(int $semestreId, int $actividadId, $user): ?Actividad
     {
+        $query = Actividad::where('id_actividad', $actividadId)
+            ->where('id_semestre', $semestreId)
+            ->delTipoPrograma($this->panelTipoPrograma());
+
+        $idsPanel = $this->idsUnidadPanel();
+        if ($idsPanel !== []) {
+            $query->whereIn('id_unidad', $idsPanel);
+
+            return $query->first();
+        }
+
         $uaName = $user->unidad_academica ?? '';
         $user_unidad_id = $user->unidad_id ?? $user->unidad ?? null;
         $uaKeyword = null;
@@ -379,10 +368,6 @@ trait ImprimeFormatoActividadCoordinador
                 break;
             }
         }
-
-        $query = Actividad::where('id_actividad', $actividadId)
-            ->where('id_semestre', $semestreId)
-            ->delTipoPrograma($this->panelTipoPrograma());
 
         if (! empty($user_unidad_id)) {
             $query->where('id_unidad', $user_unidad_id);

@@ -70,6 +70,11 @@ class PanelTlahuitoltepecController extends Controller
         return ['%Tlahui%', '%Tlahuitoltepec%'];
     }
 
+    protected function idsUnidadPanel(): array
+    {
+        return [3];
+    }
+
     public function show($id, Request $request)
     {
         if ($redirect = $this->redirigirResultadosAFormatos($request)) {

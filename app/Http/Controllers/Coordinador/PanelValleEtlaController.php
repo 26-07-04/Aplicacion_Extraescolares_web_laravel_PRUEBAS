@@ -66,12 +66,17 @@ class PanelValleEtlaController extends Controller
 
     protected function keywordsActividadPanel(): array
     {
-        return ['Valle', 'Etla', 'Valle de Etla'];
+        return ['Valle de Etla', 'Etla'];
     }
 
     protected function fallbackLikeActividadPanel(): array
     {
-        return ['%Valle%', '%Etla%'];
+        return ['%Valle de Etla%'];
+    }
+
+    protected function idsUnidadPanel(): array
+    {
+        return [4];
     }
 
     public function show($id, Request $request)

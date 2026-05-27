@@ -51,6 +51,7 @@ class EvaluacionValleEtlaController extends Controller
                 'ciudad' => $request->ciudad ?? 'Oaxaca',
                 'fecha_evaluacion' => now(),
                 'nombre_profesor' => $request->nombre_profesor ?? Auth::user()->name ?? 'Sin especificar',
+                ...EvaluacionExtraescolarFormulario::cargosConstanciaDesdeEntrada($request->all()),
             ]);
 
             return response()->json([

@@ -491,16 +491,19 @@
                             <h3 style="margin: 0 0 15px 0; color: #17a2b8; font-size: 1.2em; display: flex; align-items: center; gap: 8px;"><i class="fas fa-user-tie"></i> (5) Datos para la Constancia</h3>
                             <div style="display: grid; grid-template-columns: 1fr; gap: 15px;">
                                 <div>
+                                    <label style="display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 0.95em;"><i class="fas fa-user-cog"></i> Nombre del Jefe(a) del Depto. de Servicios Escolares: <span style="color: #dc3545;">*</span></label>
+                                    <input type="text" id="jefeServiciosEscolares" required placeholder="Ingrese el nombre completo del jefe de servicios escolares" style="width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em;">
+                                    <p id="cargoDestinatario" class="constancia-firma-cargo" data-default="Jefe del Departamento de Servicios Escolares" contenteditable="false" title="Doble clic para editar el puesto">Jefe del Departamento de Servicios Escolares</p>
+                                </div>
+                                <div>
                                     <label style="display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 0.95em;"><i class="fas fa-chalkboard-teacher"></i> Nombre del profesor(a) responsable: <span style="color: #dc3545;">*</span></label>
                                     <input type="text" id="nombreProfesor" required value="{{ Auth::user()->name ?? '' }}" placeholder="Ingrese el nombre completo del profesor responsable" style="width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em;">
+                                    <p id="cargoProfesor" class="constancia-firma-cargo" data-default="Profesor responsable" contenteditable="false" title="Doble clic para editar el puesto">Profesor responsable</p>
                                 </div>
                                 <div>
                                     <label style="display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 0.95em;"><i class="fas fa-user-shield"></i> Nombre del Jefe(a) del Depto. de Actividades Extraescolares: <span style="color: #dc3545;">*</span></label>
                                     <input type="text" id="jefeExtraescolares" required placeholder="Ingrese el nombre completo del jefe de departamento" style="width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em;">
-                                </div>
-                                <div>
-                                    <label style="display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 0.95em;"><i class="fas fa-user-cog"></i> Nombre del Jefe(a) del Depto. de Servicios Escolares: <span style="color: #dc3545;">*</span></label>
-                                    <input type="text" id="jefeServiciosEscolares" required placeholder="Ingrese el nombre completo del jefe de servicios escolares" style="width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em;">
+                                    <p id="cargoVobo" class="constancia-firma-cargo" data-default="Subdirección de Planeación y Vinculación" contenteditable="false" title="Doble clic para editar el puesto">Subdirección de Planeación y Vinculación</p>
                                 </div>
                             </div>
                         </div>
@@ -523,6 +526,10 @@
         `;
 
         document.body.appendChild(modal);
+
+        if (typeof window.inicializarConstanciaExtraescolarCargos === 'function') {
+            window.inicializarConstanciaExtraescolarCargos();
+        }
 
         // Agregar listeners
         agregarCalculosAutomaticos();
@@ -633,6 +640,9 @@
             nombre_profesor: nombreProfesor,
             jefe_extraescolares: jefeExtraescolares,
             jefe_servicios_escolares: jefeServiciosEscolares,
+            cargo_profesor: (function () { const el = document.getElementById('cargoProfesor'); const t = el ? (el.textContent || '').trim() : ''; return t || 'Profesor responsable'; })(),
+            cargo_vobo: (function () { const el = document.getElementById('cargoVobo'); const t = el ? (el.textContent || '').trim() : ''; return t || 'Subdirección de Planeación y Vinculación'; })(),
+            cargo_destinatario: (function () { const el = document.getElementById('cargoDestinatario'); const t = el ? (el.textContent || '').trim() : ''; return t || 'Jefe del Departamento de Servicios Escolares'; })(),
             _token: '{{ csrf_token() }}'
         };
         const btnGuardar = document.querySelector('#formEvaluacion button[type="submit"]');
@@ -667,3 +677,4 @@
     totalPaginas = Math.ceil(estudiantesFiltrados.length / estudiantesPorPagina);
     renderizarPagina(1);
 </script>
+@include('coordinador.partials.constancia_extraescolar_cargos_editable', ['constanciaCargosStorageKey' => 'constancia_cargos_extraescolar_tlahui'])
