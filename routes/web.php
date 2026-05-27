@@ -332,6 +332,38 @@ Route::get('coordinador/union-hidalgo/complementarias/resultados/print/{id}', [P
     ->middleware('auth')
     ->name('coordinador.union_hidalgo.resultados.print.complementarias');
 
+Route::get('coordinador/valle-de-etla/complementarias/evaluacion-formulario/print/{id_evaluacion}', [PanelValleEtlaComplementariasController::class, 'printEvaluacionFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.valle.evaluacion-formulario.print.complementarias');
+
+Route::get('coordinador/valle-de-etla/complementarias/evaluacion-formulario/print-all/{id}', [PanelValleEtlaComplementariasController::class, 'printAllEvaluacionesFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.valle.evaluacion-formulario.print-all.complementarias');
+
+Route::get('coordinador/demetrio-vallejo/complementarias/evaluacion-formulario/print/{id_evaluacion}', [PanelDemetrioVallejoComplementariasController::class, 'printEvaluacionFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.demetrio.evaluacion-formulario.print.complementarias');
+
+Route::get('coordinador/demetrio-vallejo/complementarias/evaluacion-formulario/print-all/{id}', [PanelDemetrioVallejoComplementariasController::class, 'printAllEvaluacionesFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.demetrio.evaluacion-formulario.print-all.complementarias');
+
+Route::get('coordinador/union-hidalgo/complementarias/evaluacion-formulario/print/{id_evaluacion}', [PanelUnionHidalgoComplementariasController::class, 'printEvaluacionFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.union_hidalgo.evaluacion-formulario.print.complementarias');
+
+Route::get('coordinador/union-hidalgo/complementarias/evaluacion-formulario/print-all/{id}', [PanelUnionHidalgoComplementariasController::class, 'printAllEvaluacionesFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.union_hidalgo.evaluacion-formulario.print-all.complementarias');
+
+Route::get('coordinador/tlahuitoltepec/complementarias/evaluacion-formulario/print/{id_evaluacion}', [PanelTlahuitoltepecComplementariasController::class, 'printEvaluacionFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.tlahuitoltepec.evaluacion-formulario.print.complementarias');
+
+Route::get('coordinador/tlahuitoltepec/complementarias/evaluacion-formulario/print-all/{id}', [PanelTlahuitoltepecComplementariasController::class, 'printAllEvaluacionesFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.tlahuitoltepec.evaluacion-formulario.print-all.complementarias');
+
 Route::get('coordinador/semestres/tlahuitoltepec', [CoordinadorSemestresTlahController::class, 'index'])
     ->name('coordinador.semestres.tlahuitoltepec');
 

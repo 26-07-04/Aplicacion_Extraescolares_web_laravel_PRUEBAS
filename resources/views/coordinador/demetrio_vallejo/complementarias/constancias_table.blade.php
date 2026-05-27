@@ -551,18 +551,21 @@
                                         <i class="fas fa-chalkboard-teacher"></i> Nombre del profesor(a) responsable: <span style="color: #dc3545;">*</span>
                                     </label>
                                     <input type="text" id="nombreProfesor" required value="{{ Auth::user()->name ?? '' }}" placeholder="Ingrese el nombre completo del profesor responsable" style="width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em;">
+                                    <p id="cargoProfesor" class="constancia-firma-cargo" data-default="Docente encargado" contenteditable="false" title="Doble clic para editar el puesto">Docente encargado</p>
                                 </div>
                                 <div>
                                     <label style="display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 0.95em;">
                                         <i class="fas fa-user-shield"></i> Nombre del Subdirector Académico: <span style="color: #dc3545;">*</span>
                                     </label>
                                     <input type="text" id="jefeExtraescolares" required placeholder="Ingrese el nombre completo del subdirector académico" style="width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em;">
+                                    <p id="cargoVobo" class="constancia-firma-cargo" data-default="Subdirector Académico" contenteditable="false" title="Doble clic para editar el puesto">Subdirector Académico</p>
                                 </div>
                                 <div>
                                     <label style="display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 0.95em;">
                                         <i class="fas fa-user-cog"></i> Nombre del Jefe(a) del Depto. de Servicios Escolares: <span style="color: #dc3545;">*</span>
                                     </label>
                                     <input type="text" id="jefeServiciosEscolares" required placeholder="Ingrese el nombre completo del jefe de servicios escolares" style="width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em;">
+                                    <p id="cargoDestinatario" class="constancia-firma-cargo" data-default="Jefe de Departamento de Servicios Escolares" contenteditable="false" title="Doble clic para editar el puesto">Jefe de Departamento de Servicios Escolares</p>
                                 </div>
                             </div>
                         </div>
@@ -612,6 +615,10 @@
         `;
         
         document.body.appendChild(modal);
+
+        if (typeof window.inicializarConstanciaComplementariasCargos === 'function') {
+            window.inicializarConstanciaComplementariasCargos();
+        }
         
         // Agregar event listeners para calcular automáticamente
         agregarCalculosAutomaticos();
@@ -652,7 +659,7 @@
             'Trabaja en equipo y se adapta a nuevas situaciones.',
             'Muestra liderazgo en las actividades encomendadas.',
             'Organiza su tiempo y trabaja de manera proactiva.',
-            'Interpreta la realidad y se sensibiliza aportando soluciones a la problemática con la actividad Cultural y/o Deportiva.',
+            'Interpreta la realidad y se sensibiliza aportando soluciones a la problemática con la actividad académica',
             'Realiza sugerencias innovadoras para beneficio o mejora del programa en el que participa.',
             'Tiene iniciativa para ayudar en las actividades encomendadas y muestra espíritu de servicio.'
         ];
@@ -804,6 +811,7 @@
             nombre_profesor: nombreProfesor,
             jefe_extraescolares: jefeExtraescolares,
             jefe_servicios_escolares: jefeServiciosEscolares,
+            ...(typeof window.obtenerCargosConstanciaComplementarias === 'function' ? window.obtenerCargosConstanciaComplementarias() : {}),
             _token: '{{ csrf_token() }}'
         };
         
@@ -933,3 +941,4 @@
     totalPaginas = Math.ceil(estudiantesFiltrados.length / estudiantesPorPagina);
     renderizarPagina(1);
 </script>
+@include('coordinador.partials.constancia_complementarias_cargos_editable', ['constanciaCargosStorageKey' => 'constancia_cargos_complementarias_demetrio'])

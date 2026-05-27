@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Coordinador\Concerns;
 
+use App\Models\Actividad;
 use App\Models\Documento;
 use App\Models\Evaluacion;
 use App\Models\Semestre;
@@ -16,12 +17,38 @@ trait ImprimeEvaluacionFormularioCoordinador
      */
     protected function encabezadoEvaluacionFormulario(): array
     {
+        if ($this->panelTipoPrograma() === Actividad::TIPO_COMPLEMENTARIA) {
+            return [
+                'INSTITUTO TECNOLÓGICO DEL VALLE DE ETLA',
+                'Subdirección Académica',
+                'DEPARTAMENTO DE ACTIVIDADES COMPLEMENTARIAS',
+                'FORMATO DE EVALUACIÓN DE DESEMPEÑO',
+            ];
+        }
+
         return [
             'INSTITUTO TECNOLÓGICO DEL VALLE DE ETLA',
             'Subdirección de Planeación y Vinculación',
             'DEPARTAMENTO DE ACTIVIDADES EXTRAESCOLARES',
             'OFICINA DE PROMOCIÓN CULTURAL O DEPORTIVA',
         ];
+    }
+
+    protected function etiquetaCampoActividadEvaluacion(): string
+    {
+        if ($this->panelTipoPrograma() === Actividad::TIPO_COMPLEMENTARIA) {
+            return 'Actividad complementaria académica';
+        }
+
+        return 'Actividad Cultural y/o Deportiva';
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function criteriosEvaluacionFormulario(): array
+    {
+        return EvaluacionExtraescolarFormulario::criteriosParaTipoPrograma($this->panelTipoPrograma());
     }
 
     protected function evaluacionFormularioPdfView(): string
@@ -35,7 +62,7 @@ trait ImprimeEvaluacionFormularioCoordinador
         $this->autorizarCoordinadorFormato($user);
 
         $evaluacion = Evaluacion::with(['estudiante', 'actividad', 'semestre'])->findOrFail($id_evaluacion);
-        EvaluacionExtraescolarFormulario::asegurarEvaluacionExtraescolar($evaluacion);
+        EvaluacionExtraescolarFormulario::asegurarEvaluacionTipoPrograma($evaluacion, $this->panelTipoPrograma());
 
         $semestre = $evaluacion->semestre;
         if (! $semestre) {
@@ -92,6 +119,8 @@ trait ImprimeEvaluacionFormularioCoordinador
             'evaluaciones' => $evaluaciones,
             'membreteArchivoUrl' => $this->membreteArchivoUrlDesdeRequest($request, $semestre),
             'encabezadoEvaluacion' => $this->encabezadoEvaluacionFormulario(),
+            'criteriosEvaluacion' => $this->criteriosEvaluacionFormulario(),
+            'etiquetaCampoActividad' => $this->etiquetaCampoActividadEvaluacion(),
         ];
     }
 

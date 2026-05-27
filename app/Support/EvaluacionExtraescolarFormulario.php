@@ -19,8 +19,31 @@ class EvaluacionExtraescolarFormulario
         'Tiene iniciativa para ayudar en las actividades encomendadas y muestra espíritu de servicio.',
     ];
 
-  /** @var list<string> */
+    /** @var list<string> */
+    public const CRITERIOS_COMPLEMENTARIAS = [
+        'Cumple en tiempo y forma con las actividades encomendadas alcanzando los objetivos.',
+        'Trabaja en equipo y se adapta a nuevas situaciones.',
+        'Muestra liderazgo en las actividades encomendadas.',
+        'Organiza su tiempo y trabaja de manera proactiva.',
+        'Interpreta la realidad y se sensibiliza aportando soluciones a la problemática con la actividad académica',
+        'Realiza sugerencias innovadoras para beneficio o mejora del programa en el que participa.',
+        'Tiene iniciativa para ayudar en las actividades encomendadas y muestra espíritu de servicio.',
+    ];
+
+    /** @var list<string> */
     public const COLUMNAS_NIVEL = ['insuficiente', 'suficiente', 'bueno', 'notable', 'excelente'];
+
+    /**
+     * @return list<string>
+     */
+    public static function criteriosParaTipoPrograma(string $tipoPrograma): array
+    {
+        if ($tipoPrograma === Actividad::TIPO_COMPLEMENTARIA) {
+            return self::CRITERIOS_COMPLEMENTARIAS;
+        }
+
+        return self::CRITERIOS;
+    }
 
     /**
      * @return array<string, mixed>
@@ -228,26 +251,40 @@ class EvaluacionExtraescolarFormulario
      * @param  array<string, mixed>  $datos
      * @return array{cargo_profesor: string, cargo_vobo: string, cargo_destinatario: string}
      */
-    public static function cargosConstanciaDesdeEntrada(array $datos): array
+    public static function cargosConstanciaDesdeEntrada(array $datos, ?array $defaults = null): array
     {
-        $defProfesor = 'Profesor responsable';
-        $defVobo = 'Subdirección de Planeación y Vinculación';
-        $defDestinatario = 'Jefe del Departamento de Servicios Escolares';
+        $def = $defaults ?? [
+            'cargo_profesor' => 'Profesor responsable',
+            'cargo_vobo' => 'Subdirección de Planeación y Vinculación',
+            'cargo_destinatario' => 'Jefe del Departamento de Servicios Escolares',
+        ];
 
         $profesor = trim((string) ($datos['cargo_profesor'] ?? ''));
         $vobo = trim((string) ($datos['cargo_vobo'] ?? ''));
         $destinatario = trim((string) ($datos['cargo_destinatario'] ?? ''));
 
         return [
-            'cargo_profesor' => $profesor !== '' ? $profesor : $defProfesor,
-            'cargo_vobo' => $vobo !== '' ? $vobo : $defVobo,
-            'cargo_destinatario' => $destinatario !== '' ? $destinatario : $defDestinatario,
+            'cargo_profesor' => $profesor !== '' ? $profesor : $def['cargo_profesor'],
+            'cargo_vobo' => $vobo !== '' ? $vobo : $def['cargo_vobo'],
+            'cargo_destinatario' => $destinatario !== '' ? $destinatario : $def['cargo_destinatario'],
         ];
     }
 
-    public static function cargoDestinatarioEvaluacion(Evaluacion $evaluacion): string
+    /**
+     * @return array{cargo_profesor: string, cargo_vobo: string, cargo_destinatario: string}
+     */
+    public static function cargosConstanciaComplementariasDesdeEntrada(array $datos): array
     {
-        $def = 'Jefe del Departamento de Servicios Escolares';
+        return self::cargosConstanciaDesdeEntrada($datos, [
+            'cargo_profesor' => 'Docente encargado',
+            'cargo_vobo' => 'Subdirector Académico',
+            'cargo_destinatario' => 'Jefe de Departamento de Servicios Escolares',
+        ]);
+    }
+
+    public static function cargoDestinatarioEvaluacion(Evaluacion $evaluacion, ?string $def = null): string
+    {
+        $def = $def ?? 'Jefe del Departamento de Servicios Escolares';
         $destinatario = trim((string) ($evaluacion->cargo_destinatario ?? ''));
         if ($destinatario !== '') {
             return $destinatario;
@@ -256,12 +293,18 @@ class EvaluacionExtraescolarFormulario
         return trim((string) ($evaluacion->cargo_docente ?? '')) ?: $def;
     }
 
-    public static function asegurarEvaluacionExtraescolar(Evaluacion $evaluacion): void
+    public static function asegurarEvaluacionTipoPrograma(Evaluacion $evaluacion, string $tipoEsperado): void
     {
         $act = $evaluacion->actividad;
-        if (! $act || ($act->tipo_programa ?? Actividad::TIPO_EXTRAESCOLAR) !== Actividad::TIPO_EXTRAESCOLAR) {
+        $tipo = $act->tipo_programa ?? Actividad::TIPO_EXTRAESCOLAR;
+        if (! $act || $tipo !== $tipoEsperado) {
             abort(404);
         }
+    }
+
+    public static function asegurarEvaluacionExtraescolar(Evaluacion $evaluacion): void
+    {
+        self::asegurarEvaluacionTipoPrograma($evaluacion, Actividad::TIPO_EXTRAESCOLAR);
     }
 
     /** @deprecated Use asegurarEvaluacionExtraescolar() */
