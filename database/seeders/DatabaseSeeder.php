@@ -25,7 +25,6 @@ class DatabaseSeeder extends Seeder
         // Otros seeders...
         $this->call([
             UnidadesTableSeeder::class,
-            DeveloperUsersSeeder::class,
         ]);
     }
 }
