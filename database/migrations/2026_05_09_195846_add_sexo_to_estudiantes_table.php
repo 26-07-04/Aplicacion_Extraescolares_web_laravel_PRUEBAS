@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Comentamos esto porque la columna ya existe en phpMyAdmin
-        /*
-        Schema::table('estudiantes', function (Blueprint $table) {
-            $table->string('sexo', 20)->nullable()->after('carrera');
-        });
-        */
+        // Añadir la columna sólo si no existe (permite ejecutar migrate en entornos distintos)
+        if (! Schema::hasColumn('estudiantes', 'sexo')) {
+            Schema::table('estudiantes', function (Blueprint $table) {
+                $table->string('sexo', 20)->nullable()->after('carrera');
+            });
+        }
     }
 
     /**
@@ -24,8 +24,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('estudiantes', function (Blueprint $table) {
-            $table->dropColumn('sexo');
-        });
+        if (Schema::hasColumn('estudiantes', 'sexo')) {
+            Schema::table('estudiantes', function (Blueprint $table) {
+                $table->dropColumn('sexo');
+            });
+        }
     }
 };
