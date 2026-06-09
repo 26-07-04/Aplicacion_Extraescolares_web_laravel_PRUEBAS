@@ -483,7 +483,7 @@ Route::prefix('administrador')->group(function () {
             'id_unidad'    => $request->query('id_unidad'),
             'id_semestre'  => $request->query('id_semestre'),
         ]);
-    })->name('administrador.actividades.detalle');
+    })->name('administrador.actividades.detalle_uh');
 
     // Ruta de detalle que carga la vista D_actividades_DV con query params
     Route::get('D_actividades_DV', function (Request $request) {
@@ -492,7 +492,7 @@ Route::prefix('administrador')->group(function () {
             'id_unidad'    => $request->query('id_unidad'),
             'id_semestre'  => $request->query('id_semestre'),
         ]);
-    })->name('administrador.actividades.detalle');
+    })->name('administrador.actividades.detalle_dv');
 
     // Ruta de detalle que carga la vista D_actividades_SMT con query params
     Route::get('D_actividades_SMT', function (Request $request) {
@@ -501,7 +501,7 @@ Route::prefix('administrador')->group(function () {
             'id_unidad'    => $request->query('id_unidad'),
             'id_semestre'  => $request->query('id_semestre'),
         ]);
-    })->name('administrador.actividades.detalle');
+    })->name('administrador.actividades.detalle_smt');
 
     // Ruta de detalle que carga la vista D_actividades_VE with query params
     Route::get('D_actividades_VE', function (Request $request) {
@@ -510,7 +510,7 @@ Route::prefix('administrador')->group(function () {
             'id_unidad'    => $request->query('id_unidad'),
             'id_semestre'  => $request->query('id_semestre'),
         ]);
-    })->name('administrador.actividades.detalle');
+    })->name('administrador.actividades.detalle_ve');
 });
 
 Route::prefix('administrador')->group(function () {
