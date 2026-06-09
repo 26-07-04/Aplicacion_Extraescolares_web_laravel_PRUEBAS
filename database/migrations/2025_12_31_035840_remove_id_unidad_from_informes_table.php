@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('informes', function (Blueprint $table) {
-            $table->dropColumn('id_unidad');
-        });
+        if (Schema::hasColumn('informes', 'id_unidad')) {
+            Schema::table('informes', function (Blueprint $table) {
+                // Primero eliminar la FK (si existe) para que MySQL permita borrar la columna
+                $table->dropForeign(['id_unidad']);
+                $table->dropColumn('id_unidad');
+            });
+        }
     }
 
     /**
