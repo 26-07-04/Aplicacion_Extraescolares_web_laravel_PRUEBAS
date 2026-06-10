@@ -196,6 +196,19 @@ Route::post('/coordinador/tlahuitoltepec/informe/subir-pdf', [InformeTlahuitolte
 Route::post('/coordinador/tlahuitoltepec/informe/generar-pdf', [InformeTlahuitoltepecController::class, 'generarPDFLaravel'])->name('informe_tlahuitoltepec.generar_pdf');
 Route::delete('/coordinador/tlahuitoltepec/informe/{id}', [InformeTlahuitoltepecController::class, 'destroy'])->name('coordinador.tlahuitoltepec.informe.eliminar');
 
+Route::middleware(['auth'])->get('/informes/{informe}/archivo', function (\App\Models\Informe $informe) {
+    $rel = ltrim(str_replace('storage/', '', (string) $informe->archivo), '/');
+    if ($rel === '') {
+        abort(404);
+    }
+    $path = storage_path('app/public/' . $rel);
+    if (! is_file($path)) {
+        abort(404);
+    }
+
+    return response()->file($path, ['Content-Type' => 'application/pdf']);
+})->name('informe.archivo');
+
 // ============ RUTAS PARA INFORME FINAL (DEMETRIO VALLEJO) ============
 Route::middleware(['auth'])->prefix('coordinador/demetrio-vallejo')->group(function () {
     Route::get('informe', [InformeDemetrioController::class, 'index'])
