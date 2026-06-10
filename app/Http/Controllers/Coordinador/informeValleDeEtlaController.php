@@ -52,7 +52,7 @@ class InformeValleDeEtlaController extends Controller
 	public function guardarDatos(Request $request)
 	{
 		$request->validate([
-			'pdf' => 'required|file|mimes:pdf|max:10240', // 10MB
+			'pdf' => 'required|file|max:10240',
 			'titulo' => 'required|string|max:255',
 			'id_semestre' => 'nullable|exists:semestres,id_semestre',
 			'descripcion' => 'nullable|string',
