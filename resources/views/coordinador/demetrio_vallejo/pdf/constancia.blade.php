@@ -237,7 +237,7 @@
         <!-- Lugar y fecha -->
         <div class="lugar-fecha">
             <p style="margin-top: 0.2cm;">
-                Se extiende la presente en Santiago Suchilquitongo, Oax, a los {{ $fecha->day }} días del mes de {{ $fecha->locale('es')->translatedFormat('F') }} de {{ $fecha->year }}.
+                Se extiende la presente en El Espinal, Oax, a los {{ $fecha->day }} días del mes de {{ $fecha->locale('es')->translatedFormat('F') }} de {{ $fecha->year }}.
             </p>
         </div>
 

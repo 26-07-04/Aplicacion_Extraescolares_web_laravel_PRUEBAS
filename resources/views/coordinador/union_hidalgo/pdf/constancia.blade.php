@@ -55,7 +55,7 @@
         <div class="cuerpo">
             @include('coordinador.partials.constancia_extraescolar_cuerpo')
         </div>
-        <div style="margin-bottom:1.2cm;">Se extiende la presente en Santiago Suchilquitongo, Oax, a los {{ $fecha->day }} días del mes de {{ strtolower($fecha->locale('es')->translatedFormat('F')) }} de {{ $fecha->year }}.</div>
+        <div style="margin-bottom:1.2cm;">Se extiende la presente en Unión Hidalgo, Oax, a los {{ $fecha->day }} días del mes de {{ strtolower($fecha->locale('es')->translatedFormat('F')) }} de {{ $fecha->year }}.</div>
         <div class="atentamente">A T E N T A M E N T E</div>
         <div style="text-align:center; font-size:9pt; margin-bottom:0.4cm;"><strong><em>Excelencia en Educación Tecnológica®</em></strong><br><strong><em>“Ciencia y Sustentbilidad al Servicio de la Humanidad”</em></strong></div>
         @include('coordinador.partials.constancia_extraescolar_firmas', ['mostrarSello' => false])
