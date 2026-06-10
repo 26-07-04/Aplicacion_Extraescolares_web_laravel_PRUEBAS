@@ -57,4 +57,16 @@ class Informe extends Model
             ->get();
     }
 
+    /**
+     * URL para ver el PDF guardado (misma ruta para todos los usuarios autenticados).
+     */
+    public function urlArchivo(): string
+    {
+        if (! $this->id || empty($this->archivo)) {
+            return '#';
+        }
+
+        return route('informe.archivo', ['informe' => $this->id], false);
+    }
+
 }

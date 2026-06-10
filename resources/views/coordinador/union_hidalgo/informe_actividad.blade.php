@@ -175,7 +175,7 @@
               </div>
             </div>
             <div class="documento-actions" style="margin-top: 10px; display: flex; gap: 8px;">
-              <a href="{{ asset($inf->archivo) }}" target="_blank" class="btn-ver-informe" style="background: #1a365d; border-radius: 5px; padding: 6px 10px; color: #fff; font-size: 1rem; border: none; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; height: 34px; min-width: 34px;">
+              <a href="{{ $inf->urlArchivo() }}" target="_blank" class="btn-ver-informe" style="background: #1a365d; border-radius: 5px; padding: 6px 10px; color: #fff; font-size: 1rem; border: none; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; height: 34px; min-width: 34px;">
                 <i class="fas fa-eye"></i>
               </a>
               <form method="POST" action="{{ route('coordinador.union_hidalgo.informe.eliminar', $inf->id) }}" onsubmit="return confirmarEliminacionInforme(event)">
