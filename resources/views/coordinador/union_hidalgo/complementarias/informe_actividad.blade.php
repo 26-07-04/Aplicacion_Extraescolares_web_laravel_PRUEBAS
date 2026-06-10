@@ -1133,33 +1133,43 @@ async function generarPDF() {
     let nombrePDF = tituloInforme ? tituloInforme : 'informe_actividades_itve';
     nombrePDF = nombrePDF.replace(/[^a-zA-Z0-9_\- ]/g, '').replace(/\s+/g, '_') + '.pdf';
     const pdfBlobFinal = doc.output('blob');
-    formData.append('pdf', pdfBlobFinal, nombrePDF);
+    const pdfFile = (typeof File !== 'undefined')
+      ? new File([pdfBlobFinal], nombrePDF, { type: 'application/pdf' })
+      : pdfBlobFinal;
+    formData.append('pdf', pdfFile, nombrePDF);
 
-    let csrf = document.querySelector('meta[name="csrf-token"]');
-    let headers = {};
-    // Siempre incluir el token CSRF
     const csrfToken = document.querySelector('meta[name="csrf-token"]');
-    if (csrfToken) headers['X-CSRF-TOKEN'] = csrfToken.getAttribute('content');
+    const headers = {
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest'
+    };
+    if (csrfToken && csrfToken.getAttribute('content')) {
+      headers['X-CSRF-TOKEN'] = csrfToken.getAttribute('content');
+      formData.append('_token', csrfToken.getAttribute('content'));
+    }
 
-    fetch('/coordinador/union-hidalgo/informe/guardar', {
+    fetch(@json(route('informe_union_hidalgo.guardar')), {
       method: 'POST',
       headers,
+      credentials: 'same-origin',
       body: formData
     })
     .then(async res => {
-      const contentType = res.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
         const text = await res.text();
         throw new Error('Respuesta no JSON del servidor:\n' + text);
       }
       const data = await res.json();
-      if (data.status === 'ok') {
+      if (res.ok && data.status === 'ok') {
+        document.getElementById('loadingGeneracion').style.display = 'none';
         alert("Informe guardado correctamente");
       } else {
-        alert("Error al guardar el informe");
+        const detalle = data.message || data.mensaje || (data.errors ? JSON.stringify(data.errors) : '');
+        throw new Error(detalle || 'Error al guardar el informe');
       }
     })
-    .catch(async (err) => {
+    .catch((err) => {
       let msg = 'Error de red al guardar el informe.';
       if (err && err.message) msg += '\n' + err.message;
       document.getElementById('loadingGeneracion').style.display = 'none';
