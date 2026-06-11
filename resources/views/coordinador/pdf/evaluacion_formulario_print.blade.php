@@ -79,6 +79,9 @@
             font-size: 11.5pt;
             margin-top: 0.1cm;
         }
+        .encabezado-institucional.encabezado-reservado {
+            visibility: hidden;
+        }
         .datos-estudiante {
             font-size: 9pt;
             line-height: 1.3;
@@ -328,7 +331,7 @@
                     'OFICINA DE PROMOCIÓN CULTURAL O DEPORTIVA',
                 ];
             @endphp
-            <div class="encabezado-institucional">
+            <div class="encabezado-institucional{{ ($mostrarEncabezadoInstitucional ?? true) ? '' : ' encabezado-reservado' }}" aria-hidden="{{ ($mostrarEncabezadoInstitucional ?? true) ? 'false' : 'true' }}">
                 <p>{{ $lineasEnc[0] ?? '' }}</p>
                 <p>{{ $lineasEnc[1] ?? '' }}</p>
                 <p class="titulo-principal">{{ $lineasEnc[2] ?? '' }}</p>

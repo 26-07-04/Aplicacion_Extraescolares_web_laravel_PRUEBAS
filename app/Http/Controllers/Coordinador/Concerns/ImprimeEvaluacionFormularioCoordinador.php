@@ -121,6 +121,7 @@ trait ImprimeEvaluacionFormularioCoordinador
             'encabezadoEvaluacion' => $this->encabezadoEvaluacionFormulario(),
             'criteriosEvaluacion' => $this->criteriosEvaluacionFormulario(),
             'etiquetaCampoActividad' => $this->etiquetaCampoActividadEvaluacion(),
+            'mostrarEncabezadoInstitucional' => $this->panelTipoPrograma() !== Actividad::TIPO_COMPLEMENTARIA,
         ];
     }
 
