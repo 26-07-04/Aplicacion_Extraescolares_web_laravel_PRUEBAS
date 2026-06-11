@@ -1,4 +1,4 @@
-ï»¿<style>
+<style>
     .formatos-container {
         padding: 24px;
         background: #f8f9fa;
@@ -305,12 +305,12 @@
     $firmasFormatos = \App\Support\ResultadosExtraescolaresFirmas::forUnidad($firmasUnidadKey);
     \Carbon\Carbon::setLocale('es');
     $fechaMxFormatos = \Carbon\Carbon::now('America/Mexico_City');
-    $fechaDefaultFormatos = $formatosLugarBase . ', a los ' . $fechaMxFormatos->day . ' dÃ­as del mes de ' . $fechaMxFormatos->translatedFormat('F') . ' de ' . $fechaMxFormatos->year . '.';
+    $fechaDefaultFormatos = $formatosLugarBase . ', a los ' . $fechaMxFormatos->day . ' días del mes de ' . $fechaMxFormatos->translatedFormat('F') . ' de ' . $fechaMxFormatos->year . '.';
 @endphp
 
 <div class="formatos-container">
     <div class="formatos-header">
-        <h2><i class="fas fa-file-alt"></i> Formatos de impresiÃ³n</h2>
+        <h2><i class="fas fa-file-alt"></i> Formatos de impresión</h2>
         <p>Selecciona el PDF membretado, el tipo de formato y la actividad para generar el documento.</p>
     </div>
 
@@ -359,7 +359,7 @@
             </div>
             <div class="formatos-firma-card">
                 <div class="formatos-firma-recuadro" title="Espacio para firma"></div>
-                <label>Jefe de oficina de promociÃ³n</label>
+                <label>Jefe de oficina de promoción</label>
                 <input type="text" id="formatosFirmaCentroNombre" data-slot="centro" value="{{ $firmasFormatos['centro']['nombre'] ?? '' }}" data-default="{{ $firmasFormatos['centro']['nombre'] ?? '' }}">
                 <p id="formatosFirmaCentroCargo" class="formatos-firma-cargo" data-slot="centro" data-default="{{ $firmasFormatos['centro']['cargo'] ?? '' }}" title="Doble clic para editar">{{ $firmasFormatos['centro']['cargo'] ?? '' }}</p>
             </div>
@@ -417,6 +417,9 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@include('coordinador.partials.swal_alerta_helper')
 
 <script>
 (function () {
@@ -476,7 +479,7 @@
         if (!frame) {
             frame = document.createElement('iframe');
             frame.id = 'formatosPrintFrame';
-            frame.title = 'ImpresiÃ³n de formato';
+            frame.title = 'Impresión de formato';
             frame.setAttribute('aria-hidden', 'true');
             frame.style.cssText = 'position:fixed;width:0;height:0;border:0;visibility:hidden;';
             document.body.appendChild(frame);
@@ -528,12 +531,16 @@
             var formato = btn.getAttribute('data-formato');
             var semestreId = {{ $semestre->id_semestre ?? 'null' }};
             if (!semestreId || !actividadId) {
-                alert('No se encontrÃ³ el semestre o la actividad.');
+                swalAlerta('No se encontró el semestre o la actividad.');
                 return;
             }
             var documentosCount = {{ isset($documentos) ? $documentos->count() : 0 }};
             if (documentosCount > 0 && (!window.pdfFormatosSeleccionado || !window.pdfFormatosSeleccionado.id)) {
-                alert('Selecciona el PDF membretado con el botÃ³n "Usar PDF".');
+                Swal.fire({
+                    title: '¿PDF membretado?',
+                    text: 'Selecciona el PDF membretado con el botón "Usar PDF".',
+                    icon: 'question'
+                });
                 return;
             }
             var baseUrl = `{{ route($formatosPrintRoute, ['semestre' => '__SEM__', 'actividad' => '__ACT__']) }}`

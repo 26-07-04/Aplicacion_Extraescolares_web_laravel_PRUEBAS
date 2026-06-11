@@ -200,8 +200,7 @@
             ? (string) (int) round($cal)
             : number_format($cal, 1, '.', '');
 
-        $cred = max(1, (int) ($evaluacion->creditos ?? 1));
-        $textoCreditos = $cred === 1 ? '1 crédito' : $cred . ' créditos';
+        $textoCreditos = '1 crédito';
 
         $mesNombre = mb_strtolower($fecha->copy()->locale('es')->translatedFormat('F'), 'UTF-8');
 

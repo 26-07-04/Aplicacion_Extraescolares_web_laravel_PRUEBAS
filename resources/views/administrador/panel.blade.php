@@ -391,6 +391,7 @@
   <!-- SheetJS y script para manejar la carga desde Activities list -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  @include('coordinador.partials.swal_alerta_helper')
   <script>
     (function(){
       // Definir variables globales al inicio
@@ -456,7 +457,7 @@
             const worksheet = workbook.Sheets[sheetName];
             const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
             if (!rows || rows.length === 0) {
-              alert('El archivo está vacío o no se pudo leer.');
+              swalAlerta('El archivo está vacío o no se pudo leer.');
               return;
             }
 
@@ -603,7 +604,7 @@
             if (modal) modal.style.display = 'flex';
           } catch (err) {
             console.error(err);
-            alert('Error al procesar el archivo. Asegúrate de que sea un Excel válido.');
+            swalAlerta('Error al procesar el archivo. Asegúrate de que sea un Excel válido.');
           }
         };
         reader.readAsArrayBuffer(f);
@@ -613,11 +614,11 @@
       if (modalUpload) modalUpload.addEventListener('click', function(){
         const mapped = window.__lastExcelMapped || [];
         if (!mapped || mapped.length === 0) {
-          alert('No hay datos para subir. Carga primero un archivo.');
+          swalAlerta('No hay datos para subir. Carga primero un archivo.');
           return;
         }
         if (!actividadSeleccionada.id) {
-          alert('No se detectó la actividad seleccionada. Vuelve a abrir el modal desde la actividad deseada.');
+          swalAlerta('No se detectó la actividad seleccionada. Vuelve a abrir el modal desde la actividad deseada.');
           return;
         }
 
@@ -672,15 +673,15 @@
               if (modalInfo) modalInfo.textContent = '';
             }, 500);
           } else if (json.errors) {
-            alert('Error: ' + JSON.stringify(json));
+            swalAlerta('Error: ' + JSON.stringify(json));
           } else {
-            alert('Respuesta inesperada del servidor.');
+            swalAlerta('Respuesta inesperada del servidor.');
           }
         }).catch(err => {
           console.error(err);
           modalUpload.disabled = false;
           modalUpload.textContent = 'Subir estudiantes';
-          alert('Error al comunicarse con el servidor. Revisa la consola.');
+          swalAlerta('Error al comunicarse con el servidor. Revisa la consola.');
         });
       });
 

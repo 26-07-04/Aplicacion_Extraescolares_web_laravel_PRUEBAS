@@ -523,7 +523,7 @@
     const semestre = document.getElementById('editSemestre').value;
 
     if (!nombre || !numero || !carrera || !semestre) {
-      alert('Por favor completa todos los campos');
+      swalAlerta('Por favor completa todos los campos');
       return;
     }
 
@@ -560,11 +560,11 @@
           location.reload(); // Recargar página después de 2 segundos
         }, 2000);
       } else {
-        alert('Error: ' + (json.message || 'Error desconocido'));
+        swalAlerta('Error: ' + (json.message || 'Error desconocido'));
       }
     }).catch(err => {
       console.error(err);
-      alert('Error al comunicarse con el servidor');
+      swalAlerta('Error al comunicarse con el servidor');
     });
   });
 </script>

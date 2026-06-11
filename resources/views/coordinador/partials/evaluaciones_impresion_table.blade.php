@@ -303,6 +303,9 @@
 
 <iframe id="evalImpPrintFrame" title="Impresión evaluación" aria-hidden="true" style="position:fixed;width:0;height:0;border:0;visibility:hidden;"></iframe>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@include('coordinador.partials.swal_alerta_helper')
+
 <script>
 (function () {
     var filas = @json($filasEvalImp);
@@ -318,7 +321,7 @@
 
     function requiereMembrete() {
         if (documentosCount > 0 && (!window.pdfEvalImpSeleccionado || !window.pdfEvalImpSeleccionado.id)) {
-            alert('Selecciona el PDF membretado con el botón "Usar PDF".');
+            swalAlerta('Selecciona el PDF membretado con el botón "Usar PDF".');
             return false;
         }
         return true;
@@ -487,7 +490,7 @@
     if (btnTodos) {
         btnTodos.addEventListener('click', function () {
             if (!semestreId) {
-                alert('No se encontró el semestre.');
+                swalAlerta('No se encontró el semestre.');
                 return;
             }
             if (!requiereMembrete()) return;

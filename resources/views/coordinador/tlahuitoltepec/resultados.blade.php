@@ -613,10 +613,10 @@
 
     function abrirImpresion(tipo) {
         const semestreId = {{ $semestre->id_semestre ?? 'null' }};
-        if (!semestreId) { alert('No se encontró el semestre para imprimir.'); return; }
+        if (!semestreId) { swalAlerta('No se encontró el semestre para imprimir.'); return; }
         const documentosCount = {{ isset($documentos) ? $documentos->count() : 0 }};
         if (documentosCount > 0 && (!window.pdfResultadosSeleccionado || !window.pdfResultadosSeleccionado.id)) {
-            alert('Selecciona el PDF membretado con el botón "Usar PDF".');
+            swalAlerta('Selecciona el PDF membretado con el botón "Usar PDF".');
             return;
         }
         const baseUrl = `{{ route('coordinador.tlahuitoltepec.resultados.print', ['id' => '__ID__']) }}`.replace('__ID__', semestreId);

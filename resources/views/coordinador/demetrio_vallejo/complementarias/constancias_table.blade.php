@@ -416,14 +416,14 @@
     function evaluarEstudiante(button) {
         const idAlumno = button.getAttribute('data-id');
         if (!idAlumno) {
-            alert('Error: ID del alumno no encontrado');
+            swalAlerta('Error: ID del alumno no encontrado');
             return;
         }
         
         // Buscar datos del estudiante
         const estudiante = todosEstudiantes.find(est => est.id_alumno == idAlumno);
         if (!estudiante) {
-            alert('Error: No se encontraron datos del estudiante');
+            swalAlerta('Error: No se encontraron datos del estudiante');
             return;
         }
         
@@ -765,7 +765,7 @@
         // Validar que se haya seleccionado un documento membretado
         const documentoMembrete = document.getElementById('selectDocumentoMembrete').value;
         if (!documentoMembrete) {
-            alert('Por favor, seleccione un documento membretado antes de evaluar.');
+            swalAlerta('Por favor, seleccione un documento membretado antes de evaluar.');
             return;
         }
 
@@ -773,7 +773,7 @@
         const nivelDesempeno = document.getElementById('nivelDesempeno').value;
         const criteriosDesempeno = obtenerCriteriosDesempeno();
         if (criteriosDesempeno.some(v => v === null) || nivelDesempeno === 'No evaluado' || !nivelDesempeno) {
-            alert('Por favor, evalúe los 7 criterios antes de guardar.');
+            swalAlerta('Por favor, evalúe los 7 criterios antes de guardar.');
             return;
         }
         
@@ -783,19 +783,19 @@
         const jefeServiciosEscolares = document.getElementById('jefeServiciosEscolares').value.trim();
         
         if (!nombreProfesor) {
-            alert('Por favor, ingrese el nombre del profesor responsable.');
+            swalAlerta('Por favor, ingrese el nombre del profesor responsable.');
             document.getElementById('nombreProfesor').focus();
             return;
         }
         
         if (!jefeExtraescolares) {
-            alert('Por favor, ingrese el nombre del Subdirector Académico.');
+            swalAlerta('Por favor, ingrese el nombre del Subdirector Académico.');
             document.getElementById('jefeExtraescolares').focus();
             return;
         }
         
         if (!jefeServiciosEscolares) {
-            alert('Por favor, ingrese el nombre del Jefe del Departamento de Servicios Escolares.');
+            swalAlerta('Por favor, ingrese el nombre del Jefe del Departamento de Servicios Escolares.');
             document.getElementById('jefeServiciosEscolares').focus();
             return;
         }
@@ -805,7 +805,7 @@
             nivel_desempeno: nivelDesempeno,
             criterios_desempeno: criteriosDesempeno,
             calificacion_numerica: valorNumerico,
-            creditos: 5,
+            creditos: 1,
             observaciones: document.getElementById('observaciones').value,
             ciudad: 'Oaxaca',
             nombre_profesor: nombreProfesor,
