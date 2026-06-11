@@ -6,6 +6,7 @@ use App\Models\Actividad;
 use App\Models\Documento;
 use App\Models\Evaluacion;
 use App\Models\Semestre;
+use App\Support\ComplementariasEvaluacionEncabezado;
 use App\Support\EvaluacionExtraescolarFormulario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,12 +19,7 @@ trait ImprimeEvaluacionFormularioCoordinador
     protected function encabezadoEvaluacionFormulario(): array
     {
         if ($this->panelTipoPrograma() === Actividad::TIPO_COMPLEMENTARIA) {
-            return [
-                'INSTITUTO TECNOLÓGICO DEL VALLE DE ETLA',
-                'Subdirección Académica',
-                'DEPARTAMENTO DE ACTIVIDADES COMPLEMENTARIAS',
-                'FORMATO DE EVALUACIÓN DE DESEMPEÑO',
-            ];
+            return ComplementariasEvaluacionEncabezado::defaults();
         }
 
         return [
@@ -121,7 +117,7 @@ trait ImprimeEvaluacionFormularioCoordinador
             'encabezadoEvaluacion' => $this->encabezadoEvaluacionFormulario(),
             'criteriosEvaluacion' => $this->criteriosEvaluacionFormulario(),
             'etiquetaCampoActividad' => $this->etiquetaCampoActividadEvaluacion(),
-            'mostrarEncabezadoInstitucional' => $this->panelTipoPrograma() !== Actividad::TIPO_COMPLEMENTARIA,
+            'esComplementariasEvaluacion' => $this->panelTipoPrograma() === Actividad::TIPO_COMPLEMENTARIA,
         ];
     }
 
