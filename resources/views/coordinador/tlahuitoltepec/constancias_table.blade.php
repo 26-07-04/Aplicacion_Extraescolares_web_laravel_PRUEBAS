@@ -399,14 +399,14 @@
     function evaluarEstudiante(button) {
         const idAlumno = button.getAttribute('data-id');
         if (!idAlumno) {
-            alert('Error: ID del alumno no encontrado');
+            swalAlerta('Error: ID del alumno no encontrado');
             return;
         }
 
         // Buscar datos del estudiante
         const estudiante = todosEstudiantes.find(est => est.id_alumno == idAlumno);
         if (!estudiante) {
-            alert('Error: No se encontraron datos del estudiante');
+            swalAlerta('Error: No se encontraron datos del estudiante');
             return;
         }
 
@@ -615,20 +615,20 @@
 
     function guardarEvaluacion(estudiante) {
         const documentoMembrete = document.getElementById('selectDocumentoMembrete').value;
-        if (!documentoMembrete) { alert('Por favor, seleccione un documento membretado antes de evaluar.'); return; }
+        if (!documentoMembrete) { swalAlerta('Por favor, seleccione un documento membretado antes de evaluar.'); return; }
         const valorNumerico = parseFloat(document.getElementById('valorNumerico').value);
         const nivelDesempeno = document.getElementById('nivelDesempeno').value;
         const criteriosDesempeno = obtenerCriteriosDesempeno();
         if (criteriosDesempeno.some(v => v === null) || nivelDesempeno === 'No evaluado' || !nivelDesempeno) {
-            alert('Por favor, evalúe los 7 criterios antes de guardar.');
+            swalAlerta('Por favor, evalúe los 7 criterios antes de guardar.');
             return;
         }
         const nombreProfesor = document.getElementById('nombreProfesor').value.trim();
         const jefeExtraescolares = document.getElementById('jefeExtraescolares').value.trim();
         const jefeServiciosEscolares = document.getElementById('jefeServiciosEscolares').value.trim();
-        if (!nombreProfesor) { alert('Por favor, ingrese el nombre del profesor responsable.'); document.getElementById('nombreProfesor').focus(); return; }
-        if (!jefeExtraescolares) { alert('Por favor, ingrese el nombre del Jefe del Departamento de Actividades Extraescolares.'); document.getElementById('jefeExtraescolares').focus(); return; }
-        if (!jefeServiciosEscolares) { alert('Por favor, ingrese el nombre del Jefe del Departamento de Servicios Escolares.'); document.getElementById('jefeServiciosEscolares').focus(); return; }
+        if (!nombreProfesor) { swalAlerta('Por favor, ingrese el nombre del profesor responsable.'); document.getElementById('nombreProfesor').focus(); return; }
+        if (!jefeExtraescolares) { swalAlerta('Por favor, ingrese el nombre del Jefe del Departamento de Actividades Extraescolares.'); document.getElementById('jefeExtraescolares').focus(); return; }
+        if (!jefeServiciosEscolares) { swalAlerta('Por favor, ingrese el nombre del Jefe del Departamento de Servicios Escolares.'); document.getElementById('jefeServiciosEscolares').focus(); return; }
         const datosEvaluacion = {
             id_alumno: estudiante.id_alumno,
             nivel_desempeno: nivelDesempeno,

@@ -192,11 +192,32 @@
 
     <script>
     function confirmarEliminacionInforme(e) {
-      if (!confirm('¿Estás seguro de que deseas eliminar este informe? Esta acción no se puede deshacer.')) {
-        e.preventDefault();
-        return false;
-      }
-      return true;
+      e.preventDefault();
+      var form = e.target;
+      Swal.fire({
+        title: '¿Estás seguro?',
+        text: 'No podrás revertir esta acción.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      }).then(function (result) {
+        if (result.isConfirmed) {
+          Swal.fire({
+            title: '¡Eliminado!',
+            text: 'El informe ha sido eliminado.',
+            icon: 'success',
+            showConfirmButton: false,
+            timer: 1500,
+            timerProgressBar: true
+          }).then(function () {
+            form.submit();
+          });
+        }
+      });
+      return false;
     }
     </script>
   </div>
@@ -362,7 +383,7 @@
       <div class="nota fecha-actual" id="notaFecha">Se establecerá automáticamente la fecha actual si no se especifica</div>
     </div>
     
-    <div class="loading" id="loadingGeneracion">
+    <div class="loading" id="loadingGeneracion" style="display: none !important;" aria-hidden="true">
       <div class="spinner"></div>
       <p>Generando PDF, por favor espere...</p>
     </div>
@@ -399,6 +420,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@include('coordinador.partials.swal_alerta_helper')
 
 <script>
 // -------------------------------------------
@@ -569,7 +592,7 @@ function validarSeccionActual() {
     case 1: // Configuración del documento
       // Validar que se haya seleccionado un PDF membretado
       if (!window.pdfSeleccionado || !window.pdfSeleccionado.archivo) {
-        alert('Debe seleccionar un PDF membretado usando el botón "Usar PDF".');
+        swalAlerta('Debe seleccionar un PDF membretado usando el botón "Usar PDF".');
         return false;
       }
       return true;
@@ -587,7 +610,7 @@ function validarSeccionActual() {
     case 3: // Registro de eventos
       const filas = document.querySelectorAll('#cuerpoTabla tr');
       if (filas.length === 0) {
-        alert('Debe agregar al menos un evento antes de continuar.');
+        swalAlerta('Debe agregar al menos un evento antes de continuar.');
         return false;
       }
       return true;
@@ -625,26 +648,46 @@ async function convertirPDFaPNG(file) {
 // -------------------------------------------
 // GENERAR PDF FINAL
 // -------------------------------------------
+function mostrarCargaInforme() {
+  if (typeof Swal !== 'undefined') {
+    Swal.fire({
+      title: 'Generando PDF, por favor espere...',
+      icon: 'success',
+      draggable: true,
+      showConfirmButton: false,
+      allowOutsideClick: false,
+      timer: 5000,
+      timerProgressBar: true
+    });
+  }
+}
+function ocultarCargaInforme() {
+  if (typeof Swal !== 'undefined' && Swal.isVisible()) {
+    Swal.close();
+  }
+  var el = document.getElementById('loadingGeneracion');
+  if (el) el.style.display = 'none';
+}
 async function generarPDF() {
   // Mostrar loading
-  document.getElementById('loadingGeneracion').style.display = 'block';
+  mostrarCargaInforme();
 
   // Validar todos los campos
   if (!validarSeccionActual() || !validarSeccionesPrevias()) {
-    document.getElementById('loadingGeneracion').style.display = 'none';
+    ocultarCargaInforme();
     return;
   }
 
   try {
     if (!window.pdfSeleccionado || !window.pdfSeleccionado.archivo) {
-      alert("Selecciona primero el PDF membretado usando el botón 'Usar PDF'.");
-      document.getElementById('loadingGeneracion').style.display = 'none';
+      swalAlerta("Selecciona primero el PDF membretado usando el botón 'Usar PDF'.");
+      ocultarCargaInforme();
       return;
     }
     const response = await fetch(window.pdfSeleccionado.archivo);
     if (!response.ok) {
-      alert('No se pudo descargar el PDF membretado.');
-      document.getElementById('loadingGeneracion').style.display = 'none';
+      swalAlerta('No se pudo descargar el PDF membretado.');
+      ocultarCargaInforme();
       return;
     }
     const pdfBlob = await response.blob();
@@ -656,8 +699,8 @@ async function generarPDF() {
     let trs = [...document.querySelectorAll("#cuerpoTabla tr")];
 
     if (trs.length === 0) {
-      alert("No hay eventos. Agregue al menos un evento antes de generar el PDF.");
-      document.getElementById('loadingGeneracion').style.display = 'none';
+      swalAlerta("No hay eventos. Agregue al menos un evento antes de generar el PDF.");
+      ocultarCargaInforme();
       return;
     }
 
@@ -782,8 +825,8 @@ async function generarPDF() {
     // Obtener el id_semestre de forma limpia y segura
     const idSemestreInput = document.getElementById('id_semestre');
     if (!idSemestreInput || !idSemestreInput.value) {
-      alert('Error: no se pudo determinar el semestre actual.');
-      document.getElementById('loadingGeneracion').style.display = 'none';
+      swalAlerta('Error: no se pudo determinar el semestre actual.');
+      ocultarCargaInforme();
       return;
     }
 
@@ -827,8 +870,7 @@ async function generarPDF() {
       }
       const data = await res.json();
       if (res.ok && data.status === 'ok') {
-        document.getElementById('loadingGeneracion').style.display = 'none';
-        alert("Informe guardado correctamente");
+        ocultarCargaInforme();
       } else {
         const detalle = data.message || data.mensaje || (data.errors ? JSON.stringify(data.errors) : '');
         throw new Error(detalle || 'Error al guardar el informe');
@@ -837,16 +879,16 @@ async function generarPDF() {
     .catch((err) => {
       let msg = 'Error de red al guardar el informe.';
       if (err && err.message) msg += '\n' + err.message;
-      document.getElementById('loadingGeneracion').style.display = 'none';
-      alert(msg);
+      ocultarCargaInforme();
+      swalAlerta(msg);
     });
 
     doc.save("informe_actividades_itve.pdf");
 
   } catch (error) {
     console.error("Error al generar PDF:", error);
-    document.getElementById('loadingGeneracion').style.display = 'none';
-    alert("Hubo un error al generar el PDF. Por favor, intente nuevamente.");
+    ocultarCargaInforme();
+    swalAlerta("Hubo un error al generar el PDF. Por favor, intente nuevamente.");
   }
 }
 
