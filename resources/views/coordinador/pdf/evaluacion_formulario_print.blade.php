@@ -79,8 +79,8 @@
             font-size: 11.5pt;
             margin-top: 0.1cm;
         }
-        .encabezado-institucional.encabezado-reservado {
-            visibility: hidden;
+        .foreground.foreground-complementarias {
+            padding-top: 4.6cm;
         }
         .datos-estudiante {
             font-size: 9pt;
@@ -263,6 +263,9 @@
             .foreground {
                 overflow: visible !important;
             }
+            .foreground.foreground-complementarias {
+                padding-top: 4.6cm !important;
+            }
             .pagina-indicador {
                 top: 1.22in !important;
                 right: 1.72in !important;
@@ -322,7 +325,7 @@
     <div class="print-page">
         <img class="print-page-bg" src="" alt="" />
         <div class="pagina-indicador" aria-hidden="true">Página {{ $pIndex + 1 }} de {{ $totalPaginasEval }}</div>
-        <div class="foreground">
+        <div class="foreground{{ ($esComplementariasEvaluacion ?? false) ? ' foreground-complementarias' : '' }}">
             @php
                 $lineasEnc = $encabezadoEvaluacion ?? [
                     'INSTITUTO TECNOLÓGICO DEL VALLE DE ETLA',
@@ -331,11 +334,11 @@
                     'OFICINA DE PROMOCIÓN CULTURAL O DEPORTIVA',
                 ];
             @endphp
-            <div class="encabezado-institucional{{ ($mostrarEncabezadoInstitucional ?? true) ? '' : ' encabezado-reservado' }}" aria-hidden="{{ ($mostrarEncabezadoInstitucional ?? true) ? 'false' : 'true' }}">
-                <p>{{ $lineasEnc[0] ?? '' }}</p>
-                <p>{{ $lineasEnc[1] ?? '' }}</p>
-                <p class="titulo-principal">{{ $lineasEnc[2] ?? '' }}</p>
-                <p class="titulo-principal">{{ $lineasEnc[3] ?? '' }}</p>
+            <div class="encabezado-institucional">
+                <p data-field="encabezado-0">{{ $lineasEnc[0] ?? '' }}</p>
+                <p data-field="encabezado-1">{{ $lineasEnc[1] ?? '' }}</p>
+                <p class="titulo-principal" data-field="encabezado-2">{{ $lineasEnc[2] ?? '' }}</p>
+                <p class="titulo-principal" data-field="encabezado-3">{{ $lineasEnc[3] ?? '' }}</p>
             </div>
 
             <div class="datos-estudiante">
@@ -465,7 +468,30 @@
             });
         });
     }
+    function cargarEncabezadoDesdePanel() {
+        if (!@json($esComplementariasEvaluacion ?? false)) return;
+        try {
+            var raw = sessionStorage.getItem('complementariasEvalImpEncabezadoPayload');
+            if (!raw) return;
+            var data = JSON.parse(raw);
+            if (!data.lineas || !data.lineas.length) return;
+            data.lineas.forEach(function (texto, i) {
+                var t = String(texto == null ? '' : texto).trim();
+                document.querySelectorAll('[data-field="encabezado-' + i + '"]').forEach(function (el) {
+                    el.textContent = t;
+                    el.style.display = t ? '' : 'none';
+                });
+            });
+            document.querySelectorAll('.encabezado-institucional').forEach(function (bloque) {
+                var visible = data.lineas.some(function (linea) {
+                    return String(linea == null ? '' : linea).trim();
+                });
+                bloque.style.display = visible ? '' : 'none';
+            });
+        } catch (e) {}
+    }
     function finalizarImpresion() {
+        cargarEncabezadoDesdePanel();
         requestAnimationFrame(function () {
             setTimeout(function () {
                 try { window.focus(); window.print(); } catch (e) {}

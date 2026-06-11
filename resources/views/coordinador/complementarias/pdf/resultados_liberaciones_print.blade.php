@@ -368,9 +368,9 @@
         <div class="foreground">
             @if($pIndex === 0)
                 <div class="oficio-meta-derecha">
-                    <p>{{ $lugarOficio }} {{ $fechaOficio }}</p>
-                    <p><strong>OFICIO: {{ $oficioNumero }}</strong></p>
-                    <p><strong>ASUNTO: {{ $asuntoOficio }}</strong></p>
+                    <p data-field="oficio-lugar-fecha">{{ $lugarOficio }} {{ $fechaOficio }}</p>
+                    <p data-field="oficio-numero"><strong>OFICIO: {{ $oficioNumero }}</strong></p>
+                    <p data-field="oficio-asunto"><strong>ASUNTO: {{ $asuntoOficio }}</strong></p>
                 </div>
                 <div class="oficio-destinatario">
                     <p class="destinatario-nombre" data-field="destinatario-nombre"><strong>{{ $firmasLib['destinatario']['nombre'] ?? '' }}</strong></p>
@@ -516,14 +516,66 @@
             if (!raw) return;
             var data = JSON.parse(raw);
             function aplicarCampoTexto(selector, valor) {
-                if (!valor) return;
+                var t = (valor == null ? '' : String(valor)).trim();
                 document.querySelectorAll(selector).forEach(function (el) {
+                    if (!t) {
+                        el.textContent = '';
+                        el.innerHTML = '';
+                        el.style.display = 'none';
+                        return;
+                    }
+                    el.style.display = '';
                     var strong = el.querySelector('strong');
                     if (strong) {
-                        strong.textContent = valor;
+                        strong.textContent = t;
                     } else {
-                        el.textContent = valor;
+                        el.textContent = t;
                     }
+                });
+            }
+            if (data.oficio) {
+                document.querySelectorAll('[data-field="oficio-lugar-fecha"]').forEach(function (el) {
+                    var t = String(data.oficio.lugarFecha == null ? '' : data.oficio.lugarFecha).trim();
+                    el.textContent = t;
+                    el.style.display = t ? '' : 'none';
+                });
+                document.querySelectorAll('[data-field="oficio-numero"]').forEach(function (el) {
+                    var t = String(data.oficio.numero == null ? '' : data.oficio.numero).trim();
+                    if (!t) {
+                        el.textContent = '';
+                        el.innerHTML = '';
+                        el.style.display = 'none';
+                        return;
+                    }
+                    el.style.display = '';
+                    var strong = el.querySelector('strong');
+                    if (strong) {
+                        strong.textContent = 'OFICIO: ' + t;
+                    } else {
+                        el.innerHTML = '<strong>OFICIO: ' + t + '</strong>';
+                    }
+                });
+                document.querySelectorAll('[data-field="oficio-asunto"]').forEach(function (el) {
+                    var t = String(data.oficio.asunto == null ? '' : data.oficio.asunto).trim();
+                    if (!t) {
+                        el.textContent = '';
+                        el.innerHTML = '';
+                        el.style.display = 'none';
+                        return;
+                    }
+                    el.style.display = '';
+                    var strong = el.querySelector('strong');
+                    if (strong) {
+                        strong.textContent = 'ASUNTO: ' + t;
+                    } else {
+                        el.innerHTML = '<strong>ASUNTO: ' + t + '</strong>';
+                    }
+                });
+                document.querySelectorAll('.oficio-meta-derecha').forEach(function (bloque) {
+                    var visible = ['lugarFecha', 'numero', 'asunto'].some(function (k) {
+                        return String(data.oficio[k] == null ? '' : data.oficio[k]).trim();
+                    });
+                    bloque.style.display = visible ? '' : 'none';
                 });
             }
             if (data.destinatario) {
@@ -532,10 +584,14 @@
             }
             if (data.firmante) {
                 document.querySelectorAll('[data-field="firmante-nombre"]').forEach(function (el) {
-                    if (data.firmante.nombre) el.textContent = data.firmante.nombre;
+                    var t = String(data.firmante.nombre == null ? '' : data.firmante.nombre).trim();
+                    el.textContent = t;
+                    el.style.display = t ? '' : 'none';
                 });
                 document.querySelectorAll('[data-field="firmante-cargo"]').forEach(function (el) {
-                    if (data.firmante.cargo) el.textContent = data.firmante.cargo;
+                    var t = String(data.firmante.cargo == null ? '' : data.firmante.cargo).trim();
+                    el.textContent = t;
+                    el.style.display = t ? '' : 'none';
                 });
             }
         } catch (e) {}

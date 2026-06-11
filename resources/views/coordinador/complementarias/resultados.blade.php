@@ -313,16 +313,16 @@
     }
 
     .liberaciones-oficio-section {
-        max-width: 640px;
+        max-width: 980px;
         margin-bottom: 20px;
     }
     .liberaciones-oficio-grid {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 12px;
         align-items: stretch;
     }
-    @media (max-width: 700px) {
+    @media (max-width: 960px) {
         .liberaciones-oficio-section {
             max-width: 100%;
         }
@@ -417,6 +417,13 @@
 
 @php
     $firmasLib = $firmasLiberaciones ?? \App\Support\ComplementariasLiberacionesFirmas::defaults();
+    $lugarOficioPanel = $lugarOficioPanel ?? 'Santiago Suchilquitongo, Oax.';
+    $oficioLib = (isset($semestre) && $semestre)
+        ? \App\Support\ComplementariasLiberacionesOficio::datosPdf($semestre, $lugarOficioPanel)
+        : \App\Support\ComplementariasLiberacionesOficio::datosPdf(new \App\Models\Semestre(['nombre' => '']), $lugarOficioPanel);
+    $lineaLugarFechaDefault = trim(($oficioLib['lugarOficio'] ?? $lugarOficioPanel) . ' ' . ($oficioLib['fechaOficio'] ?? ''));
+    $oficioNumeroDefault = $oficioLib['oficioNumero'] ?? '';
+    $oficioAsuntoDefault = $oficioLib['asuntoOficio'] ?? 'Entrega de Constancias';
 @endphp
 
 <div class="resultados-container">
@@ -459,6 +466,19 @@
 
     <div class="liberaciones-oficio-section">
     <div class="liberaciones-oficio-grid">
+    <div class="liberaciones-firmas-block">
+        <h3><i class="fas fa-file-alt"></i> Datos del oficio</h3>
+        <p class="liberaciones-firmas-desc">Lugar, fecha, número y asunto del encabezado del documento.</p>
+        <div class="liberaciones-firma-card">
+            <label for="libOficioLugarFecha">Lugar y fecha</label>
+            <input type="text" id="libOficioLugarFecha" value="{{ $lineaLugarFechaDefault }}" data-default="{{ $lineaLugarFechaDefault }}">
+            <label for="libOficioNumero" style="margin-top:6px;">Oficio</label>
+            <input type="text" id="libOficioNumero" value="{{ $oficioNumeroDefault }}" data-default="{{ $oficioNumeroDefault }}" placeholder="SPV/06/2026">
+            <label for="libOficioAsunto" style="margin-top:6px;">Asunto</label>
+            <input type="text" id="libOficioAsunto" value="{{ $oficioAsuntoDefault }}" data-default="{{ $oficioAsuntoDefault }}">
+        </div>
+    </div>
+
     <div class="liberaciones-firmas-block">
         <h3><i class="fas fa-user-tie"></i> Destinatario del oficio</h3>
         <p class="liberaciones-firmas-desc">Nombre y cargo de quien recibe el oficio.</p>
@@ -740,8 +760,7 @@
 
     function textoCargoLiberaciones(el) {
         if (!el) return '';
-        var t = String(el.innerText || el.textContent || '').trim();
-        return t || String(el.getAttribute('data-default') || '').trim();
+        return String(el.innerText || el.textContent || '').trim();
     }
 
     function inicializarFirmasLiberaciones() {
@@ -753,8 +772,6 @@
             });
             el.addEventListener('blur', function () {
                 this.contentEditable = 'false';
-                var d = this.getAttribute('data-default') || '';
-                if (!(this.textContent || '').trim()) this.textContent = d;
             });
             el.addEventListener('keydown', function (e) {
                 if (e.key === 'Enter') { e.preventDefault(); this.blur(); }
@@ -767,13 +784,25 @@
         var destCargo = document.getElementById('libDestinatarioCargo');
         var nombre = document.getElementById('libFirmaNombre');
         var cargo = document.getElementById('libFirmaCargo');
+        var lugarFecha = document.getElementById('libOficioLugarFecha');
+        var oficioNum = document.getElementById('libOficioNumero');
+        var oficioAsunto = document.getElementById('libOficioAsunto');
+        function valorInput(el) {
+            if (!el) return '';
+            return String(el.value || '').trim();
+        }
         return {
+            oficio: {
+                lugarFecha: valorInput(lugarFecha),
+                numero: valorInput(oficioNum),
+                asunto: valorInput(oficioAsunto)
+            },
             destinatario: {
-                nombre: destNombre ? String(destNombre.value || destNombre.getAttribute('data-default') || '').trim() : '',
+                nombre: destNombre ? String(destNombre.value || '').trim() : '',
                 cargo: textoCargoLiberaciones(destCargo)
             },
             firmante: {
-                nombre: nombre ? String(nombre.value || nombre.getAttribute('data-default') || '').trim() : '',
+                nombre: nombre ? String(nombre.value || '').trim() : '',
                 cargo: textoCargoLiberaciones(cargo)
             }
         };

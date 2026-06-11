@@ -88,6 +88,49 @@
     .btn-usar-pdf-eval:hover { background: #2c5aa0; }
     .btn-usar-pdf-eval.active { background: #2e7d32; }
     #evalImpMembreteInfo { margin-top: 10px; font-size: 0.9rem; color: #2e7d32; font-weight: 600; }
+    .eval-imp-encabezado {
+        background: #fff;
+        border-radius: 12px;
+        padding: 18px 20px;
+        margin-bottom: 22px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+        border-left: 3px solid #17a2b8;
+        max-width: 640px;
+    }
+    .eval-imp-encabezado h3 { margin: 0 0 4px 0; font-size: 1rem; color: #17a2b8; }
+    .eval-imp-encabezado-desc {
+        margin: 0 0 12px 0;
+        color: #666;
+        font-size: 0.85rem;
+        line-height: 1.35;
+    }
+    .eval-imp-encabezado-card {
+        background: #f9fafb;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 12px 14px;
+    }
+    .eval-imp-encabezado-card label {
+        display: block;
+        font-weight: 600;
+        font-size: 0.78rem;
+        margin-bottom: 4px;
+        color: #333;
+    }
+    .eval-imp-encabezado-card input[type="text"] {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 7px 9px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+    .eval-imp-encabezado-card input[type="text"]:last-of-type {
+        margin-bottom: 0;
+    }
     .eval-imp-tabla-wrap {
         background: #fff;
         border-radius: 12px;
@@ -232,6 +275,10 @@
     $totalEvaluados = collect($filasEvalImp)->where('evaluado', true)->count();
     $rutaEvalImpPrint = $rutaEvalImpPrint ?? 'coordinador.valle.evaluacion-formulario.print';
     $rutaEvalImpPrintAll = $rutaEvalImpPrintAll ?? 'coordinador.valle.evaluacion-formulario.print-all';
+    $esComplementariasEvalImp = $tipoProgramaPanel === \App\Models\Actividad::TIPO_COMPLEMENTARIA;
+    $encabezadoEvalImp = $esComplementariasEvalImp
+        ? \App\Support\ComplementariasEvaluacionEncabezado::defaults()
+        : [];
 @endphp
 
 <div class="eval-imp-container">
@@ -260,6 +307,23 @@
             <p style="margin:0;color:#666;">No hay PDF membretado para este semestre. Puede imprimir sin fondo o cargar uno en documentos.</p>
         @endif
     </div>
+
+    @if($esComplementariasEvalImp)
+    <div class="eval-imp-encabezado">
+        <h3><i class="fas fa-heading"></i> Encabezado del formato</h3>
+        <p class="eval-imp-encabezado-desc">Texto institucional que aparece arriba del documento impreso.</p>
+        <div class="eval-imp-encabezado-card">
+            <label for="evalImpEnc0">Instituto</label>
+            <input type="text" id="evalImpEnc0" value="{{ $encabezadoEvalImp[0] ?? '' }}" data-default="{{ $encabezadoEvalImp[0] ?? '' }}">
+            <label for="evalImpEnc1">Subdirección</label>
+            <input type="text" id="evalImpEnc1" value="{{ $encabezadoEvalImp[1] ?? '' }}" data-default="{{ $encabezadoEvalImp[1] ?? '' }}">
+            <label for="evalImpEnc2">Departamento</label>
+            <input type="text" id="evalImpEnc2" value="{{ $encabezadoEvalImp[2] ?? '' }}" data-default="{{ $encabezadoEvalImp[2] ?? '' }}">
+            <label for="evalImpEnc3">Título del formato</label>
+            <input type="text" id="evalImpEnc3" value="{{ $encabezadoEvalImp[3] ?? '' }}" data-default="{{ $encabezadoEvalImp[3] ?? '' }}">
+        </div>
+    </div>
+    @endif
 
     <div class="eval-imp-tabla-wrap">
         <div class="eval-imp-tabla-controls">
@@ -318,6 +382,19 @@
     var paginaActual = 1;
     var totalPaginas = 1;
     var filasFiltradas = [];
+    var esComplementariasEvalImp = @json($esComplementariasEvalImp);
+
+    function guardarEncabezadoEvalImpPayload() {
+        if (!esComplementariasEvalImp) return;
+        var lineas = [];
+        for (var i = 0; i < 4; i++) {
+            var el = document.getElementById('evalImpEnc' + i);
+            lineas.push(el ? String(el.value || '').trim() : '');
+        }
+        try {
+            sessionStorage.setItem('complementariasEvalImpEncabezadoPayload', JSON.stringify({ lineas: lineas }));
+        } catch (e) {}
+    }
 
     function requiereMembrete() {
         if (documentosCount > 0 && (!window.pdfEvalImpSeleccionado || !window.pdfEvalImpSeleccionado.id)) {
@@ -336,6 +413,7 @@
     }
 
     function abrirImpresion(url) {
+        guardarEncabezadoEvalImpPayload();
         var frame = document.getElementById('evalImpPrintFrame');
         if (!frame) {
             frame = document.createElement('iframe');
