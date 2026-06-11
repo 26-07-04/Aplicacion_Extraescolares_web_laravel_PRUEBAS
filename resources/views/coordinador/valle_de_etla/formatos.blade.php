@@ -305,12 +305,12 @@
     $firmasFormatos = \App\Support\ResultadosExtraescolaresFirmas::forUnidad($firmasUnidadKey);
     \Carbon\Carbon::setLocale('es');
     $fechaMxFormatos = \Carbon\Carbon::now('America/Mexico_City');
-    $fechaDefaultFormatos = $formatosLugarBase . ', a los ' . $fechaMxFormatos->day . ' días del mes de ' . $fechaMxFormatos->translatedFormat('F') . ' de ' . $fechaMxFormatos->year . '.';
+    $fechaDefaultFormatos = $formatosLugarBase . ', a los ' . $fechaMxFormatos->day . ' dÃ­as del mes de ' . $fechaMxFormatos->translatedFormat('F') . ' de ' . $fechaMxFormatos->year . '.';
 @endphp
 
 <div class="formatos-container">
     <div class="formatos-header">
-        <h2><i class="fas fa-file-alt"></i> Formatos de impresión</h2>
+        <h2><i class="fas fa-file-alt"></i> Formatos de impresiÃ³n</h2>
         <p>Selecciona el PDF membretado, el tipo de formato y la actividad para generar el documento.</p>
     </div>
 
@@ -359,7 +359,7 @@
             </div>
             <div class="formatos-firma-card">
                 <div class="formatos-firma-recuadro" title="Espacio para firma"></div>
-                <label>Jefe de oficina de promoción</label>
+                <label>Jefe de oficina de promociÃ³n</label>
                 <input type="text" id="formatosFirmaCentroNombre" data-slot="centro" value="{{ $firmasFormatos['centro']['nombre'] ?? '' }}" data-default="{{ $firmasFormatos['centro']['nombre'] ?? '' }}">
                 <p id="formatosFirmaCentroCargo" class="formatos-firma-cargo" data-slot="centro" data-default="{{ $firmasFormatos['centro']['cargo'] ?? '' }}" title="Doble clic para editar">{{ $firmasFormatos['centro']['cargo'] ?? '' }}</p>
             </div>
@@ -479,7 +479,7 @@
         if (!frame) {
             frame = document.createElement('iframe');
             frame.id = 'formatosPrintFrame';
-            frame.title = 'Impresión de formato';
+            frame.title = 'ImpresiÃ³n de formato';
             frame.setAttribute('aria-hidden', 'true');
             frame.style.cssText = 'position:fixed;width:0;height:0;border:0;visibility:hidden;';
             document.body.appendChild(frame);
@@ -531,14 +531,14 @@
             var formato = btn.getAttribute('data-formato');
             var semestreId = {{ $semestre->id_semestre ?? 'null' }};
             if (!semestreId || !actividadId) {
-                swalAlerta('No se encontró el semestre o la actividad.');
+                swalAlerta('No se encontrÃ³ el semestre o la actividad.');
                 return;
             }
             var documentosCount = {{ isset($documentos) ? $documentos->count() : 0 }};
             if (documentosCount > 0 && (!window.pdfFormatosSeleccionado || !window.pdfFormatosSeleccionado.id)) {
                 Swal.fire({
-                    title: '¿PDF membretado?',
-                    text: 'Selecciona el PDF membretado con el botón "Usar PDF".',
+                    title: 'Â¿PDF membretado?',
+                    text: 'Selecciona el PDF membretado con el botÃ³n "Usar PDF".',
                     icon: 'question'
                 });
                 return;
