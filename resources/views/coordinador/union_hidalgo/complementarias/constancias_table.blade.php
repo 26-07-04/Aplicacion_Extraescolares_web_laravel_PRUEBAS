@@ -458,7 +458,12 @@
                                 <div>
                                     <label style="display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 0.95em;"><i class="fas fa-user-shield"></i> Nombre del Subdirector Académico: <span style="color: #dc3545;">*</span></label>
                                     <input type="text" id="jefeExtraescolares" required placeholder="Ingrese el nombre completo del subdirector académico" style="width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em;">
-                                    <p id="cargoVobo" class="constancia-firma-cargo" data-default="Subdirector Académico" contenteditable="false" title="Doble clic para editar el puesto">Subdirector Académico</p>
+                                    <select id="cargoVobo" class="constancia-firma-cargo" data-default="SUBDIRECTORA ACADÉMICA" title="Selecciona el cargo del firmante">
+                                        <option value="SUBDIRECTORA ACADÉMICA" selected>SUBDIRECTORA ACADÉMICA</option>
+                                        <option value="Jefe del Depto. de Ingeniería Eléctrica y Electrónica">Jefe del Depto. de Ingeniería Eléctrica y Electrónica</option>
+                                        <option value="Jefe del Depto. de Ciencias Económico Administrativo">Jefe del Depto. de Ciencias Económico Administrativo</option>
+                                        <option value="Jefe del Depto. de Ingenierías">Jefe del Depto. de Ingenierías</option>
+                                    </select>
                                 </div>
                                 <div>
                                     <label style="display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 0.95em;"><i class="fas fa-user-cog"></i> Nombre del Jefe(a) del Depto. de Servicios Escolares: <span style="color: #dc3545;">*</span></label>
@@ -530,7 +535,7 @@
                     <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6; vertical-align: middle;"><input type="radio" name="criterio${num}" value="1" class="criterio-radio" required style="width: 20px; height: 20px; cursor: pointer;"></td>
                     <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6; vertical-align: middle;"><input type="radio" name="criterio${num}" value="2" class="criterio-radio" required style="width: 20px; height: 20px; cursor: pointer;"></td>
                     <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6; vertical-align: middle;"><input type="radio" name="criterio${num}" value="3" class="criterio-radio" required style="width: 20px; height: 20px; cursor: pointer;"></td>
-                    <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6; vertical-align: middle;"><input type="radio" name="criterio${num}" value="4" class="criterio-radio" required style="width: 20px; height: 20px; cursor: pointer;"></td>
+                    <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6; vertical-align: middle;"><input type="radio" name="criterio${num}" value="4" class="criterio-radio" required checked style="width: 20px; height: 20px; cursor: pointer;"></td>
                 </tr>
             `;
         });

@@ -39,6 +39,7 @@
     function textoCargoConstancia(elId, def) {
         var el = document.getElementById(elId);
         if (!el) return def;
+        if (el.tagName === 'SELECT') return String(el.value || '').trim() || def;
         var t = (el.textContent || '').trim();
         return t || def;
     }
@@ -83,6 +84,12 @@
             var el = document.getElementById(id);
             if (!el) return;
             var val = map[id] || el.getAttribute('data-default') || '';
+            if (el.tagName === 'SELECT') {
+                if ([].some.call(el.options, function (option) { return option.value === val; })) {
+                    el.value = val;
+                }
+                return;
+            }
             el.textContent = val;
         });
 

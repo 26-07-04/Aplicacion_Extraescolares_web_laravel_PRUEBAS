@@ -1,6 +1,6 @@
 @php
     $cargoProfesor = mb_strtoupper(trim((string) ($evaluacion->cargo_profesor ?? 'Profesor responsable')), 'UTF-8');
-    $cargoVobo = mb_strtoupper(trim((string) ($evaluacion->cargo_vobo ?? 'Subdirección de Planeación y Vinculación')), 'UTF-8');
+    $cargoVobo = mb_strtoupper(trim((string) ($evaluacion->cargo_vobo ?? 'Jefe del Depto. de Actividades Extraescolares')), 'UTF-8');
     $nombreProfesorFirma = trim((string) ($evaluacion->nombre_profesor ?? ''));
     if ($nombreProfesorFirma === '') {
         $nombreProfesorFirma = '_______________________________';

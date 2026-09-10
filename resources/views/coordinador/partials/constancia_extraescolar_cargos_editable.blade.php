@@ -3,6 +3,6 @@
     'initFunctionName' => 'inicializarConstanciaExtraescolarCargos',
     'obtenerFunctionName' => 'obtenerCargosConstanciaExtraescolar',
     'defaultCargoProfesor' => 'Profesor responsable',
-    'defaultCargoVobo' => 'Subdirección de Planeación y Vinculación',
+    'defaultCargoVobo' => 'Jefe del Depto. de Actividades Extraescolares',
     'defaultCargoDestinatario' => 'Jefe del Departamento de Servicios Escolares',
 ])

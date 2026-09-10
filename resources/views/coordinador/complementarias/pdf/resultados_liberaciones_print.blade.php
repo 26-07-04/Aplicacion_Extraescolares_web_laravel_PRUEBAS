@@ -87,6 +87,10 @@
             min-height: 0;
         }
 
+        .print-page-primera .tabla-resultados-wrap {
+            flex: 0 0 auto;
+        }
+
         .footer-liberaciones {
             flex-shrink: 0;
             page-break-inside: avoid;
@@ -97,7 +101,7 @@
 
         /* Justo debajo de la tabla (no al pie de la hoja) */
         .print-page-ultima .footer-liberaciones {
-            margin-top: 0.35cm;
+            margin-top: 0.1cm;
             transform: none;
             -webkit-transform: none;
         }
@@ -123,8 +127,8 @@
 
         /* Espacio para firma autógrafa entre lemas y la línea */
         .firma-espacio-pie {
-            min-height: 1.35cm;
-            margin: 0.15cm 0 0.1cm 0;
+            min-height: 0;
+            margin: 0;
         }
 
         .firma-linea-pie {
@@ -322,12 +326,12 @@
                 flex: 0 0 auto !important;
             }
             .print-page-ultima .footer-liberaciones {
-                margin-top: 0.35cm !important;
+                margin-top: 0.1cm !important;
                 transform: none !important;
                 -webkit-transform: none !important;
             }
             .firma-espacio-pie {
-                min-height: 1.35cm !important;
+                min-height: 0 !important;
             }
         }
     </style>
@@ -335,7 +339,7 @@
 <body>
 @php
     $lista = ($evaluaciones ?? collect())->values();
-    $pages = \App\Support\FormatoActividadPaginacion::paginar($lista, 18, 40);
+    $pages = \App\Support\FormatoActividadPaginacion::paginar($lista, 12, 12);
     $totalPages = max(1, $pages->count());
     $globalCounter = 0;
 
@@ -422,7 +426,7 @@
                 </p>
             @endif
 
-            @if($esUltima)
+            @if($esUltima && $lista->count() > 0)
                 <div class="footer-liberaciones">
                     <p class="atentamente">ATENTAMENTE</p>
                     <div class="lemas-block">

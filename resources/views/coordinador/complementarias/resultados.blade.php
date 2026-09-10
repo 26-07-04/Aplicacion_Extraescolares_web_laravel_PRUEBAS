@@ -398,6 +398,8 @@
     }
     .liberaciones-oficio-section .liberaciones-firma-cargo {
         text-align: center;
+        width: 100%;
+        box-sizing: border-box;
     }
     .liberaciones-oficio-section .liberaciones-editable-cargo {
         font-weight: 700;
@@ -460,7 +462,7 @@
             </div>
             <div id="pdfResultadosSeleccionadoInfo" class="membrete-seleccion-info"></div>
         @else
-            <p style="margin:0; color:#666;">No hay PDF membretado cargado para este semestre. Puedes imprimir sin fondo o subir uno desde el panel de documentos.</p>
+            <p style="margin:0; color:#666;">No hay PDF membretado cargado para este semestre.</p>
         @endif
     </div>
 
@@ -497,7 +499,12 @@
             <label for="libFirmaNombre">Nombre del firmante</label>
             <div class="liberaciones-firma-recuadro" title="Espacio para firma autógrafa"></div>
             <input type="text" id="libFirmaNombre" value="{{ $firmasLib['firmante']['nombre'] ?? '' }}" data-default="{{ $firmasLib['firmante']['nombre'] ?? '' }}">
-            <p id="libFirmaCargo" class="liberaciones-firma-cargo liberaciones-editable-cargo" data-default="{{ $firmasLib['firmante']['cargo'] ?? '' }}" title="Doble clic para editar">{{ $firmasLib['firmante']['cargo'] ?? '' }}</p>
+            <select id="libFirmaCargo" class="liberaciones-firma-cargo" title="Selecciona el cargo del firmante">
+                <option value="SUBDIRECTORA ACADÉMICA" @selected(($firmasLib['firmante']['cargo'] ?? '') === 'SUBDIRECTORA ACADÉMICA')>SUBDIRECTORA ACADÉMICA</option>
+                <option value="Jefe del Depto. de Ingeniería Eléctrica y Electrónica" @selected(($firmasLib['firmante']['cargo'] ?? '') === 'Jefe del Depto. de Ingeniería Eléctrica y Electrónica')>Jefe del Depto. de Ingeniería Eléctrica y Electrónica</option>
+                <option value="Jefe del Depto. de Ciencias Económico Administrativo" @selected(($firmasLib['firmante']['cargo'] ?? '') === 'Jefe del Depto. de Ciencias Económico Administrativo')>Jefe del Depto. de Ciencias Económico Administrativo</option>
+                <option value="Jefe del Depto. de Ingenierías" @selected(($firmasLib['firmante']['cargo'] ?? '') === 'Jefe del Depto. de Ingenierías')>Jefe del Depto. de Ingenierías</option>
+            </select>
         </div>
     </div>
     </div>
@@ -598,9 +605,7 @@
                 });
                 btn.classList.add('active');
                 var card = btn.closest('.documento-card-resultados');
-                if (card) {
-                    card.classList.add('is-selected');
-                }
+                if (card) card.classList.add('is-selected');
                 window.pdfResultadosSeleccionado = {
                     id: btn.getAttribute('data-id'),
                     archivo: btn.getAttribute('data-archivo') || ''
@@ -760,6 +765,7 @@
 
     function textoCargoLiberaciones(el) {
         if (!el) return '';
+        if (el.tagName === 'SELECT') return String(el.value || '').trim();
         return String(el.innerText || el.textContent || '').trim();
     }
 

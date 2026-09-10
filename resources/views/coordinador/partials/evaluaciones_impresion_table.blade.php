@@ -284,9 +284,10 @@
 <div class="eval-imp-container">
     <div class="eval-imp-header">
         <h2><i class="fas fa-clipboard-check"></i> Impresión de evaluación de desempeño</h2>
-        <p>Selecciona el PDF membretado e imprime el formato de evaluación por estudiante o todos los evaluados.</p>
+        <p>{{ $esComplementariasEvalImp ? 'Imprime el formato de evaluación por estudiante o todos los evaluados.' : 'Selecciona el PDF membretado e imprime el formato de evaluación por estudiante o todos los evaluados.' }}</p>
     </div>
 
+    @if(!$esComplementariasEvalImp)
     <div class="eval-imp-membrete">
         <h3><i class="fas fa-file-pdf"></i> PDF membretado</h3>
         @if(isset($documentos) && $documentos->count() > 0)
@@ -307,6 +308,7 @@
             <p style="margin:0;color:#666;">No hay PDF membretado para este semestre. Puede imprimir sin fondo o cargar uno en documentos.</p>
         @endif
     </div>
+    @endif
 
     @if($esComplementariasEvalImp)
     <div class="eval-imp-encabezado">
@@ -374,7 +376,7 @@
 (function () {
     var filas = @json($filasEvalImp);
     var semestreId = @json($semestreId);
-    var documentosCount = {{ isset($documentos) ? $documentos->count() : 0 }};
+    var documentosCount = {{ $esComplementariasEvalImp ? 0 : (isset($documentos) ? $documentos->count() : 0) }};
     var rutaUno = @json(route($rutaEvalImpPrint, ['id_evaluacion' => '__ID__']));
     var rutaTodos = @json(route($rutaEvalImpPrintAll, ['id' => '__ID__']));
     window.pdfEvalImpSeleccionado = null;

@@ -23,7 +23,7 @@ class ComplementariasLiberacionesFirmas
             ],
             'firmante' => [
                 'nombre' => 'M.A. FERNANDO ADRIHEL SARUBBI BALTAZAR',
-                'cargo' => 'SUBDIRECTOR DE PLANEACIÓN Y VINCULACIÓN',
+                'cargo' => 'SUBDIRECTORA ACADÉMICA',
             ],
             'sello' => [
                 'institucion' => 'INSTITUTO TECNOLÓGICO DEL VALLE DE ETLA',

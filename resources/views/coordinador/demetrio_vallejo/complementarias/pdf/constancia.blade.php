@@ -106,6 +106,13 @@
             foreach ($candidatePaths as $membretePath) {
                 if (file_exists($membretePath)) {
                     $ext = strtolower(pathinfo($membretePath, PATHINFO_EXTENSION));
+                    if ($ext === 'pdf') {
+                        $membretePath = \App\Support\MembretePdfPreview::resolve($membretePath);
+                        if (!$membretePath) {
+                            continue;
+                        }
+                        $ext = 'png';
+                    }
                     $mime = in_array($ext, ['jpg','jpeg']) ? 'image/jpeg' : ($ext === 'png' ? 'image/png' : 'image/*');
                     $membreteSrc = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($membretePath));
                     break;

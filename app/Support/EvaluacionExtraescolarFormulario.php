@@ -255,7 +255,7 @@ class EvaluacionExtraescolarFormulario
     {
         $def = $defaults ?? [
             'cargo_profesor' => 'Profesor responsable',
-            'cargo_vobo' => 'Subdirección de Planeación y Vinculación',
+            'cargo_vobo' => 'Jefe del Depto. de Actividades Extraescolares',
             'cargo_destinatario' => 'Jefe del Departamento de Servicios Escolares',
         ];
 

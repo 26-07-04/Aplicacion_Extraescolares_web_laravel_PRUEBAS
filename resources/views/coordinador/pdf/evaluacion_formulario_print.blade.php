@@ -343,6 +343,9 @@
 
             <div class="datos-estudiante">
                 <p><strong>Nombre del estudiante:</strong> {{ $d['nombreEstudiante'] }}</p>
+                @if($esComplementariasEvaluacion ?? false)
+                    <p><strong>Número de control:</strong> {{ $d['estudiante']->numero_control ?? 'N/A' }}</p>
+                @endif
                 <p><strong>{{ $etiquetaActividad }}:</strong> {{ $d['lineaActividad'] }}</p>
                 <p><strong>Periodo de realización:</strong> {{ $d['periodoRealizacion'] }}</p>
             </div>

@@ -335,7 +335,7 @@
 <body>
 @php
     $lista = ($evaluaciones ?? collect())->values();
-    $pages = \App\Support\FormatoActividadPaginacion::paginar($lista, 18, 40);
+    $pages = \App\Support\FormatoActividadPaginacion::paginar($lista, 12, 12);
     $totalPages = max(1, $pages->count());
     $globalCounter = 0;
 

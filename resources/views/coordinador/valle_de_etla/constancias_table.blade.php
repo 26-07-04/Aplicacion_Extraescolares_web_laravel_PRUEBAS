@@ -533,7 +533,7 @@
                                         <i class="fas fa-user-shield"></i> Nombre del Jefe(a) del Depto. de Actividades Extraescolares: <span style="color: #dc3545;">*</span>
                                     </label>
                                     <input type="text" id="jefeExtraescolares" required placeholder="Ingrese el nombre completo del jefe de departamento" style="width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em;">
-                                    <p id="cargoVobo" class="constancia-firma-cargo" data-default="Subdirección de Planeación y Vinculación" contenteditable="false" title="Doble clic para editar el puesto">Subdirección de Planeación y Vinculación</p>
+                                    <p id="cargoVobo" class="constancia-firma-cargo" data-default="Jefe del Depto. de Actividades Extraescolares" contenteditable="false" title="Doble clic para editar el puesto">Jefe del Depto. de Actividades Extraescolares</p>
                                 </div>
                             </div>
                         </div>
@@ -645,7 +645,7 @@
                         <input type="radio" name="criterio${num}" value="3" class="criterio-radio" required style="width: 20px; height: 20px; cursor: pointer;">
                     </td>
                     <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6; vertical-align: middle;">
-                        <input type="radio" name="criterio${num}" value="4" class="criterio-radio" required style="width: 20px; height: 20px; cursor: pointer;">
+                        <input type="radio" name="criterio${num}" value="4" class="criterio-radio" required checked style="width: 20px; height: 20px; cursor: pointer;">
                     </td>
                 </tr>
             `;
@@ -775,7 +775,7 @@
             cargo_vobo: (function () {
                 const el = document.getElementById('cargoVobo');
                 const t = el ? (el.textContent || '').trim() : '';
-                return t || 'Subdirección de Planeación y Vinculación';
+                return t || 'Jefe del Depto. de Actividades Extraescolares';
             })(),
             cargo_destinatario: (function () {
                 const el = document.getElementById('cargoDestinatario');

@@ -8,6 +8,7 @@ use App\Models\Documento;
 use App\Models\Semestre;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
+use Symfony\Component\Process\Process;
 
 class DocumentoController extends Controller
 {
@@ -43,6 +44,26 @@ class DocumentoController extends Controller
         $filename = time() . '_' . $safeName;
         $file->move($destination, $filename);
         $path = 'Documentos/' . $filename; // ruta relativa dentro de public
+
+        if (strtolower($file->getClientOriginalExtension()) === 'pdf') {
+            $pdfPath = $destination . DIRECTORY_SEPARATOR . $filename;
+            $previewPath = $destination . DIRECTORY_SEPARATOR . pathinfo($filename, PATHINFO_FILENAME) . '.png';
+            $process = new Process([
+                'pdftoppm',
+                '-png',
+                '-f',
+                '1',
+                '-singlefile',
+                $pdfPath,
+                pathinfo($previewPath, PATHINFO_DIRNAME) . DIRECTORY_SEPARATOR . pathinfo($previewPath, PATHINFO_FILENAME),
+            ]);
+            $process->setTimeout(60);
+            try {
+                $process->run();
+            } catch (\Throwable $e) {
+                // El PDF original se conserva aunque no haya conversor disponible.
+            }
+        }
 
         $documento = Documento::create([
             'nombre' => $request->input('nombre'),
