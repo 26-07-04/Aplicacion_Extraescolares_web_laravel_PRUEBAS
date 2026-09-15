@@ -1,37 +1,40 @@
-﻿FROM dunglas/frankenphp:php8.2-bookworm
-
-RUN install-php-extensions \
-    pdo_mysql \
-    mbstring \
-    exif \
-    pcntl \
-    bcmath \
-    gd \
-    zip
-
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+FROM dunglas/frankenphp:php8.2
 
 WORKDIR /app
 
-COPY . .
+COPY . /app
 
-COPY isrgrootx1.pem /etc/ssl/certs/isrgrootx1.pem
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    libzip-dev \
+    libpng-dev \
+    libicu-dev \
+    && docker-php-ext-install \
+    pdo_mysql \
+    zip \
+    gd \
+    intl \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && \
-    apt-get install -y nodejs npm && \
-    npm install && \
-    npm run build && \
-    rm -rf node_modules && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-RUN php artisan config:clear && \
-    php artisan route:clear && \
-    php artisan view:clear
+RUN php artisan config:clear
+RUN php artisan route:clear
+RUN php artisan view:clear
 
-ENV SERVER_NAME=:8000
+RUN mkdir -p storage/framework/cache \
+    storage/framework/sessions \
+    storage/framework/views \
+    storage/logs \
+    bootstrap/cache
+
+RUN chmod -R 775 storage bootstrap/cache
+
+ENV APP_ENV=production
+ENV APP_DEBUG=false
 
 EXPOSE 8000
 
