@@ -1,5 +1,5 @@
 ﻿```dockerfile
-FROM node:22-bookworm AS frontend
+FROM node:22-bookworm
 
 WORKDIR /app
 
@@ -37,7 +37,7 @@ COPY . .
 
 COPY isrgrootx1.pem /etc/ssl/certs/isrgrootx1.pem
 
-COPY --from=frontend /app/public/build ./public/build
+COPY --from=0 /app/public/build ./public/build
 
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
