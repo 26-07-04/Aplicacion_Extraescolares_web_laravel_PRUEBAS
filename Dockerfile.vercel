@@ -1,4 +1,5 @@
-﻿FROM node:22-bookworm AS frontend
+﻿```dockerfile
+FROM node:22-bookworm AS frontend
 
 WORKDIR /app
 
@@ -7,8 +8,11 @@ COPY package*.json ./
 RUN npm install
 
 COPY resources ./resources
+
 COPY public ./public
+
 COPY vite.config.js ./
+
 COPY postcss.config.js ./
 
 RUN npm run build
@@ -31,6 +35,8 @@ WORKDIR /app
 
 COPY . .
 
+COPY isrgrootx1.pem /etc/ssl/certs/isrgrootx1.pem
+
 COPY --from=frontend /app/public/build ./public/build
 
 RUN composer install --no-dev --optimize-autoloader --no-interaction
@@ -42,3 +48,4 @@ ENV SERVER_NAME=:8000
 EXPOSE 8000
 
 CMD ["sh", "-c", "php artisan octane:frankenphp --host=0.0.0.0 --port=${PORT:-8000}"]
+```
