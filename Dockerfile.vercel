@@ -38,4 +38,4 @@ ENV APP_DEBUG=false
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "frankenphp php-server -r public/ --listen 0.0.0.0:${PORT:-8000}"]
+CMD ["sh", "-c", "frankenphp php-server -r public/ --listen 0.0.0.0:${PORT:-8000} --try-files '{path} index.php'"]
