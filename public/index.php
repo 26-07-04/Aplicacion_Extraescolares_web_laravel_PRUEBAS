@@ -18,6 +18,8 @@ require __DIR__.'/../vendor/autoload.php';
 /** @var Application $app */
 $app = require_once __DIR__.'/../bootstrap/app.php';
 
-echo 'BOOTSTRAP OK';
+$response = $app->handleRequest(Request::capture());
+
+echo 'LARAVEL RESPONDIO';
 exit;
 $app->handleRequest(Request::capture());
