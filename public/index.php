@@ -1,4 +1,6 @@
 <?php
+echo 'INDEX PHP FUNCIONANDO';
+exit;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
