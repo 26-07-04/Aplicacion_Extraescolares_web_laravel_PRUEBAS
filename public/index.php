@@ -18,8 +18,10 @@ require __DIR__.'/../vendor/autoload.php';
 /** @var Application $app */
 $app = require_once __DIR__.'/../bootstrap/app.php';
 
-$response = $app->handleRequest(Request::capture());
+$request = Request::capture();
 
-echo 'LARAVEL RESPONDIO';
+$response = $app->handleRequest($request);
+
+echo 'TIPO: ' . get_class($response);
 exit;
 $app->handleRequest(Request::capture());
