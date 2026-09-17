@@ -38,7 +38,7 @@ Route::get('/', function () {
 });
 */
 Route::get('/', function () {
-    return 'Vercel esta ejecutando Laravel correctamente';
+    return view('home');
 })->name('home');
 
 // Note: authentication routes are defined in routes/auth.php
