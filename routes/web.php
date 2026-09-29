@@ -38,8 +38,8 @@ Route::get('/', function () {
 });
 */
 Route::get('/', function () {
-    return view('home');
-})->name('home');
+    return 'HOLA VERCEL';
+});
 
 // Note: authentication routes are defined in routes/auth.php
 
