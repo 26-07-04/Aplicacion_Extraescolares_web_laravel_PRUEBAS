@@ -34,7 +34,7 @@ RUN mkdir -p storage/framework/cache \
 RUN chmod -R 775 storage bootstrap/cache
 
 ENV APP_ENV=production
-ENV APP_DEBUG=false
+ENV APP_DEBUG=true
 
 EXPOSE 8000
 
