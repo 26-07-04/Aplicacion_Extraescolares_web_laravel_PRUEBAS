@@ -59,9 +59,9 @@ class AuthController extends Controller
         if (! $passwordVerified) {
             return back()->withErrors(['contrasena' => 'Contraseña incorrecta'])->withInput();
         }
-        $request->session()->regenerate();
-
         Auth::login($user);
+
+        $request->session()->regenerate();
 
         // Redirigir según rol
         if ($user->rol === 'Administrador') {
