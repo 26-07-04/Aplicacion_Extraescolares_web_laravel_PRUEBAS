@@ -337,8 +337,9 @@ body, .contenedor-principal, .lado-izquierdo, .lado-derecho, .formulario-login, 
         <h1 style="font-size:1.5rem; font-weight:bold; margin-bottom: 8px;">ACTIVIDADES EXTRAESCOLARES</h1>
         <p style="font-size:1.05rem; font-weight:500; margin-bottom: 0;">Sistema de gestión de actividades complementarias</p>
       </div>
-      <form class="formulario-login" style="margin-top: 30px;" method="POST" action="{{ url('/login') }}">
+      <form class="formulario-login" style="margin-top: 30px;" method="POST" action="{{ route('login') }}">
         @csrf
+        <input type="hidden" name="_token" value="{{ csrf_token() }}">
         <div class="campo">
           <img src="Imagenes/user.png" alt="Usuario" style="width:35px; height:35px; margin-right:8px;">
           <input type="text" id="usuario" name="usuario" value="{{ old('usuario') }}" class="input-login-pequeno" placeholder="Ingresa tu nombre de usuario" />
