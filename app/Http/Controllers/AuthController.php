@@ -65,6 +65,12 @@ Auth::guard('web')->login($user, true);
 $request->session()->regenerate();
 
 session()->save();
+dd([
+    'auth_check' => Auth::check(),
+    'user' => Auth::user(),
+    'session_id' => session()->getId(),
+]);
+
 
         // Redirigir según rol
         if ($user->rol === 'Administrador') {
