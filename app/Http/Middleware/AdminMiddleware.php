@@ -16,10 +16,9 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(Auth::check() && Auth::user()->usertype=='admin'){
-            return $next($request);
-
-        }
+      if (Auth::check() && Auth::user()->rol === 'Administrador') {
+    return $next($request);
+}
 
         abort(403,'Acceso no autorizado');
 
