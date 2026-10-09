@@ -32,8 +32,12 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
     && chmod -R 755 /var/www/html/bootstrap/cache
 
-# Copiar .env si existe
-RUN if [ ! -f .env ]; then cp .env.example .env; fi
+# Crear .env con configuración base para Render
+RUN echo "APP_NAME=Laravel" > .env && \
+    echo "APP_ENV=production" >> .env && \
+    echo "APP_DEBUG=false" >> .env && \
+    echo "APP_URL=http://localhost" >> .env && \
+    echo "DB_CONNECTION=pgsql" >> .env
 
 # Instalar dependencias
 RUN composer install --no-dev --optimize-autoloader --no-interaction
