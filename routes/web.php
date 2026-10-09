@@ -357,6 +357,8 @@ Route::get('coordinador/tlahuitoltepec/complementarias/formatos/print/{semestre}
     ->middleware('auth')
     ->name('coordinador.tlahuitoltepec.formatos.print.complementarias');
 
+require __DIR__.'/auth.php';
+
 Route::get('coordinador/demetrio-vallejo/complementarias/resultados/print/{id}', [PanelDemetrioVallejoComplementariasController::class, 'printResultados'])
     ->middleware('auth')
     ->name('coordinador.demetrio.resultados.print.complementarias');
