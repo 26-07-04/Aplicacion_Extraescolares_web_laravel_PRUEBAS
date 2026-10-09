@@ -1,7 +1,15 @@
 FROM php:8.2-apache
 
+# Instalar dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 # Instalar extensiones necesarias
-RUN docker-php-ext-install pdo pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd
+RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd
 
 # Habilitar mod_rewrite de Apache
 RUN a2enmod rewrite
