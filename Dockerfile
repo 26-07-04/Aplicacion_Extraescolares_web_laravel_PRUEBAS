@@ -6,10 +6,12 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     libpq-dev \
+    unzip \
+    zip \
     && rm -rf /var/lib/apt/lists/*
 
 # Instalar extensiones necesarias
-RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd
+RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd zip
 
 # Habilitar mod_rewrite de Apache
 RUN a2enmod rewrite
