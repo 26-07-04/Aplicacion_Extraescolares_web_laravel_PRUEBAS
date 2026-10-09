@@ -32,12 +32,22 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
     && chmod -R 755 /var/www/html/bootstrap/cache
 
-# Crear .env con configuración base para Render
-RUN echo "APP_NAME=Laravel" > .env && \
-    echo "APP_ENV=production" >> .env && \
-    echo "APP_DEBUG=false" >> .env && \
-    echo "APP_URL=http://localhost" >> .env && \
-    echo "DB_CONNECTION=pgsql" >> .env
+# Crear .env con configuración base para Render (usará variables de entorno)
+RUN cat > .env << 'EOF'
+APP_NAME=Laravel
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=${APP_URL:-http://localhost}
+DB_CONNECTION=${DB_CONNECTION:-pgsql}
+DB_HOST=${DB_HOST}
+DB_PORT=${DB_PORT:-5432}
+DB_DATABASE=${DB_DATABASE}
+DB_USERNAME=${DB_USERNAME}
+DB_PASSWORD=${DB_PASSWORD}
+SESSION_DRIVER=${SESSION_DRIVER:-database}
+CACHE_DRIVER=${CACHE_DRIVER:-database}
+QUEUE_CONNECTION=${QUEUE_CONNECTION:-database}
+EOF
 
 # Instalar dependencias
 RUN composer install --no-dev --optimize-autoloader --no-interaction
