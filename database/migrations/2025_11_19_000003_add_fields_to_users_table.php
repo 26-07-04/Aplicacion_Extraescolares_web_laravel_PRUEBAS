@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('nombre', 100);
             $table->string('contrasena', 255);
             $table->string('contrasena_texto', 255)->nullable();
-            $table->enum('rol', ['Administrador', 'Coordinador']);
+            $table->string('rol', 20)->default('Coordinador'); // Cambiado de enum a string para compatibilidad con PostgreSQL
             $table->string('unidad_academica', 120);
             $table->string('contacto', 50);
             $table->timestamps();

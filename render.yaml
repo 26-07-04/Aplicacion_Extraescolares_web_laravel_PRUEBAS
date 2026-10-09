@@ -1,0 +1,66 @@
+services:
+  # Servicio Web (Laravel)
+  - type: web
+    name: aplicacion-extraescolares
+    env: php
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: php artisan serve --host=0.0.0.0 --port=$PORT
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_URL
+        value: https://aplicacion-extraescolares.onrender.com
+      - key: LOG_CHANNEL
+        value: errorlog
+      - key: LOG_LEVEL
+        value: warning
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: aplicacion-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: aplicacion-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: aplicacion-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: aplicacion-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: aplicacion-db
+          property: password
+      - key: CACHE_DRIVER
+        value: database
+      - key: SESSION_DRIVER
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: SESSION_SECURE_COOKIE
+        value: true
+      - key: SESSION_SAME_SITE
+        value: lax
+      - key: TRUSTED_PROXIES
+        value: "*"
+      - key: FILESYSTEM_DISK
+        value: local
+
+  # Base de Datos PostgreSQL
+  - type: postgres
+    name: aplicacion-db
+    plan: free
+    ipAllowList: []
+    databases:
+      - name: aplicacion_integral
+        databaseName: aplicacion_integral

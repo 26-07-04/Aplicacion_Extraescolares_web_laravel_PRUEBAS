@@ -37,6 +37,29 @@ class User extends Authenticatable
     ];
 
     /**
+     * The attributes that should be cast.
+     *
+     * @var array<string,string>
+     */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
+
+    /**
+     * Boot method to add validation for rol field
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($user) {
+            if (!in_array($user->rol, ['Administrador', 'Coordinador'])) {
+                throw new \InvalidArgumentException('El rol debe ser Administrador o Coordinador');
+            }
+        });
+    }
+
+    /**
      * The attributes that should be hidden for serialization.
      *
      * @var list<string>
