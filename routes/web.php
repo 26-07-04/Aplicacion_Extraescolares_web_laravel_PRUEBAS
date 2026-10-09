@@ -186,11 +186,11 @@ Route::post('/coordinador/union-hidalgo/informe/generar-pdf', [InformeUnionHidal
 Route::delete('/coordinador/union-hidalgo/informe/{id}', [App\Http\Controllers\Coordinador\InformeUnionHidalgoController::class, 'destroy'])->name('coordinador.union_hidalgo.informe.eliminar');
 
 // Rutas para el informe de Valle de Etla (unidad)
-Route::get('/coordinador/valle-de-etla/informe', [App\Http\Controllers\Coordinador\informeValleDeEtlaController::class, 'index'])->name('informe_valle_de_etla.index');
-Route::post('/coordinador/valle-de-etla/informe/guardar', [App\Http\Controllers\Coordinador\informeValleDeEtlaController::class, 'guardarDatos'])->name('informe_valle_de_etla.guardar');
-Route::post('/coordinador/valle-de-etla/informe/subir-pdf', [App\Http\Controllers\Coordinador\informeValleDeEtlaController::class, 'subirPDF'])->name('informe_valle_de_etla.subir_pdf');
-Route::post('/coordinador/valle-de-etla/informe/generar-pdf', [App\Http\Controllers\Coordinador\informeValleDeEtlaController::class, 'generarPDFLaravel'])->name('informe_valle_de_etla.generar_pdf');
-Route::delete('/coordinador/valle-de-etla/informe/{id}', [App\Http\Controllers\Coordinador\informeValleDeEtlaController::class, 'destroy'])->name('coordinador.valle_etla.informe.eliminar');
+Route::get('/coordinador/valle-de-etla/informe', [App\Http\Controllers\Coordinador\InformeValleDeEtlaController::class, 'index'])->name('informe_valle_de_etla.index');
+Route::post('/coordinador/valle-de-etla/informe/guardar', [App\Http\Controllers\Coordinador\InformeValleDeEtlaController::class, 'guardarDatos'])->name('informe_valle_de_etla.guardar');
+Route::post('/coordinador/valle-de-etla/informe/subir-pdf', [App\Http\Controllers\Coordinador\InformeValleDeEtlaController::class, 'subirPDF'])->name('informe_valle_de_etla.subir_pdf');
+Route::post('/coordinador/valle-de-etla/informe/generar-pdf', [App\Http\Controllers\Coordinador\InformeValleDeEtlaController::class, 'generarPDFLaravel'])->name('informe_valle_de_etla.generar_pdf');
+Route::delete('/coordinador/valle-de-etla/informe/{id}', [App\Http\Controllers\Coordinador\InformeValleDeEtlaController::class, 'destroy'])->name('coordinador.valle_etla.informe.eliminar');
 
 
 // Rutas para el informe de Tlahuitoltepec (unidad)
