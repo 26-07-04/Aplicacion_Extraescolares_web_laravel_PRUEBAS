@@ -289,6 +289,7 @@
         @include('coordinador.partials.evaluaciones_impresion_table', [
           'rutaEvalImpPrint' => 'coordinador.union_hidalgo.evaluacion-formulario.print.complementarias',
           'rutaEvalImpPrintAll' => 'coordinador.union_hidalgo.evaluacion-formulario.print-all.complementarias',
+          'rutaEvalImpDownloadAll' => 'coordinador.union_hidalgo.evaluacion-formulario.download-all.complementarias',
         ])
       @endif
 

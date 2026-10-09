@@ -66,6 +66,13 @@
         <div class="atentamente">A T E N T A M E N T E</div>
         <div style="text-align:center; font-size:9pt; margin-bottom:0.4cm;"><strong><em>Excelencia en Educación Tecnológica®</em></strong><br><strong><em>“Ciencia y Sustentbilidad al Servicio de la Humanidad”</em></strong></div>
         @include('coordinador.partials.constancia_extraescolar_firmas', ['mostrarSello' => false])
+
+        <div class="footer">
+            <div class="footer-inner">
+                <div class="footer-left">TecNM-VI-PO-003-05</div>
+                <div class="footer-right">Rev. 0</div>
+            </div>
+        </div>
     </div>
 </body>
 </html>

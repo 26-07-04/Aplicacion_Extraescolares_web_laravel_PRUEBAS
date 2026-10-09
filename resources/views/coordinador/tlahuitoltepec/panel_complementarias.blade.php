@@ -291,6 +291,7 @@
         @include('coordinador.partials.evaluaciones_impresion_table', [
           'rutaEvalImpPrint' => 'coordinador.tlahuitoltepec.evaluacion-formulario.print.complementarias',
           'rutaEvalImpPrintAll' => 'coordinador.tlahuitoltepec.evaluacion-formulario.print-all.complementarias',
+          'rutaEvalImpDownloadAll' => 'coordinador.tlahuitoltepec.evaluacion-formulario.download-all.complementarias',
         ])
       @endif
 

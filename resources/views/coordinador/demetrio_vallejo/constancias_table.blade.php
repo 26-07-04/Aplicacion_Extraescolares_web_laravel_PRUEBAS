@@ -122,8 +122,6 @@
             <select id="selectDocumentoMembrete" style="flex: 1; min-width: 300px; padding: 10px 15px; border: 2px solid white; border-radius: 6px; font-size: 0.95em; background: white; color: #333; cursor: pointer;">
                 <option value="">Seleccione un documento...</option>
                 @php
-                    // Usar el semestre que fue pasado al panel (variable $semestre).
-                    // Si no está disponible, caer a semestre activo como fallback.
                     $currentSemestre = $semestre ?? \App\Models\Semestre::where('estatus', 1)->first();
                     $documentosMembrete = [];
                     if ($currentSemestre) {
@@ -137,6 +135,7 @@
                     <option value="{{ $doc->id }}">{{ $doc->nombre }}</option>
                 @endforeach
             </select>
+            @include('coordinador.partials.constancias_actividad_controls', ['rutaConstanciasActividad' => '/coordinador/demetrio-vallejo/constancias/actividad/pdf', 'rutaActualizarResponsables' => route('demetrio.constancias.actividad.responsables'), 'rutaGuardarEvaluacion' => route('demetrio.evaluacion.guardar')])
             <div id="estadoDocumento" style="display: none; color: #d4edda; background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 6px; font-weight: 500;">
                 <i class="fas fa-check-circle"></i> Documento seleccionado
             </div>
@@ -211,7 +210,8 @@
         $idsActividades = ($actividades ?? collect())->pluck('id_actividad')->filter()->values()->all();
         $allEstudiantes = $idsActividades === [] ? collect() : \App\Support\EstudiantesPanelQuery::queryBase($idsActividades, $tipoProgramaPanel)
             ->leftJoin('evaluaciones', function ($join) use ($semId, $unidadId) {
-                $join->on('estudiantes.id_alumno', '=', 'evaluaciones.id_alumno');
+                $join->on('estudiantes.id_alumno', '=', 'evaluaciones.id_alumno')
+                    ->on('estudiantes.id_actividad', '=', 'evaluaciones.id_actividad');
                 if ($semId) {
                     $join->where('evaluaciones.id_semestre', '=', $semId);
                 }
@@ -233,6 +233,7 @@
                 'semestre' => $est->semestre ?? '',
                 'status' => $est->id_evaluacion ? 'completed' : 'pending',
                 'id_alumno' => $est->id_alumno ?? null,
+                'id_actividad' => $est->id_actividad ?? null,
                 'id_evaluacion' => $est->id_evaluacion ?? null,
                 'nombre_actividad' => $est->nombre_actividad ?? ''
             ];
@@ -240,7 +241,28 @@
     @endphp
     
     const todosEstudiantes = @json($estudiantesArray);
+    const actividadesDisponibles = @json(($actividades ?? collect())->map(function($actividad) {
+        return [
+            'id_actividad' => $actividad->id_actividad ?? $actividad['id_actividad'] ?? null,
+            'nombre_actividad' => $actividad->nombre_actividad ?? $actividad['nombre_actividad'] ?? 'Actividad',
+        ];
+    })->values());
     let estudiantesFiltrados = [...todosEstudiantes];
+    const selectActividadConstancia = document.getElementById('selectActividadConstancia');
+    const fechaConstanciaInput = document.getElementById('fechaConstancia');
+    if (selectActividadConstancia) {
+        selectActividadConstancia.addEventListener('change', buscar);
+    }
+    if (fechaConstanciaInput) {
+        fechaConstanciaInput.addEventListener('change', buscar);
+    }
+
+    function obtenerFechaConstanciaSeleccionada() {
+        if (fechaConstanciaInput && fechaConstanciaInput.value) {
+            return fechaConstanciaInput.value;
+        }
+        return new Date().toISOString().slice(0, 10);
+    }
     
     // Datos del semestre (usar el semestre pasado al panel si existe, si no, caer al semestre activo)
     const semestreActivo = {
@@ -371,18 +393,25 @@
 
     function buscar() {
         const termino = (searchInput.value || '').toLowerCase();
-        
-        if (termino.trim() === '') {
-            estudiantesFiltrados = [...todosEstudiantes];
-        } else {
-            estudiantesFiltrados = todosEstudiantes.filter(est =>
-                est.numero_control.toLowerCase().includes(termino) ||
-                est.nombre.toLowerCase().includes(termino) ||
-                est.carrera.toLowerCase().includes(termino) ||
-                String(est.sexo || '').toLowerCase().includes(termino)
+        const actividadSeleccionada = selectActividadConstancia ? selectActividadConstancia.value : 'all';
+
+        let lista = [...todosEstudiantes];
+
+        if (actividadSeleccionada !== 'all') {
+            lista = lista.filter(est => String(est.id_actividad ?? '') === String(actividadSeleccionada));
+        }
+
+        if (termino.trim() !== '') {
+            lista = lista.filter(est =>
+                (est.numero_control || '').toLowerCase().includes(termino) ||
+                (est.nombre || '').toLowerCase().includes(termino) ||
+                (est.carrera || '').toLowerCase().includes(termino) ||
+                String(est.sexo || '').toLowerCase().includes(termino) ||
+                (est.nombre_actividad || '').toLowerCase().includes(termino)
             );
         }
-        
+
+        estudiantesFiltrados = lista;
         totalPaginas = Math.ceil(estudiantesFiltrados.length / estudiantesPorPagina);
         if (totalPaginas === 0) totalPaginas = 1;
         paginaActual = 1;
@@ -550,21 +579,21 @@
                                     <label style="display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 0.95em;">
                                         <i class="fas fa-user-cog"></i> Nombre del Jefe(a) del Depto. de Servicios Escolares: <span style="color: #dc3545;">*</span>
                                     </label>
-                                    <input type="text" id="jefeServiciosEscolares" required placeholder="Ingrese el nombre completo del jefe de servicios escolares" style="width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em;">
+                                    <input type="text" id="jefeServiciosEscolares" required value="LIC.HIRAM GALLEGOS FELIPE" placeholder="Ingrese el nombre completo del jefe de servicios escolares" style="width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em;">
                                     <p id="cargoDestinatario" class="constancia-firma-cargo" data-default="Jefe del Departamento de Servicios Escolares" contenteditable="false" title="Doble clic para editar el puesto">Jefe del Departamento de Servicios Escolares</p>
                                 </div>
                                 <div>
                                     <label style="display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 0.95em;">
                                         <i class="fas fa-chalkboard-teacher"></i> Nombre del profesor(a) responsable: <span style="color: #dc3545;">*</span>
                                     </label>
-                                    <input type="text" id="nombreProfesor" required value="{{ Auth::user()->name ?? '' }}" placeholder="Ingrese el nombre completo del profesor responsable" style="width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em;">
+                                    <input type="text" id="nombreProfesor" required value="DR. FERNANDO ADRIHEL SARUBBI BALTAZAR" placeholder="Ingrese el nombre completo del profesor responsable" style="width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em;">
                                     <p id="cargoProfesor" class="constancia-firma-cargo" data-default="Profesor responsable" contenteditable="false" title="Doble clic para editar el puesto">Profesor responsable</p>
                                 </div>
                                 <div>
                                     <label style="display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 0.95em;">
                                         <i class="fas fa-user-shield"></i> Nombre del Jefe(a) del Depto. de Actividades Extraescolares: <span style="color: #dc3545;">*</span>
                                     </label>
-                                    <input type="text" id="jefeExtraescolares" required placeholder="Ingrese el nombre completo del jefe de departamento" style="width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em;">
+                                    <input type="text" id="jefeExtraescolares" required value="M.C. ALEJANDRO LOMA BOLAÑOS" placeholder="Ingrese el nombre completo del jefe de departamento" style="width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em;">
                                     <p id="cargoVobo" class="constancia-firma-cargo" data-default="Jefe del Depto. de Actividades Extraescolares" contenteditable="false" title="Doble clic para editar el puesto">Jefe del Depto. de Actividades Extraescolares</p>
                                 </div>
                             </div>
@@ -575,7 +604,7 @@
                             <label style="display: block; font-weight: 600; color: #1a3461; margin-bottom: 8px; font-size: 1.05em;">
                                 <i class="fas fa-comment-alt"></i> (6) Observaciones:
                             </label>
-                            <textarea id="observaciones" rows="4" placeholder="Anote todas las reflexiones que considere importantes para que el estudiante realice mejoras..." style="width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em; font-family: inherit; resize: vertical;"></textarea>
+                            <textarea id="observaciones" rows="4" placeholder="Anote todas las reflexiones que considere importantes para que el estudiante realice mejoras..." style="width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em; font-family: inherit; resize: vertical;">Ninguna</textarea>
                         </div>
 
                         <!-- Sección 5: Resultados (calculados automáticamente) -->
@@ -615,6 +644,10 @@
         `;
         
         document.body.appendChild(modal);
+
+        document.getElementById('nombreProfesor').value = document.getElementById('nombreProfesorGeneral').value;
+        document.getElementById('jefeExtraescolares').value = document.getElementById('jefeExtraescolaresGeneral').value;
+        document.getElementById('jefeServiciosEscolares').value = document.getElementById('jefeServiciosEscolaresGeneral').value;
 
         if (typeof window.inicializarConstanciaExtraescolarCargos === 'function') {
             window.inicializarConstanciaExtraescolarCargos();
@@ -755,6 +788,7 @@
     }
 
     function cerrarModalEvaluacion() {
+        estudiantesEvaluacionMasiva = null;
         const modal = document.getElementById('modalEvaluacion');
         if (modal) {
             modal.remove();
@@ -816,6 +850,11 @@
             cargo_destinatario: (function () { const el = document.getElementById('cargoDestinatario'); const t = el ? (el.textContent || '').trim() : ''; return t || 'Jefe del Departamento de Servicios Escolares'; })(),
             _token: '{{ csrf_token() }}'
         };
+
+        if (Array.isArray(estudiantesEvaluacionMasiva)) {
+            guardarEvaluacionesMasivas(datosEvaluacion);
+            return;
+        }
         
         // Mostrar indicador de carga
         const btnGuardar = document.querySelector('#formEvaluacion button[type="submit"]');
@@ -907,7 +946,8 @@
             });
             return;
         }
-        const urlPDF = `/coordinador/demetrio-vallejo/constancia/${idEvaluacion}/pdf?id_documento=${documentoMembrete}`;
+        const parametros = new URLSearchParams({ id_documento: documentoMembrete, fecha_constancia: obtenerFechaConstanciaSeleccionada(), ...obtenerFirmasConstancia() });
+        const urlPDF = `/coordinador/demetrio-vallejo/constancia/${idEvaluacion}/pdf?${parametros.toString()}`;
         window.location.href = urlPDF;
     }
 

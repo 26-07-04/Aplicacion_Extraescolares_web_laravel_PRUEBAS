@@ -18,6 +18,7 @@ use App\Support\ResultadosTipoFiltro;
 
 class PanelValleEtlaController extends Controller
 {
+    use Concerns\GestionaEstudiantesActividad;
     use ImprimeFormatoActividadCoordinador;
     use ImprimeEvaluacionFormularioCoordinador;
     /**

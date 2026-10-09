@@ -265,6 +265,13 @@
             </div>
 
             @include('coordinador.partials.constancia_complementarias_ccp_footer')
+
+            <div class="doc-footer">
+                <div class="doc-footer-inner">
+                    <div class="doc-footer-left">TecNM-VI-PO-003-05</div>
+                    <div class="doc-footer-right">Rev. 0</div>
+                </div>
+            </div>
         </div>
     </div>
 </body>

@@ -315,6 +315,7 @@
         @include('coordinador.partials.evaluaciones_impresion_table', [
           'rutaEvalImpPrint' => 'coordinador.demetrio.evaluacion-formulario.print.complementarias',
           'rutaEvalImpPrintAll' => 'coordinador.demetrio.evaluacion-formulario.print-all.complementarias',
+          'rutaEvalImpDownloadAll' => 'coordinador.demetrio.evaluacion-formulario.download-all.complementarias',
         ])
       @endif
 

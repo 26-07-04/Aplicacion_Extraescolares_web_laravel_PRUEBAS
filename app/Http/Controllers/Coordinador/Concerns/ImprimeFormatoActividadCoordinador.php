@@ -32,13 +32,13 @@ trait ImprimeFormatoActividadCoordinador
         if ($formato === 'registro') {
             return [
                 'top' => '1.06in',
-                'right' => '1.52in',
+                'right' => '1.10in',
             ];
         }
 
         return [
-            'top' => '1.24in',
-            'right' => '1.70in',
+            'top' => '1.22in',
+            'right' => '1.05in',
         ];
     }
 
@@ -297,7 +297,7 @@ trait ImprimeFormatoActividadCoordinador
                     'control' => $e->numero_control,
                     'carrera' => $e->carrera,
                     'sem' => $e->semestre,
-                    'observaciones' => '',
+                    'observaciones' => 'Ninguna',
                 ])
                 ->values();
         } else {

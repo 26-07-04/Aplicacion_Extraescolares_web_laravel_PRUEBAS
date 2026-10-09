@@ -113,7 +113,7 @@ class ImportEstudiantesController extends Controller
                 $nombre = $st['Nombre'] ?? $st['nombre'] ?? '';
                 $carrera = $st['Carrera'] ?? $st['carrera'] ?? '';
                 $sexo = $st['Sexo'] ?? $st['sexo'] ?? '';
-                $sem = $st['Semestre'] ?? $st['semestre'] ?? null;
+                $sem = $this->normalizarSemestre($st['Semestre'] ?? $st['semestre'] ?? null);
 
                 if (! $no) {
                     $skipped++;
@@ -151,7 +151,11 @@ class ImportEstudiantesController extends Controller
                     $inserted++;
                     $controlesEnLote[$no] = true;
                 } catch (\Exception $ex) {
-                    if (strpos($ex->getMessage(), 'UNIQUE') !== false || strpos($ex->getMessage(), 'numero_control') !== false) {
+                    $mensajeError = strtolower($ex->getMessage());
+                    $esDuplicado = str_contains($mensajeError, 'duplicate entry')
+                        || str_contains($mensajeError, 'unique constraint failed');
+
+                    if ($esDuplicado) {
                         $skipped++;
                         $errors[] = ['row' => $i + 1, 'reason' => 'El estudiante ya está inscrito en esta actividad'];
                         try {
@@ -190,5 +194,42 @@ class ImportEstudiantesController extends Controller
             'skipped' => $skipped,
             'errors' => $errors,
         ], 200);
+    }
+
+    private function normalizarSemestre($semestre): ?int
+    {
+        if ($semestre === null || trim((string) $semestre) === '') {
+            return null;
+        }
+
+        if (is_numeric($semestre)) {
+            return (int) $semestre;
+        }
+
+        $valor = mb_strtolower(trim((string) $semestre), 'UTF-8');
+        $valor = strtr($valor, ['á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u']);
+        $semestres = [
+            'primer' => 1,
+            'primero' => 1,
+            'segundo' => 2,
+            'tercero' => 3,
+            'cuarto' => 4,
+            'quinto' => 5,
+            'sexto' => 6,
+            'septimo' => 7,
+            'octavo' => 8,
+            'noveno' => 9,
+            'decimo' => 10,
+            'undecimo' => 11,
+            'duodecimo' => 12,
+        ];
+
+        if (isset($semestres[$valor])) {
+            return $semestres[$valor];
+        }
+
+        return preg_match('/\b(1[0-2]|[1-9])\b/', $valor, $coincidencia)
+            ? (int) $coincidencia[1]
+            : null;
     }
 }

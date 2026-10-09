@@ -15,6 +15,8 @@ use Carbon\Carbon;
 
 class EvaluacionUnionHidalgoController extends Controller
 {
+    use Concerns\GeneraConstanciasActividad;
+
     public function guardarEvaluacion(Request $request)
     {
         try {
@@ -66,6 +68,8 @@ class EvaluacionUnionHidalgoController extends Controller
     {
         $evaluacion = Evaluacion::with(['estudiante', 'actividad', 'semestre'])->findOrFail($id_evaluacion);
 
+        $this->aplicarFirmasDesdeSolicitud($request, $evaluacion);
+
         $act = $evaluacion->actividad;
         if (! $act || ($act->tipo_programa ?? Actividad::TIPO_EXTRAESCOLAR) !== Actividad::TIPO_EXTRAESCOLAR) {
             abort(404);
@@ -77,14 +81,14 @@ class EvaluacionUnionHidalgoController extends Controller
                 $documentoMembrete = Documento::find($request->id_documento);
             }
 
+            $fechaConstancia = $request->input('fecha_constancia');
             $data = [
                 'evaluacion' => $evaluacion,
                 'estudiante' => $evaluacion->estudiante,
                 'actividad' => $evaluacion->actividad,
                 'semestre' => $evaluacion->semestre,
                 'documentoMembrete' => $documentoMembrete,
-                // Usar la fecha actual en la zona de Oaxaca/México para evitar desfases por UTC
-                'fecha' => Carbon::now('America/Mexico_City'),
+                'fecha' => Carbon::parse($fechaConstancia ?: $evaluacion->fecha_evaluacion),
             ];
 
                 $pdf = Pdf::loadView('coordinador.union_hidalgo.pdf.constancia', $data);
@@ -98,6 +102,16 @@ class EvaluacionUnionHidalgoController extends Controller
                 'message' => 'Error al generar la constancia: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function generarConstanciasActividad(Request $request)
+    {
+        return $this->generarPdfConstanciasActividad($request, 'coordinador.union_hidalgo.pdf.constancia', 1);
+    }
+
+    public function actualizarResponsablesActividad(Request $request)
+    {
+        return $this->actualizarResponsablesDeActividad($request, 1);
     }
 
     /**
@@ -118,13 +132,14 @@ class EvaluacionUnionHidalgoController extends Controller
                 $documentoMembrete = Documento::find($request->id_documento);
             }
 
+            $fechaConstancia = $request->input('fecha_constancia');
             $data = [
                 'evaluacion' => $evaluacion,
                 'estudiante' => $evaluacion->estudiante,
                 'actividad' => $evaluacion->actividad,
                 'semestre' => $evaluacion->semestre,
                 'documentoMembrete' => $documentoMembrete,
-                'fecha' => Carbon::now('America/Mexico_City'),
+                'fecha' => Carbon::parse($fechaConstancia ?: $evaluacion->fecha_evaluacion),
             ];
 
             $pdf = Pdf::loadView('coordinador.union_hidalgo.complementarias.pdf.constancia', $data);

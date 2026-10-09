@@ -17,6 +17,8 @@ use Carbon\Carbon;
 
 class EvaluacionValleEtlaController extends Controller
 {
+    use Concerns\GeneraConstanciasActividad;
+
     /**
      * Guardar evaluación de estudiante
      */
@@ -79,6 +81,8 @@ class EvaluacionValleEtlaController extends Controller
             'semestre',
         ])->findOrFail($id_evaluacion);
 
+        $this->aplicarFirmasDesdeSolicitud($request, $evaluacion);
+
         $act = $evaluacion->actividad;
         if (! $act || ($act->tipo_programa ?? Actividad::TIPO_EXTRAESCOLAR) !== Actividad::TIPO_EXTRAESCOLAR) {
             abort(404);
@@ -92,13 +96,14 @@ class EvaluacionValleEtlaController extends Controller
             }
 
             // Preparar datos para la vista
+            $fechaConstancia = $request->input('fecha_constancia');
             $data = [
                 'evaluacion' => $evaluacion,
                 'estudiante' => $evaluacion->estudiante,
                 'actividad' => $evaluacion->actividad,
                 'semestre' => $evaluacion->semestre,
                 'documentoMembrete' => $documentoMembrete,
-                'fecha' => Carbon::parse($evaluacion->fecha_evaluacion),
+                'fecha' => Carbon::parse($fechaConstancia ?: $evaluacion->fecha_evaluacion),
             ];
 
             // Generar PDF
@@ -118,6 +123,16 @@ class EvaluacionValleEtlaController extends Controller
                 'message' => 'Error al generar la constancia: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function generarConstanciasActividad(Request $request)
+    {
+        return $this->generarPdfConstanciasActividad($request, 'coordinador.valle_de_etla.pdf.constancia', 4);
+    }
+
+    public function actualizarResponsablesActividad(Request $request)
+    {
+        return $this->actualizarResponsablesDeActividad($request, 4);
     }
 
     /**
@@ -142,13 +157,14 @@ class EvaluacionValleEtlaController extends Controller
                 $documentoMembrete = Documento::find($request->id_documento);
             }
 
+            $fechaConstancia = $request->input('fecha_constancia');
             $data = [
                 'evaluacion' => $evaluacion,
                 'estudiante' => $evaluacion->estudiante,
                 'actividad' => $evaluacion->actividad,
                 'semestre' => $evaluacion->semestre,
                 'documentoMembrete' => $documentoMembrete,
-                'fecha' => Carbon::parse($evaluacion->fecha_evaluacion),
+                'fecha' => Carbon::parse($fechaConstancia ?: $evaluacion->fecha_evaluacion),
             ];
 
             $pdf = PDF::loadView('coordinador.valle_de_etla.complementarias.pdf.constancia', $data);

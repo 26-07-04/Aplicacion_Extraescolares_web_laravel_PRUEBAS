@@ -288,6 +288,7 @@
         @include('coordinador.partials.evaluaciones_impresion_table', [
           'rutaEvalImpPrint' => 'coordinador.valle.evaluacion-formulario.print.complementarias',
           'rutaEvalImpPrintAll' => 'coordinador.valle.evaluacion-formulario.print-all.complementarias',
+          'rutaEvalImpDownloadAll' => 'coordinador.valle.evaluacion-formulario.download-all.complementarias',
         ])
       @endif
 

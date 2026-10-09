@@ -1,0 +1,11 @@
+HTTP/1.1 302 Found
+Host: 127.0.0.1:8000
+Connection: close
+X-Powered-By: PHP/8.2.12
+Cache-Control: no-cache, private
+Date: Thu, 01 Oct 2026 19:09:46 GMT
+Location: http://127.0.0.1:8000/coordinador/semestres/valle-de-etla
+Content-Type: text/html; charset=utf-8
+Set-Cookie: XSRF-TOKEN=eyJpdiI6Im05YXBOcGtiMEhZVG5GNHZSK1lER3c9PSIsInZhbHVlIjoidkliZmhpT3FDY0F3VjhFbGhtekF0ZHd0LzBOazBhRWdwbVJsTWVqdzJ6SWUvRDBJYnN5M1dZT2JuUmdVcXBMMWcxcXEyZGoxRDV6MUEwOWpKVHRwVXRZamtIdDNKeWFtLzdlcHZVMnlqNXJYckpUeEpRMHQrVjhOODBnVEpwK3AiLCJtYWMiOiJhYWZkNmYxODM0OTU3YjNlMDk3OTc4ZDdiYjVjN2M3ZWUyOTlhOWNjZmUzOGMxZjk1YzA0YThlY2FmZWM0YzBmIiwidGFnIjoiIn0%3D; expires=Thu, 01 Oct 2026 21:09:46 GMT; Max-Age=7200; path=/; domain=127.0.0.1; samesite=lax
+Set-Cookie: laravel_session=eyJpdiI6Ik1yakpBeFA1cFdadWszUGp0Vk44NUE9PSIsInZhbHVlIjoiNkFoS0pZYms2LzYwd1NIRUZBMW1NNHV2OCtBRHozY25iZW91Q3Vsak1PL2cybFBEcGo0bC9UQVRhV2MzRkFPYlJ2TVh5K3g1ZnhhUm5hVSswMGlnQ1B4ckpZd0pUSWV0OWIySVNsU0FKb015eHR0aEdQamtEUUVORVQxcEtQVUsiLCJtYWMiOiJhOTUyYTk1YjgwMWVlMjY5ODBjN2I0MTIwYjk0Nzc0YTc2YjZjNWRkZjVkMDYxNTAxYWMwODI5YTk5NTlkM2QxIiwidGFnIjoiIn0%3D; expires=Thu, 01 Oct 2026 21:09:46 GMT; Max-Age=7200; path=/; domain=127.0.0.1; httponly; samesite=lax
+

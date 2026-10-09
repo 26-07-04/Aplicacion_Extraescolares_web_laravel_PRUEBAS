@@ -259,6 +259,13 @@
 
         @include('coordinador.partials.constancia_extraescolar_firmas', ['mostrarSello' => true])
 
+        <div class="footer">
+            <div class="footer-inner">
+                <div class="footer-left">TecNM-VI-PO-003-05</div>
+                <div class="footer-right">Rev. 0</div>
+            </div>
+        </div>
+
     </div>
     </div>
 </body>

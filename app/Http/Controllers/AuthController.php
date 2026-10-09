@@ -60,7 +60,7 @@ class AuthController extends Controller
     return back()->withErrors(['contrasena' => 'Contraseña incorrecta'])->withInput();
 }
 
-Auth::guard('web')->login($user, true);
+Auth::guard('web')->login($user);
 
 $request->session()->regenerate();
 

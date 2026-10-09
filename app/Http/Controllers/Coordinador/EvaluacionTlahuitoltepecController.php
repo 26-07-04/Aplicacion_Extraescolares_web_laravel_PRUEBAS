@@ -17,6 +17,8 @@ use Carbon\Carbon;
 
 class EvaluacionTlahuitoltepecController extends Controller
 {
+    use Concerns\GeneraConstanciasActividad;
+
     /**
      * Guardar evaluación de estudiante
      */
@@ -79,6 +81,8 @@ class EvaluacionTlahuitoltepecController extends Controller
             'semestre',
         ])->findOrFail($id_evaluacion);
 
+        $this->aplicarFirmasDesdeSolicitud($request, $evaluacion);
+
         $act = $evaluacion->actividad;
         if (! $act || ($act->tipo_programa ?? Actividad::TIPO_EXTRAESCOLAR) !== Actividad::TIPO_EXTRAESCOLAR) {
             abort(404);
@@ -92,13 +96,14 @@ class EvaluacionTlahuitoltepecController extends Controller
             }
 
             // Preparar datos para la vista
+            $fechaConstancia = $request->input('fecha_constancia');
             $data = [
                 'evaluacion' => $evaluacion,
                 'estudiante' => $evaluacion->estudiante,
                 'actividad' => $evaluacion->actividad,
                 'semestre' => $evaluacion->semestre,
                 'documentoMembrete' => $documentoMembrete,
-                'fecha' => Carbon::parse($evaluacion->fecha_evaluacion),
+                'fecha' => Carbon::parse($fechaConstancia ?: $evaluacion->fecha_evaluacion),
             ];
 
             // Generar PDF usando la vista de Tlahuitoltepec
@@ -115,6 +120,16 @@ class EvaluacionTlahuitoltepecController extends Controller
                 'message' => 'Error al generar la constancia: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function generarConstanciasActividad(Request $request)
+    {
+        return $this->generarPdfConstanciasActividad($request, 'coordinador.tlahuitoltepec.pdf.constancia', 3);
+    }
+
+    public function actualizarResponsablesActividad(Request $request)
+    {
+        return $this->actualizarResponsablesDeActividad($request, 3);
     }
 
     /**
@@ -139,13 +154,14 @@ class EvaluacionTlahuitoltepecController extends Controller
                 $documentoMembrete = Documento::find($request->id_documento);
             }
 
+            $fechaConstancia = $request->input('fecha_constancia');
             $data = [
                 'evaluacion' => $evaluacion,
                 'estudiante' => $evaluacion->estudiante,
                 'actividad' => $evaluacion->actividad,
                 'semestre' => $evaluacion->semestre,
                 'documentoMembrete' => $documentoMembrete,
-                'fecha' => Carbon::parse($evaluacion->fecha_evaluacion),
+                'fecha' => Carbon::parse($fechaConstancia ?: $evaluacion->fecha_evaluacion),
             ];
 
             $pdf = PDF::loadView('coordinador.tlahuitoltepec.complementarias.pdf.constancia', $data);

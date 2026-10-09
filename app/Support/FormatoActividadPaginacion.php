@@ -6,11 +6,11 @@ use Illuminate\Support\Collection;
 
 class FormatoActividadPaginacion
 {
-    /** Filas máximas en la primera hoja (cabecera) y la última (firmas). */
-    public const FILAS_PRIMERA_ULTIMA = 21;
+    /** Filas máximas por hoja para mantener una vista limpia y evitar desbordamiento del formato. */
+    public const FILAS_PRIMERA_ULTIMA = 16;
 
-    /** Filas máximas en hojas intermedias (sin cabecera ni pie de firmas). */
-    public const FILAS_INTERMEDIAS = 35;
+    /** Filas máximas en hojas intermedias. */
+    public const FILAS_INTERMEDIAS = 16;
 
     /**
      * Divide las filas del formato: primera y última página con límite menor;

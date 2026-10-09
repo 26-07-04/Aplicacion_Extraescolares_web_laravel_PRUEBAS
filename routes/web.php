@@ -134,6 +134,8 @@ Route::get('coordinador/semestres/union-hidalgo', [CoordinadorSemestresUnionCont
 Route::get('coordinador/union-hidalgo/panel/{id}', [PanelUnionHidalgoController::class, 'show'])
     ->middleware('auth')
     ->name('coordinador.union.panel');
+Route::get('coordinador/union-hidalgo/actividades/{actividad}/estudiantes', [PanelUnionHidalgoController::class, 'listarEstudiantesDeActividad'])->middleware('auth')->name('coordinador.union.actividad.estudiantes');
+Route::put('coordinador/union-hidalgo/actividades/{actividad}/estudiantes', [PanelUnionHidalgoController::class, 'actualizarEstudiantesDeActividad'])->middleware('auth')->name('coordinador.union.actividad.estudiantes.update');
 
 Route::get('coordinador/union-hidalgo/complementarias/panel/{id}', [PanelUnionHidalgoComplementariasController::class, 'show'])
     ->middleware('auth')
@@ -143,6 +145,8 @@ Route::get('coordinador/union-hidalgo/complementarias/panel/{id}', [PanelUnionHi
 Route::get('coordinador/valle-de-etla/panel/{id}', [PanelValleEtlaController::class, 'show'])
     ->middleware('auth')
     ->name('coordinador.valle.panel');
+Route::get('coordinador/valle-de-etla/actividades/{actividad}/estudiantes', [PanelValleEtlaController::class, 'listarEstudiantesDeActividad'])->middleware('auth')->name('coordinador.valle.actividad.estudiantes');
+Route::put('coordinador/valle-de-etla/actividades/{actividad}/estudiantes', [PanelValleEtlaController::class, 'actualizarEstudiantesDeActividad'])->middleware('auth')->name('coordinador.valle.actividad.estudiantes.update');
 
 Route::get('coordinador/valle-de-etla/complementarias/panel/{id}', [PanelValleEtlaComplementariasController::class, 'show'])
     ->middleware('auth')
@@ -227,6 +231,8 @@ Route::middleware(['auth'])->prefix('coordinador/demetrio-vallejo')->group(funct
 Route::get('coordinador/tlahuitoltepec/panel/{id}', [PanelTlahuitoltepecController::class, 'show'])
     ->middleware('auth')
     ->name('coordinador.tlahuitoltepec.panel');
+Route::get('coordinador/tlahuitoltepec/actividades/{actividad}/estudiantes', [PanelTlahuitoltepecController::class, 'listarEstudiantesDeActividad'])->middleware('auth')->name('coordinador.tlahuitoltepec.actividad.estudiantes');
+Route::put('coordinador/tlahuitoltepec/actividades/{actividad}/estudiantes', [PanelTlahuitoltepecController::class, 'actualizarEstudiantesDeActividad'])->middleware('auth')->name('coordinador.tlahuitoltepec.actividad.estudiantes.update');
 
 Route::get('coordinador/tlahuitoltepec/complementarias/panel/{id}', [PanelTlahuitoltepecComplementariasController::class, 'show'])
     ->middleware('auth')
@@ -236,6 +242,8 @@ Route::get('coordinador/tlahuitoltepec/complementarias/panel/{id}', [PanelTlahui
 Route::get('coordinador/demetrio-vallejo/panel/{id}', [PanelDemetrioVallejoController::class, 'show'])
     ->middleware('auth')
     ->name('coordinador.demetrio.panel');
+Route::get('coordinador/demetrio-vallejo/actividades/{actividad}/estudiantes', [PanelDemetrioVallejoController::class, 'listarEstudiantesDeActividad'])->middleware('auth')->name('coordinador.demetrio.actividad.estudiantes');
+Route::put('coordinador/demetrio-vallejo/actividades/{actividad}/estudiantes', [PanelDemetrioVallejoController::class, 'actualizarEstudiantesDeActividad'])->middleware('auth')->name('coordinador.demetrio.actividad.estudiantes.update');
 
 Route::get('coordinador/demetrio-vallejo/complementarias/panel/{id}', [PanelDemetrioVallejoComplementariasController::class, 'show'])
     ->middleware('auth')
@@ -257,6 +265,10 @@ Route::get('coordinador/demetrio-vallejo/evaluacion-formulario/print-all/{id}', 
     ->middleware('auth')
     ->name('coordinador.demetrio.evaluacion-formulario.print-all');
 
+Route::get('coordinador/demetrio-vallejo/evaluacion-formulario/download-all/{id}', [PanelDemetrioVallejoController::class, 'downloadAllEvaluacionesFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.demetrio.evaluacion-formulario.download-all');
+
 // Ruta de impresión de resultados (Tlahuitoltepec)
 Route::get('coordinador/tlahuitoltepec/resultados/print/{id}', [PanelTlahuitoltepecController::class, 'printResultados'])
     ->middleware('auth')
@@ -269,6 +281,10 @@ Route::get('coordinador/tlahuitoltepec/evaluacion-formulario/print/{id_evaluacio
 Route::get('coordinador/tlahuitoltepec/evaluacion-formulario/print-all/{id}', [PanelTlahuitoltepecController::class, 'printAllEvaluacionesFormulario'])
     ->middleware('auth')
     ->name('coordinador.tlahuitoltepec.evaluacion-formulario.print-all');
+
+Route::get('coordinador/tlahuitoltepec/evaluacion-formulario/download-all/{id}', [PanelTlahuitoltepecController::class, 'downloadAllEvaluacionesFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.tlahuitoltepec.evaluacion-formulario.download-all');
 
 // Ruta de impresión de resultados (Unión Hidalgo)
 Route::get('coordinador/union-hidalgo/resultados/print/{id}', [PanelUnionHidalgoController::class, 'printResultados'])
@@ -283,6 +299,10 @@ Route::get('coordinador/union-hidalgo/evaluacion-formulario/print-all/{id}', [Pa
     ->middleware('auth')
     ->name('coordinador.union_hidalgo.evaluacion-formulario.print-all');
 
+Route::get('coordinador/union-hidalgo/evaluacion-formulario/download-all/{id}', [PanelUnionHidalgoController::class, 'downloadAllEvaluacionesFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.union_hidalgo.evaluacion-formulario.download-all');
+
 // Ruta de impresión de resultados (Valle de Etla)
 Route::get('coordinador/valle-de-etla/resultados/print/{id}', [PanelValleEtlaController::class, 'printResultados'])
     ->middleware('auth')
@@ -295,6 +315,10 @@ Route::get('coordinador/valle-de-etla/evaluacion-formulario/print/{id_evaluacion
 Route::get('coordinador/valle-de-etla/evaluacion-formulario/print-all/{id}', [PanelValleEtlaController::class, 'printAllEvaluacionesFormulario'])
     ->middleware('auth')
     ->name('coordinador.valle.evaluacion-formulario.print-all');
+
+Route::get('coordinador/valle-de-etla/evaluacion-formulario/download-all/{id}', [PanelValleEtlaController::class, 'downloadAllEvaluacionesFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.valle.evaluacion-formulario.download-all');
 
 Route::get('coordinador/valle-de-etla/formatos/print/{semestre}/{actividad}', [PanelValleEtlaController::class, 'printFormato'])
     ->middleware('auth')
@@ -353,6 +377,10 @@ Route::get('coordinador/valle-de-etla/complementarias/evaluacion-formulario/prin
     ->middleware('auth')
     ->name('coordinador.valle.evaluacion-formulario.print-all.complementarias');
 
+Route::get('coordinador/valle-de-etla/complementarias/evaluacion-formulario/download-all/{id}', [PanelValleEtlaComplementariasController::class, 'downloadAllEvaluacionesFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.valle.evaluacion-formulario.download-all.complementarias');
+
 Route::get('coordinador/demetrio-vallejo/complementarias/evaluacion-formulario/print/{id_evaluacion}', [PanelDemetrioVallejoComplementariasController::class, 'printEvaluacionFormulario'])
     ->middleware('auth')
     ->name('coordinador.demetrio.evaluacion-formulario.print.complementarias');
@@ -360,6 +388,10 @@ Route::get('coordinador/demetrio-vallejo/complementarias/evaluacion-formulario/p
 Route::get('coordinador/demetrio-vallejo/complementarias/evaluacion-formulario/print-all/{id}', [PanelDemetrioVallejoComplementariasController::class, 'printAllEvaluacionesFormulario'])
     ->middleware('auth')
     ->name('coordinador.demetrio.evaluacion-formulario.print-all.complementarias');
+
+Route::get('coordinador/demetrio-vallejo/complementarias/evaluacion-formulario/download-all/{id}', [PanelDemetrioVallejoComplementariasController::class, 'downloadAllEvaluacionesFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.demetrio.evaluacion-formulario.download-all.complementarias');
 
 Route::get('coordinador/union-hidalgo/complementarias/evaluacion-formulario/print/{id_evaluacion}', [PanelUnionHidalgoComplementariasController::class, 'printEvaluacionFormulario'])
     ->middleware('auth')
@@ -369,6 +401,10 @@ Route::get('coordinador/union-hidalgo/complementarias/evaluacion-formulario/prin
     ->middleware('auth')
     ->name('coordinador.union_hidalgo.evaluacion-formulario.print-all.complementarias');
 
+Route::get('coordinador/union-hidalgo/complementarias/evaluacion-formulario/download-all/{id}', [PanelUnionHidalgoComplementariasController::class, 'downloadAllEvaluacionesFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.union_hidalgo.evaluacion-formulario.download-all.complementarias');
+
 Route::get('coordinador/tlahuitoltepec/complementarias/evaluacion-formulario/print/{id_evaluacion}', [PanelTlahuitoltepecComplementariasController::class, 'printEvaluacionFormulario'])
     ->middleware('auth')
     ->name('coordinador.tlahuitoltepec.evaluacion-formulario.print.complementarias');
@@ -376,6 +412,10 @@ Route::get('coordinador/tlahuitoltepec/complementarias/evaluacion-formulario/pri
 Route::get('coordinador/tlahuitoltepec/complementarias/evaluacion-formulario/print-all/{id}', [PanelTlahuitoltepecComplementariasController::class, 'printAllEvaluacionesFormulario'])
     ->middleware('auth')
     ->name('coordinador.tlahuitoltepec.evaluacion-formulario.print-all.complementarias');
+
+Route::get('coordinador/tlahuitoltepec/complementarias/evaluacion-formulario/download-all/{id}', [PanelTlahuitoltepecComplementariasController::class, 'downloadAllEvaluacionesFormulario'])
+    ->middleware('auth')
+    ->name('coordinador.tlahuitoltepec.evaluacion-formulario.download-all.complementarias');
 
 Route::get('coordinador/semestres/tlahuitoltepec', [CoordinadorSemestresTlahController::class, 'index'])
     ->name('coordinador.semestres.tlahuitoltepec');
@@ -624,6 +664,10 @@ Route::middleware(['auth'])->prefix('coordinador/demetrio-vallejo')->group(funct
     // Generar constancia en PDF
     Route::get('constancia/{id_evaluacion}/pdf', [EvaluacionDemetrioController::class, 'generarConstancia'])
         ->name('demetrio.constancia.pdf');
+    Route::get('constancias/actividad/pdf', [EvaluacionDemetrioController::class, 'generarConstanciasActividad'])
+        ->name('demetrio.constancias.actividad.pdf');
+    Route::post('constancias/actividad/responsables', [EvaluacionDemetrioController::class, 'actualizarResponsablesActividad'])
+        ->name('demetrio.constancias.actividad.responsables');
     
     // Obtener documentos membretados del semestre
     Route::get('documentos-membrete/{id_semestre}', [EvaluacionDemetrioController::class, 'obtenerDocumentosMembrete'])
@@ -639,6 +683,10 @@ Route::middleware(['auth'])->prefix('coordinador/tlahuitoltepec')->group(functio
     // Generar constancia en PDF
     Route::get('constancia/{id_evaluacion}/pdf', [EvaluacionTlahuitoltepecController::class, 'generarConstancia'])
         ->name('tlahuitoltepec.constancia.pdf');
+    Route::get('constancias/actividad/pdf', [EvaluacionTlahuitoltepecController::class, 'generarConstanciasActividad'])
+        ->name('tlahuitoltepec.constancias.actividad.pdf');
+    Route::post('constancias/actividad/responsables', [EvaluacionTlahuitoltepecController::class, 'actualizarResponsablesActividad'])
+        ->name('tlahuitoltepec.constancias.actividad.responsables');
     
     // Obtener documentos membretados del semestre
     Route::get('documentos-membrete/{id_semestre}', [EvaluacionTlahuitoltepecController::class, 'obtenerDocumentosMembrete'])
@@ -654,6 +702,10 @@ Route::middleware(['auth'])->prefix('coordinador/union-hidalgo')->group(function
     // Generar constancia en PDF
     Route::get('constancia/{id_evaluacion}/pdf', [EvaluacionUnionHidalgoController::class, 'generarConstancia'])
         ->name('unionhidalgo.constancia.pdf');
+    Route::get('constancias/actividad/pdf', [EvaluacionUnionHidalgoController::class, 'generarConstanciasActividad'])
+        ->name('unionhidalgo.constancias.actividad.pdf');
+    Route::post('constancias/actividad/responsables', [EvaluacionUnionHidalgoController::class, 'actualizarResponsablesActividad'])
+        ->name('unionhidalgo.constancias.actividad.responsables');
     
     // Obtener documentos membretados del semestre
     Route::get('documentos-membrete/{id_semestre}', [EvaluacionUnionHidalgoController::class, 'obtenerDocumentosMembrete'])
@@ -669,6 +721,10 @@ Route::middleware(['auth'])->prefix('coordinador/valle-de-etla')->group(function
     // Generar constancia en PDF
     Route::get('constancia/{id_evaluacion}/pdf', [EvaluacionValleEtlaController::class, 'generarConstancia'])
         ->name('valleetla.constancia.pdf');
+    Route::get('constancias/actividad/pdf', [EvaluacionValleEtlaController::class, 'generarConstanciasActividad'])
+        ->name('valleetla.constancias.actividad.pdf');
+    Route::post('constancias/actividad/responsables', [EvaluacionValleEtlaController::class, 'actualizarResponsablesActividad'])
+        ->name('valleetla.constancias.actividad.responsables');
     
     // Obtener documentos membretados del semestre
     Route::get('documentos-membrete/{id_semestre}', [EvaluacionValleEtlaController::class, 'obtenerDocumentosMembrete'])

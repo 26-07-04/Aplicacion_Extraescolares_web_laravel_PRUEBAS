@@ -514,7 +514,7 @@
                         </div>
 
                         <div style="margin-bottom: 25px;"><label style="display: block; font-weight: 600; color: #1a3461; margin-bottom: 8px; font-size: 1.05em;"><i class="fas fa-comment-alt"></i> (6) Observaciones:</label>
-                            <textarea id="observaciones" rows="4" placeholder="Anote todas las reflexiones que considere importantes para que el estudiante realice mejoras..." style="width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em; font-family: inherit; resize: vertical;"></textarea>
+                            <textarea id="observaciones" rows="4" placeholder="Anote todas las reflexiones que considere importantes para que el estudiante realice mejoras..." style="width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em; font-family: inherit; resize: vertical;">Ninguna</textarea>
                         </div>
 
                         <div style="background: #e7f3ff; padding: 20px; border-radius: 8px; border-left: 4px solid #0d6efd;">

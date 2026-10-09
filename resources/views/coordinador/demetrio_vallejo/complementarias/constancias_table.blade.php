@@ -211,7 +211,8 @@
         $idsActividades = ($actividades ?? collect())->pluck('id_actividad')->filter()->values()->all();
         $allEstudiantes = $idsActividades === [] ? collect() : \App\Support\EstudiantesPanelQuery::queryBase($idsActividades, $tipoProgramaPanel)
             ->leftJoin('evaluaciones', function ($join) use ($semId, $unidadId) {
-                $join->on('estudiantes.id_alumno', '=', 'evaluaciones.id_alumno');
+                $join->on('estudiantes.id_alumno', '=', 'evaluaciones.id_alumno')
+                    ->on('estudiantes.id_actividad', '=', 'evaluaciones.id_actividad');
                 if ($semId) {
                     $join->where('evaluaciones.id_semestre', '=', $semId);
                 }
@@ -580,7 +581,7 @@
                             <label style="display: block; font-weight: 600; color: #1a3461; margin-bottom: 8px; font-size: 1.05em;">
                                 <i class="fas fa-comment-alt"></i> (6) Observaciones:
                             </label>
-                            <textarea id="observaciones" rows="4" placeholder="Anote todas las reflexiones que considere importantes para que el estudiante realice mejoras..." style="width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em; font-family: inherit; resize: vertical;"></textarea>
+                            <textarea id="observaciones" rows="4" placeholder="Anote todas las reflexiones que considere importantes para que el estudiante realice mejoras..." style="width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em; font-family: inherit; resize: vertical;">Ninguna</textarea>
                         </div>
 
                         <!-- Sección 5: Resultados (calculados automáticamente) -->

@@ -46,7 +46,7 @@
         .pagina-indicador {
             position: absolute;
             top: 1.22in;
-            right: 1.72in;
+            right: 1.55in;
             left: auto;
             font-size: 9pt;
             font-weight: bold;
@@ -268,7 +268,7 @@
             }
             .pagina-indicador {
                 top: 1.22in !important;
-                right: 1.72in !important;
+                right: 1.55in !important;
                 z-index: 3 !important;
             }
             .formulario-caja {
@@ -319,12 +319,11 @@
     $etiquetaActividad = $etiquetaCampoActividad ?? 'Actividad Cultural y/o Deportiva';
 @endphp
 
-@php $totalPaginasEval = $lista->count(); @endphp
 @foreach($lista as $pIndex => $evaluacion)
     @php $d = \App\Support\EvaluacionExtraescolarFormulario::datosImpresion($evaluacion); @endphp
     <div class="print-page">
         <img class="print-page-bg" src="" alt="" />
-        <div class="pagina-indicador" aria-hidden="true">Página {{ $pIndex + 1 }} de {{ $totalPaginasEval }}</div>
+        <div class="pagina-indicador" aria-hidden="true">Página 1 de 1</div>
         <div class="foreground{{ ($esComplementariasEvaluacion ?? false) ? ' foreground-complementarias' : '' }}">
             @php
                 $lineasEnc = $encabezadoEvaluacion ?? [

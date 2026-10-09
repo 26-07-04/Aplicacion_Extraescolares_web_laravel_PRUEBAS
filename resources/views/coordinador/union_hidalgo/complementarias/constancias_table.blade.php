@@ -164,8 +164,15 @@
     @php
         $tipoProgramaPanel = $tipo_programa_informes_panel ?? \App\Models\Actividad::TIPO_COMPLEMENTARIA;
         $idsActividades = ($actividades ?? collect())->pluck('id_actividad')->filter()->values()->all();
+        $semId = $semestre->id_semestre ?? $semestre->id ?? null;
         $allEstudiantes = $idsActividades === [] ? collect() : \App\Support\EstudiantesPanelQuery::queryBase($idsActividades, $tipoProgramaPanel)
-            ->leftJoin('evaluaciones', 'estudiantes.id_alumno', '=', 'evaluaciones.id_alumno')
+            ->leftJoin('evaluaciones', function ($join) use ($semId) {
+                $join->on('estudiantes.id_alumno', '=', 'evaluaciones.id_alumno')
+                    ->on('estudiantes.id_actividad', '=', 'evaluaciones.id_actividad');
+                if ($semId) {
+                    $join->where('evaluaciones.id_semestre', '=', $semId);
+                }
+            })
             ->select('estudiantes.*', 'actividades.nombre_actividad', 'evaluaciones.id_evaluacion')
             ->orderBy('estudiantes.nombre', 'asc')
             ->get();
@@ -474,7 +481,7 @@
                         </div>
 
                         <div style="margin-bottom: 25px;"><label style="display: block; font-weight: 600; color: #1a3461; margin-bottom: 8px; font-size: 1.05em;"><i class="fas fa-comment-alt"></i> (6) Observaciones:</label>
-                            <textarea id="observaciones" rows="4" placeholder="Anote todas las reflexiones que considere importantes para que el estudiante realice mejoras..." style="width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em; font-family: inherit; resize: vertical;"></textarea>
+                            <textarea id="observaciones" rows="4" placeholder="Anote todas las reflexiones que considere importantes para que el estudiante realice mejoras..." style="width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95em; font-family: inherit; resize: vertical;">Ninguna</textarea>
                         </div>
 
                         <div style="background: #e7f3ff; padding: 20px; border-radius: 8px; border-left: 4px solid #0d6efd;">

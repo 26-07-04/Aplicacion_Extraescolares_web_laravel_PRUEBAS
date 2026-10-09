@@ -222,11 +222,13 @@
             </div>
             <div style="display:flex; gap:8px; align-items:center;">
               <button id="excelModalUpload" style="padding:8px 10px; border-radius:6px; background:#28a745; color:#fff; border:none; cursor:pointer; display:none;">Subir estudiantes</button>
+              <button id="excelModalSave" style="padding:8px 10px; border-radius:6px; background:#198754; color:#fff; border:none; cursor:pointer; display:none;">Actualizar datos</button>
               <button id="excelModalClose" style="padding:8px 10px; border-radius:6px; background:#6c757d; color:#fff; border:none; cursor:pointer;">Cerrar</button>
             </div>
           </div>
           <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
             <button id="excelModalSelectFile" style="padding:8px 10px; border-radius:6px; background:#1B396A; color:#fff; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:8px;"><i class="fas fa-file-excel"></i>Seleccionar archivo</button>
+            <button id="excelModalView" style="padding:8px 10px; border-radius:6px; background:#0d6efd; color:#fff; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:8px;"><i class="fas fa-table"></i>Ver Excel</button>
             <div style="font-size:13px; color:#444;">Actividad seleccionada: <strong><span id="excelModalActividadNameSmall"></span></strong></div>
           </div>
           <div style="max-height:70vh; overflow:auto; background:#fff; border-radius:6px; box-shadow:0 3px 10px rgba(0,0,0,0.06);">
@@ -320,6 +322,7 @@
         @include('coordinador.partials.evaluaciones_impresion_table', [
           'rutaEvalImpPrint' => 'coordinador.demetrio.evaluacion-formulario.print',
           'rutaEvalImpPrintAll' => 'coordinador.demetrio.evaluacion-formulario.print-all',
+          'rutaEvalImpDownloadAll' => 'coordinador.demetrio.evaluacion-formulario.download-all',
         ])
       @endif
 
@@ -415,6 +418,7 @@
       const __currentSemestreId = '{{ $semestre->id ?? $semestre->id_semestre ?? request()->route('id') ?? 0 }}';
       const __tipoProgramaPanel = @json($tipo_programa_informes_panel ?? \App\Models\Actividad::TIPO_EXTRAESCOLAR);
       const __currentUnidadId = '{{ $user->id_unidad ?? 0 }}';
+      const __rutaEstudiantesActividad = '/coordinador/demetrio-vallejo/actividades/';
       
       // Mapear actividades a su id_unidad
       const actividadesUnidadMap = {
@@ -432,8 +436,106 @@
       const modalClose = document.getElementById('excelModalClose');
       const modalUpload = document.getElementById('excelModalUpload');
       const modalSelectFile = document.getElementById('excelModalSelectFile');
+      const modalViewExcel = document.getElementById('excelModalView');
+      const modalSaveExcel = document.getElementById('excelModalSave');
 
       let actividadSeleccionada = { id: null, nombre: '' };
+
+      function agregarCampoEditable(fila, campo, valor, tipo = 'text') {
+        const celda = document.createElement('td');
+        celda.style.cssText = 'padding:8px; border-bottom:1px solid #e5e7eb;';
+        const input = document.createElement('input');
+        input.type = tipo;
+        input.value = valor ?? '';
+        input.dataset.field = campo;
+        input.style.cssText = 'width:100%; min-width:90px; padding:7px; border:1px solid #ced4da; border-radius:4px;';
+        celda.appendChild(input);
+        fila.appendChild(celda);
+      }
+
+      async function verExcelActividad() {
+        if (!actividadSeleccionada.id) return;
+        modalInfo.textContent = 'Cargando alumnos guardados...';
+        modalTableBody.innerHTML = '';
+        modalSaveExcel.style.display = 'none';
+        try {
+          const query = new URLSearchParams({ id_semestre: __currentSemestreId });
+          const response = await fetch(`${__rutaEstudiantesActividad}${actividadSeleccionada.id}/estudiantes?${query}`, {
+            headers: { 'Accept': 'application/json' }
+          });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.message || 'No se pudo abrir la lista de esta actividad.');
+
+          if (!result.estudiantes.length) {
+            modalTableBody.innerHTML = '<tr><td colspan="6" style="padding:14px; text-align:center; color:#666;">Esta actividad aún no tiene alumnos guardados.</td></tr>';
+            modalInfo.textContent = 'Lista de alumnos de esta actividad';
+            return;
+          }
+
+          result.estudiantes.forEach(estudiante => {
+            const fila = document.createElement('tr');
+            fila.dataset.alumnoId = estudiante.id_alumno;
+            agregarCampoEditable(fila, 'numero_control', estudiante.numero_control);
+            agregarCampoEditable(fila, 'nombre', estudiante.nombre);
+            agregarCampoEditable(fila, 'carrera', estudiante.carrera);
+            agregarCampoEditable(fila, 'sexo', estudiante.sexo);
+            agregarCampoEditable(fila, 'semestre', estudiante.semestre, 'number');
+            const estado = document.createElement('td');
+            estado.textContent = 'Guardado';
+            estado.style.cssText = 'padding:8px; border-bottom:1px solid #e5e7eb; text-align:center;';
+            fila.appendChild(estado);
+            modalTableBody.appendChild(fila);
+          });
+
+          modalInfo.textContent = `${result.estudiantes.length} alumnos guardados en ${actividadSeleccionada.nombre}. Edita las celdas y pulsa Actualizar datos.`;
+          modalSaveExcel.style.display = 'inline-block';
+        } catch (error) {
+          modalInfo.textContent = error.message;
+          Swal.fire('No se pudo abrir el Excel', error.message, 'error');
+        }
+      }
+
+      async function actualizarExcelActividad() {
+        if (!actividadSeleccionada.id) return;
+        const botonOriginal = modalSaveExcel.textContent;
+        const estudiantes = Array.from(modalTableBody.querySelectorAll('tr[data-alumno-id]')).map(fila => {
+          const estudiante = { id_alumno: Number(fila.dataset.alumnoId) };
+          fila.querySelectorAll('input[data-field]').forEach(input => {
+            estudiante[input.dataset.field] = input.value.trim();
+          });
+          estudiante.semestre = estudiante.semestre === '' ? null : Number(estudiante.semestre);
+          return estudiante;
+        });
+
+        modalSaveExcel.disabled = true;
+        modalSaveExcel.textContent = 'Actualizando...';
+        try {
+          const response = await fetch(`${__rutaEstudiantesActividad}${actividadSeleccionada.id}/estudiantes`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': __csrf,
+              'Accept': 'application/json',
+            },
+            body: JSON.stringify({ id_semestre: __currentSemestreId, estudiantes }),
+          });
+          const result = await response.json();
+          if (!response.ok || !result.success) {
+            const primerError = Object.values(result.errors || {}).flat()[0];
+            throw new Error(primerError || result.message || 'No se pudieron guardar los cambios.');
+          }
+          modalInfo.textContent = `Se actualizaron ${result.actualizados} alumnos de ${actividadSeleccionada.nombre}.`;
+          Swal.fire('Datos actualizados', `Se guardaron los cambios de ${result.actualizados} alumnos.`, 'success');
+        } catch (error) {
+          Swal.fire('No se pudo actualizar', error.message, 'error');
+        } finally {
+          modalSaveExcel.disabled = false;
+          modalSaveExcel.textContent = botonOriginal;
+        }
+      }
+
+      if (modalViewExcel) modalViewExcel.addEventListener('click', verExcelActividad);
+      if (modalSaveExcel) modalSaveExcel.addEventListener('click', actualizarExcelActividad);
 
       // Abrir modal al clicar la tarjeta completa (activity-card)
       document.querySelectorAll('.activity-card[data-actividad-id]').forEach(el => {
@@ -443,6 +545,8 @@
           // Mostrar modal
           if (modal) {
             modal.style.display = 'flex';
+            modalViewExcel.style.display = 'inline-flex';
+            modalSaveExcel.style.display = 'none';
             modalActividadName.textContent = actividadSeleccionada.nombre || '';
             modalActividadNameSmall.textContent = actividadSeleccionada.nombre || '';
             modalInfo.textContent = '';
@@ -508,6 +612,7 @@
             }
 
             const mapped = [];
+            let columnasInvertidasCorregidas = false;
             const startRow = headerRowPresent ? 1 : 0;
             for (let r = startRow; r < rows.length; r++) {
               const row = rows[r];
@@ -518,12 +623,21 @@
                 const val = row[c] !== undefined && row[c] !== null ? row[c] : '';
                 obj[key] = val;
               }
+              const controlTexto = String(obj['No_control'] || '').trim();
+              const nombreTexto = String(obj['Nombre'] || '').trim();
+              if (/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ].*\s/.test(controlTexto) && /^\d{6,12}$/.test(nombreTexto)) {
+                obj['No_control'] = nombreTexto;
+                obj['Nombre'] = controlTexto;
+                columnasInvertidasCorregidas = true;
+              }
               if (!obj['Nombre'] && !obj['No_control']) continue;
               mapped.push(obj);
             }
 
             if (modalInfo) {
-              modalInfo.textContent = headerRowPresent ? '' : 'Se usó mapeo automático por columnas (orden: No_control, Nombre, Carrera, Sexo, Semestre).';
+              modalInfo.textContent = columnasInvertidasCorregidas
+                ? 'Se detectaron invertidas las columnas No_control y Nombre; se corrigieron automáticamente.'
+                : (headerRowPresent ? '' : 'Se usó mapeo automático por columnas (orden: No_control, Nombre, Carrera, Sexo, Semestre).');
             }
 
             // Guardar mapeo en memoria para poder enviarlo al servidor
@@ -670,17 +784,21 @@
           if (json.inserted !== undefined) {
             const actividadNombre = actividadSeleccionada.nombre || 'la actividad';
             const insertados = json.inserted || 0;
+            const omitidos = json.skipped || 0;
             const totalMsg = insertados === 1 ? '1 alumno ha' : insertados + ' alumnos han';
+            const iconoImportacion = insertados === 0 ? 'error' : (omitidos > 0 ? 'warning' : 'success');
+            const tituloImportacion = insertados === 0 ? 'No se agregaron alumnos' : (omitidos > 0 ? 'Importación parcial' : 'Importación completada');
+            const notaOmitidos = insertados === 0 && omitidos > 0 ? '<br><small>Verifica si los números de control ya están registrados.</small>' : '';
             
             // Mostrar alerta SweetAlert2 con auto-cierre
             Swal.fire({
               position: 'center',
-              icon: 'success',
-              title: 'Importación completada',
+                icon: iconoImportacion,
+                title: tituloImportacion,
               html: `<div style="font-size:14px;"><strong>${totalMsg} sido agregados</strong> a <strong>${actividadNombre}</strong>` + 
-                    (json.skipped > 0 ? `<br><small style="color:#666; font-size:12px;">(${json.skipped} omitidos)</small>` : '') + `</div>`,
-              showConfirmButton: false,
-              timer: 2500,
+                    (omitidos > 0 ? `<br><small style="color:#666; font-size:12px;">(${omitidos} omitidos)</small>` : '') + notaOmitidos + `</div>`,
+                showConfirmButton: insertados === 0,
+                timer: insertados > 0 ? 2500 : undefined,
               timerProgressBar: true,
               didOpen: (modal) => {
                 const titleEl = modal.querySelector('.swal2-title');

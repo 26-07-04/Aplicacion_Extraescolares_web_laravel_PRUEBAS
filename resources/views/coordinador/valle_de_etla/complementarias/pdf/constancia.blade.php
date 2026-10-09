@@ -155,6 +155,26 @@
         .ccp-footer p {
             margin: 0;
         }
+
+        .doc-footer {
+            margin-top: 0.8cm;
+            font-size: 7.5pt;
+            line-height: 1.2;
+        }
+
+        .doc-footer-inner {
+            display: table;
+            width: 100%;
+        }
+
+        .doc-footer-left, .doc-footer-right {
+            display: table-cell;
+            width: 50%;
+            vertical-align: middle;
+        }
+
+        .doc-footer-left { text-align: left; }
+        .doc-footer-right { text-align: right; }
     </style>
 </head>
 <body>
@@ -331,6 +351,13 @@
             </div>
 
             @include('coordinador.partials.constancia_complementarias_ccp_footer')
+
+            <div class="doc-footer">
+                <div class="doc-footer-inner">
+                    <div class="doc-footer-left">TecNM-VI-PO-003-05</div>
+                    <div class="doc-footer-right">Rev. 0</div>
+                </div>
+            </div>
         </div>
     </div>
 </body>

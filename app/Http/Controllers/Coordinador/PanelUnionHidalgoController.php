@@ -17,6 +17,7 @@ use App\Support\ResultadosTipoFiltro;
 
 class PanelUnionHidalgoController extends Controller
 {
+    use Concerns\GestionaEstudiantesActividad;
     use ImprimeFormatoActividadCoordinador;
     use ImprimeEvaluacionFormularioCoordinador;
     /**

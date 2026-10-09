@@ -8,8 +8,11 @@ use App\Models\Evaluacion;
 use App\Models\Semestre;
 use App\Support\ComplementariasEvaluacionEncabezado;
 use App\Support\EvaluacionExtraescolarFormulario;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+use ZipArchive;
 
 trait ImprimeEvaluacionFormularioCoordinador
 {
@@ -89,7 +92,15 @@ trait ImprimeEvaluacionFormularioCoordinador
         }
 
         [$actividadesPrint, $ctxUnidad] = $this->actividadesDelPanelQuery($user, $semestre);
+        $actividadesPrint = $actividadesPrint->get();
+        $idActividad = (int) $request->query('id_actividad');
+        $idsActividades = $actividadesPrint->pluck('id_actividad')->map(fn ($id) => (int) $id)->all();
+        if ($idActividad <= 0 || ! in_array($idActividad, $idsActividades, true)) {
+            abort(404, 'Selecciona una actividad válida para este semestre.');
+        }
+
         $evaluaciones = $this->evaluacionesDelPanelQuery($user, $semestre, $actividadesPrint, $ctxUnidad)
+            ->where('id_actividad', $idActividad)
             ->get()
             ->sortBy(fn ($e) => $e->estudiante->nombre ?? '')
             ->values();
@@ -103,6 +114,67 @@ trait ImprimeEvaluacionFormularioCoordinador
             $evaluaciones,
             $request
         ));
+    }
+
+    public function downloadAllEvaluacionesFormulario($id, Request $request)
+    {
+        $user = Auth::user();
+        $this->autorizarCoordinadorFormato($user);
+
+        $semestre = Semestre::find($id);
+        if (! $semestre) {
+            abort(404);
+        }
+
+        [$actividadesPrint, $ctxUnidad] = $this->actividadesDelPanelQuery($user, $semestre);
+        $actividadesPrint = $actividadesPrint->get();
+        $idActividad = (int) $request->query('id_actividad');
+        $idsActividades = $actividadesPrint->pluck('id_actividad')->map(fn ($id) => (int) $id)->all();
+        if ($idActividad <= 0 || ! in_array($idActividad, $idsActividades, true)) {
+            abort(404, 'Selecciona una actividad válida para este semestre.');
+        }
+
+        $evaluaciones = $this->evaluacionesDelPanelQuery($user, $semestre, $actividadesPrint, $ctxUnidad)
+            ->where('id_actividad', $idActividad)
+            ->get()
+            ->sortBy(fn ($e) => $e->estudiante->nombre ?? '')
+            ->values();
+
+        if ($evaluaciones->isEmpty()) {
+            abort(404, 'No hay evaluaciones registradas para descargar.');
+        }
+
+        $actividadSeleccionada = $actividadesPrint->firstWhere('id_actividad', $idActividad);
+        $zipName = 'evaluaciones_' . Str::slug($actividadSeleccionada->nombre_actividad ?? 'actividad') . '_' . Str::slug($semestre->nombre ?? 'semestre') . '_' . now()->format('Ymd_His') . '.zip';
+        $zipPath = storage_path('app/temp/' . $zipName);
+        $directory = dirname($zipPath);
+        if (! is_dir($directory)) {
+            mkdir($directory, 0777, true);
+        }
+
+        $zip = new ZipArchive();
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            abort(500, 'No se pudo crear el archivo ZIP.');
+        }
+
+        foreach ($evaluaciones as $index => $evaluacion) {
+            $nombreEstudiante = trim((string) ($evaluacion->estudiante->nombre ?? 'estudiante'));
+            $nombreArchivo = ($index + 1) . '_' . Str::slug($nombreEstudiante ?: 'estudiante') . '_' . ($evaluacion->id_evaluacion ?? $index + 1) . '.pdf';
+            $pdf = Pdf::loadView($this->evaluacionFormularioPdfView(), $this->datosVistaEvaluacionFormularioPrint(
+                $semestre,
+                collect([$evaluacion]),
+                $request
+            ));
+
+            $pdf->setPaper('letter');
+            $zip->addFromString($nombreArchivo, $pdf->output());
+        }
+
+        $zip->close();
+
+        return response()->download($zipPath, $zipName)
+            ->deleteFileAfterSend(true)
+            ->header('Content-Type', 'application/zip');
     }
 
     /**

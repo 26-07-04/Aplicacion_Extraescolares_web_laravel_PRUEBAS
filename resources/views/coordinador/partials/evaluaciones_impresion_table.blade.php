@@ -154,6 +154,13 @@
         border: 1px solid #ced4da;
         min-width: 220px;
     }
+    .eval-imp-actividad {
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+        min-width: 240px;
+        max-width: 100%;
+    }
     .eval-imp-search-wrap { position: relative; }
     .eval-imp-search-wrap i {
         position: absolute;
@@ -207,6 +214,21 @@
     }
     .btn-print-all-eval:hover { background: #2c5aa0; }
     .btn-print-all-eval:disabled { background: #adb5bd; cursor: not-allowed; }
+    .btn-download-all-eval {
+        background: #2e7d32;
+        color: #fff;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .btn-download-all-eval:hover { background: #225f28; }
+    .btn-download-all-eval:disabled { background: #adb5bd; cursor: not-allowed; }
     .eval-imp-empty { padding: 40px; text-align: center; color: #6c757d; font-style: italic; }
     .eval-imp-pagination {
         display: flex;
@@ -241,13 +263,21 @@
 @php
     $semestreId = $semestre->id_semestre ?? $semestre->id ?? null;
     $tipoProgramaPanel = $tipo_programa_informes_panel ?? \App\Models\Actividad::TIPO_EXTRAESCOLAR;
-    $idsActividades = ($actividades ?? collect())->pluck('id_actividad')->filter()->values()->all();
+    $actividadesEvalImp = collect($actividades ?? [])->unique('id_actividad')->values();
+    $idsActividades = $actividadesEvalImp->pluck('id_actividad')->filter()->values()->all();
     $filasEvalImp = [];
     if ($idsActividades !== []) {
         $rows = \App\Support\EstudiantesPanelQuery::queryBase($idsActividades, $tipoProgramaPanel)
-            ->leftJoin('evaluaciones', 'estudiantes.id_alumno', '=', 'evaluaciones.id_alumno')
+            ->leftJoin('evaluaciones', function ($join) use ($semestreId) {
+                $join->on('estudiantes.id_alumno', '=', 'evaluaciones.id_alumno')
+                    ->on('estudiantes.id_actividad', '=', 'evaluaciones.id_actividad');
+                if ($semestreId) {
+                    $join->where('evaluaciones.id_semestre', '=', $semestreId);
+                }
+            })
             ->select(
                 'estudiantes.id_alumno',
+                'estudiantes.id_actividad',
                 'estudiantes.numero_control',
                 'estudiantes.nombre',
                 'estudiantes.carrera',
@@ -261,6 +291,7 @@
         foreach ($rows as $row) {
             $filasEvalImp[] = [
                 'id_alumno' => $row->id_alumno,
+                'id_actividad' => $row->id_actividad,
                 'id_evaluacion' => $row->id_evaluacion,
                 'numero_control' => $row->numero_control ?? '',
                 'nombre' => $row->nombre ?? '',
@@ -275,6 +306,7 @@
     $totalEvaluados = collect($filasEvalImp)->where('evaluado', true)->count();
     $rutaEvalImpPrint = $rutaEvalImpPrint ?? 'coordinador.valle.evaluacion-formulario.print';
     $rutaEvalImpPrintAll = $rutaEvalImpPrintAll ?? 'coordinador.valle.evaluacion-formulario.print-all';
+    $rutaEvalImpDownloadAll = $rutaEvalImpDownloadAll ?? 'coordinador.valle.evaluacion-formulario.download-all';
     $esComplementariasEvalImp = $tipoProgramaPanel === \App\Models\Actividad::TIPO_COMPLEMENTARIA;
     $encabezadoEvalImp = $esComplementariasEvalImp
         ? \App\Support\ComplementariasEvaluacionEncabezado::defaults()
@@ -330,6 +362,12 @@
     <div class="eval-imp-tabla-wrap">
         <div class="eval-imp-tabla-controls">
             <h3>Estudiantes ({{ $totalEvaluados }} evaluados)</h3>
+            <select class="eval-imp-actividad" id="evalImpActividad" aria-label="Selecciona actividad para filtrar e imprimir">
+                <option value="">Todas las actividades (elige una para imprimir en lote)</option>
+                @foreach($actividadesEvalImp as $actividadEvalImp)
+                    <option value="{{ $actividadEvalImp->id_actividad }}">{{ $actividadEvalImp->nombre_actividad }}</option>
+                @endforeach
+            </select>
             <div class="eval-imp-search-wrap">
                 <i class="fas fa-search"></i>
                 <input type="text" class="eval-imp-search" id="evalImpBuscar" placeholder="Buscar alumno...">
@@ -359,9 +397,12 @@
                 Siguiente <i class="fas fa-chevron-right"></i>
             </button>
         </div>
-        <div class="eval-imp-footer">
-            <button type="button" class="btn-print-all-eval" id="btnEvalImpTodos" @if($totalEvaluados === 0) disabled @endif>
-                <i class="fas fa-print"></i> Imprimir todos ({{ $totalEvaluados }})
+        <div class="eval-imp-footer" style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+            <button type="button" class="btn-print-all-eval" id="btnEvalImpTodos" disabled>
+                <i class="fas fa-print"></i> Imprimir actividad
+            </button>
+            <button type="button" class="btn-download-all-eval" id="btnEvalDownloadTodos" disabled>
+                <i class="fas fa-download"></i> Descargar actividad ZIP
             </button>
         </div>
     </div>
@@ -379,12 +420,14 @@
     var documentosCount = {{ $esComplementariasEvalImp ? 0 : (isset($documentos) ? $documentos->count() : 0) }};
     var rutaUno = @json(route($rutaEvalImpPrint, ['id_evaluacion' => '__ID__']));
     var rutaTodos = @json(route($rutaEvalImpPrintAll, ['id' => '__ID__']));
+    var rutaDownloadTodos = @json(route($rutaEvalImpDownloadAll, ['id' => '__ID__']));
     window.pdfEvalImpSeleccionado = null;
     var estudiantesPorPagina = 10;
     var paginaActual = 1;
     var totalPaginas = 1;
     var filasFiltradas = [];
     var esComplementariasEvalImp = @json($esComplementariasEvalImp);
+    var selectorActividad = document.getElementById('evalImpActividad');
 
     function guardarEncabezadoEvalImpPayload() {
         if (!esComplementariasEvalImp) return;
@@ -430,7 +473,9 @@
 
     function filtrarFilas(filtro) {
         var q = (filtro || '').toLowerCase().trim();
+        var actividadId = selectorActividad ? selectorActividad.value : '';
         return filas.filter(function (f) {
+            if (actividadId && String(f.id_actividad) !== actividadId) return false;
             if (!q) return true;
             return (f.nombre || '').toLowerCase().indexOf(q) >= 0
                 || (f.numero_control || '').toLowerCase().indexOf(q) >= 0
@@ -521,7 +566,27 @@
         filasFiltradas = filtrarFilas(filtro);
         totalPaginas = Math.max(1, Math.ceil(filasFiltradas.length / estudiantesPorPagina));
         paginaActual = 1;
+        actualizarControlesImpresion();
         renderTablaPagina(1);
+    }
+
+    function actualizarControlesImpresion() {
+        var actividadId = selectorActividad ? selectorActividad.value : '';
+        var total = filas.filter(function (f) {
+            return f.evaluado && (!actividadId || String(f.id_actividad) === actividadId);
+        }).length;
+        var printButton = document.getElementById('btnEvalImpTodos');
+        var downloadButton = document.getElementById('btnEvalDownloadTodos');
+        var printCount = document.querySelector('.eval-imp-tabla-controls h3');
+        if (printCount) printCount.textContent = 'Estudiantes (' + total + ' evaluados)';
+        if (printButton) {
+            printButton.disabled = !actividadId || total === 0;
+            printButton.innerHTML = '<i class="fas fa-print"></i> Imprimir actividad (' + total + ')';
+        }
+        if (downloadButton) {
+            downloadButton.disabled = !actividadId || total === 0;
+            downloadButton.innerHTML = '<i class="fas fa-download"></i> Descargar actividad ZIP (' + total + ')';
+        }
     }
 
     function escapeHtml(s) {
@@ -553,6 +618,12 @@
         buscar.addEventListener('input', function () { renderTabla(buscar.value); });
     }
 
+    if (selectorActividad) {
+        selectorActividad.addEventListener('change', function () {
+            renderTabla(buscar ? buscar.value : '');
+        });
+    }
+
     var btnAnterior = document.getElementById('evalImpBtnAnterior');
     var btnSiguiente = document.getElementById('evalImpBtnSiguiente');
     if (btnAnterior) {
@@ -569,12 +640,38 @@
     var btnTodos = document.getElementById('btnEvalImpTodos');
     if (btnTodos) {
         btnTodos.addEventListener('click', function () {
+            var actividadId = selectorActividad ? selectorActividad.value : '';
+            if (!actividadId) {
+                swalAlerta('Selecciona una actividad para imprimir sus evaluaciones.');
+                return;
+            }
             if (!semestreId) {
                 swalAlerta('No se encontró el semestre.');
                 return;
             }
             if (!requiereMembrete()) return;
-            abrirImpresion(urlConMembrete(rutaTodos.replace('__ID__', semestreId)));
+            var url = urlConMembrete(rutaTodos.replace('__ID__', semestreId));
+            url += (url.indexOf('?') >= 0 ? '&' : '?') + 'id_actividad=' + encodeURIComponent(actividadId);
+            abrirImpresion(url);
+        });
+    }
+
+    var btnDownloadTodos = document.getElementById('btnEvalDownloadTodos');
+    if (btnDownloadTodos) {
+        btnDownloadTodos.addEventListener('click', function () {
+            var actividadId = selectorActividad ? selectorActividad.value : '';
+            if (!actividadId) {
+                swalAlerta('Selecciona una actividad para descargar sus evaluaciones.');
+                return;
+            }
+            if (!semestreId) {
+                swalAlerta('No se encontró el semestre.');
+                return;
+            }
+            if (!requiereMembrete()) return;
+            var url = urlConMembrete(rutaDownloadTodos.replace('__ID__', semestreId));
+            url += (url.indexOf('?') >= 0 ? '&' : '?') + 'id_actividad=' + encodeURIComponent(actividadId);
+            window.location.href = url;
         });
     }
 
