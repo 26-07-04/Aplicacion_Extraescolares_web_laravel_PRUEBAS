@@ -1,5 +1,7 @@
 FROM richarvey/nginx-php-fpm:latest
 
+ENV WEBROOT=/var/www/html/public
+
 WORKDIR /var/www/html
 
 COPY . .
