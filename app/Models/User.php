@@ -70,15 +70,6 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array<string,string>
-     */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-    ];
-
-    /**
      * Table and primary key customization to match the new `usuarios` table.
      */
     protected $table = 'usuarios';
